@@ -1,0 +1,3 @@
+INDEX VERSION 1.126+/Users/hugo/battlecode/.metadata/.plugins/org.eclipse.jdt.core
+1765565202.index
+1380144309.index
