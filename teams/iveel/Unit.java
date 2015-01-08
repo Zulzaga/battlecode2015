@@ -14,7 +14,6 @@ import battlecode.common.TerrainTile;
 public abstract class Unit extends BaseBot{
 
     private Direction facing;
-    private Random rand;
 
     public Unit(RobotController rc) {
         super(rc);
@@ -22,55 +21,11 @@ public abstract class Unit extends BaseBot{
         rand = new Random(rc.getID());
     }
 
-    private  void transferSupplies() throws GameActionException {
-        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED,rc.getTeam());
-        double lowestSupply = rc.getSupplyLevel();
-        double transferAmount = 0;
-        MapLocation suppliesToThisLocation = null;
-        for(RobotInfo ri:nearbyAllies){
-            if(ri.supplyLevel<lowestSupply){
-                lowestSupply = ri.supplyLevel;
-                transferAmount = (rc.getSupplyLevel()-ri.supplyLevel)/2;
-                suppliesToThisLocation = ri.location;
-            }
-        }
-        if(suppliesToThisLocation!=null){
-            rc.transferSupplies((int)transferAmount, suppliesToThisLocation);
-        }
-    }
-
-    private  void buildUnit(RobotType type) throws GameActionException {
-        if(rc.getTeamOre()>type.oreCost){
-            Direction buildDir = getRandomDirection();
-            if(rc.isCoreReady()&&rc.canBuild(buildDir, type)){
-                rc.build(buildDir, type);
-            }
-        }
-    }
-
-    private  void attackEnemyZero() throws GameActionException {
-        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(rc.getLocation(),rc.getType().attackRadiusSquared,rc.getTeam().opponent());
-        if(nearbyEnemies.length>0){//there are enemies nearby
-            //try to shoot at them
-            //specifically, try to shoot at enemy specified by nearbyEnemies[0]
-            if(rc.isWeaponReady()&&rc.canAttackLocation(nearbyEnemies[0].location)){
-                rc.attackLocation(nearbyEnemies[0].location);
-            }
-        }
-    }
-
-    private  void spawnUnit(RobotType type) throws GameActionException {
-        Direction randomDir = getRandomDirection();
-        if(rc.isCoreReady()&&rc.canSpawn(randomDir, type)){
-            rc.spawn(randomDir, type);
-        }
-    }
-
-    private  Direction getRandomDirection() {
+    public  Direction getRandomDirection() {
         return Direction.values()[(int)(rand.nextDouble()*8)];
     }
 
-    private  void mineAndMove() throws GameActionException {
+    public  void mineAndMove() throws GameActionException {
         if(rc.senseOre(rc.getLocation())>1){//there is ore, so try to mine
             if(rc.isCoreReady()&&rc.canMine()){
                 rc.mine();
@@ -80,7 +35,7 @@ public abstract class Unit extends BaseBot{
         }
     }
 
-    private  void moveAround() throws GameActionException {
+    public  void moveAround() throws GameActionException {
         if(rand.nextDouble()<0.05){
             if(rand.nextDouble()<0.5){
                 facing = facing.rotateLeft();
@@ -119,6 +74,15 @@ public abstract class Unit extends BaseBot{
             }
         }
         return null;
+    }
+    
+    public void buildUnit(RobotType type) throws GameActionException {
+        if(rc.getTeamOre()>type.oreCost){
+            Direction buildDir = getRandomDirection();
+            if(rc.isCoreReady()&&rc.canBuild(buildDir, type)){
+                rc.build(buildDir, type);
+            }
+        }
     }
 
     public  Direction getBuildDirection(RobotType type) {

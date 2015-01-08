@@ -4,6 +4,7 @@ import battlecode.common.*;
 
 import java.util.*;
 
+import iveel.structures.Tower;
 import iveel.structures.AerospaceLab;
 import iveel.structures.Barracks;
 import iveel.structures.HQ;
@@ -30,8 +31,10 @@ public class RobotPlayer {
         BaseBot myself = null;
 
         switch (myType){
-        //Structures (refer to all robots that cannot move) -10
+        //Structures (refer to all robots that cannot move) -11
         case HQ: myself = new HQ(rc);
+        break;
+        case TOWER: myself = new Tower(rc);
         break;
         case SUPPLYDEPOT: myself = new SupplyDepot(rc) ;
         break;

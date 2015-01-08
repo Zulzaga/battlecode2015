@@ -11,13 +11,9 @@ public class Barracks extends Structure{
     }
     
     public void execute() throws GameActionException {
-        if (rc.isCoreReady() && rc.getTeamOre() > 200) {
-            Direction newDir = getSpawnDirection(RobotType.SOLDIER);
-            if (newDir != null) {
-                rc.spawn(newDir, RobotType.SOLDIER);
-            }
-        }
-
+        spawnUnit(RobotType.SOLDIER);
+        
+        transferSupplies();
         rc.yield();
     }
 

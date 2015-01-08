@@ -5,25 +5,15 @@ import java.util.Random;
 import battlecode.common.*;
 
 public class RobotPlayer{
-
+    
     static Direction facing;
     static Random rand;
     static RobotController rc;
-    static  MapLocation myHQ;
-    static  MapLocation theirHQ;
-    static Team myTeam;
-    static Team theirTeam;
-
+    
     public static void run(RobotController myrc){
         rc = myrc;
         rand = new Random(rc.getID());
         facing = getRandomDirection();//randomize starting direction
-
-        myHQ = rc.senseHQLocation();
-        theirHQ = rc.senseEnemyHQLocation();
-        myTeam = rc.getTeam();
-        theirTeam = myTeam.opponent();
-
         while(true){
             try {
                 if(rc.getType()==RobotType.HQ){
@@ -51,15 +41,15 @@ public class RobotPlayer{
                     moveAround();
                 }
                 transferSupplies();
-
+                
             } catch (GameActionException e) {
-
+                
                 e.printStackTrace();
             }
-
+            
             rc.yield();
         }
-
+        
     }
 
     private static void transferSupplies() throws GameActionException {
@@ -129,7 +119,7 @@ public class RobotPlayer{
             }
         }
         MapLocation tileInFront = rc.getLocation().add(facing);
-
+        
         //check that the direction in front is not a tile that can be attacked by the enemy towers
         MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
         boolean tileInFrontSafe = true;
@@ -150,97 +140,5 @@ public class RobotPlayer{
             }
         }
     }
-
-    public void executeHQ() throws GameActionException {
-        int numBeavers = rc.readBroadcast(2);
-
-        if (rc.isCoreReady() && rc.getTeamOre() > 100 && numBeavers < 10) {
-            Direction newDir = getSpawnDirection(RobotType.BEAVER);
-            if (newDir != null) {
-                rc.spawn(newDir, RobotType.BEAVER);
-                rc.broadcast(2, numBeavers + 1);
-            }
-        }
-        MapLocation rallyPoint;
-        if (Clock.getRoundNum() < 600) {
-            rallyPoint = new MapLocation( (this.myHQ.x + this.theirHQ.x) / 2,
-                    (this.myHQ.y + this.theirHQ.y) / 2);
-        }
-        else {
-            rallyPoint = this.theirHQ;
-        }
-        rc.broadcast(0, rallyPoint.x);
-        rc.broadcast(1, rallyPoint.y);
-
-        rc.yield();
-    }
-
-    public Direction[] getDirectionsToward(MapLocation dest) {
-        Direction toDest = rc.getLocation().directionTo(dest);
-        Direction[] dirs = {toDest,
-                toDest.rotateLeft(), toDest.rotateRight(),
-                toDest.rotateLeft().rotateLeft(), toDest.rotateRight().rotateRight()};
-
-        return dirs;
-    }
-
-    public Direction getMoveDir(MapLocation dest) {
-        Direction[] dirs = getDirectionsToward(dest);
-        for (Direction d : dirs) {
-            if (rc.canMove(d)) {
-                return d;
-            }
-        }
-        return null;
-    }
-
-    public Direction getSpawnDirection(RobotType type) {
-        Direction[] dirs = getDirectionsToward(this.theirHQ);
-        for (Direction d : dirs) {
-            if (rc.canSpawn(d, type)) {
-                return d;
-            }
-        }
-        return null;
-    }
-
-    public Direction getBuildDirection(RobotType type) {
-        Direction[] dirs = getDirectionsToward(this.theirHQ);
-        for (Direction d : dirs) {
-            if (rc.canBuild(d, type)) {
-                return d;
-            }
-        }
-        return null;
-    }
-
-    public RobotInfo[] getAllies() {
-        RobotInfo[] allies = rc.senseNearbyRobots(Integer.MAX_VALUE, myTeam);
-        return allies;
-    }
-
-    public RobotInfo[] getEnemiesInAttackingRange() {
-        RobotInfo[] enemies = rc.senseNearbyRobots(RobotType.SOLDIER.attackRadiusSquared, theirTeam);
-        return enemies;
-    }
-
-    public void attackLeastHealthEnemy(RobotInfo[] enemies) throws GameActionException {
-        if (enemies.length == 0) {
-            return;
-        }
-
-        double minEnergon = Double.MAX_VALUE;
-        MapLocation toAttack = null;
-        for (RobotInfo info : enemies) {
-            if (info.health < minEnergon) {
-                toAttack = info.location;
-                minEnergon = info.health;
-            }
-        }
-
-        rc.attackLocation(toAttack);
-    }
-
-
-
+    
 }

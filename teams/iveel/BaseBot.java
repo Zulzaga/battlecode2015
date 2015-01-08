@@ -1,7 +1,10 @@
 package iveel;
 
+import java.util.Random;
+
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
@@ -13,6 +16,8 @@ public abstract class BaseBot {
     protected RobotController rc;
     protected MapLocation myHQ, theirHQ;
     protected Team myTeam, theirTeam;
+    protected Random rand;
+
 
     public BaseBot(RobotController rc) {
         this.rc = rc;
@@ -20,6 +25,7 @@ public abstract class BaseBot {
         this.theirHQ = rc.senseEnemyHQLocation();
         this.myTeam = rc.getTeam();
         this.theirTeam = this.myTeam.opponent();
+        this.rand = new Random(rc.getID());
     }
 
     public  Direction[] getDirectionsToward(MapLocation dest) {
@@ -57,6 +63,17 @@ public abstract class BaseBot {
 
         rc.attackLocation(toAttack);
     }
+    
+    protected  void attackEnemyZero() throws GameActionException {
+        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(rc.getLocation(),rc.getType().attackRadiusSquared,rc.getTeam().opponent());
+        if(nearbyEnemies.length>0){//there are enemies nearby
+            //try to shoot at them
+            //specifically, try to shoot at enemy specified by nearbyEnemies[0]
+            if(rc.isWeaponReady()&&rc.canAttackLocation(nearbyEnemies[0].location)){
+                rc.attackLocation(nearbyEnemies[0].location);
+            }
+        }
+    }
 
 
     public  void beginningOfTurn() {
@@ -65,7 +82,7 @@ public abstract class BaseBot {
         }
     }
 
-    public  void endOfTurn() {
+    public  void endOfTurn() throws GameActionException {
     }
 
     public  void go() throws GameActionException {
@@ -77,5 +94,31 @@ public abstract class BaseBot {
     public  void execute() throws GameActionException {
         rc.yield();
     }
+    
+    
+    
+    public void transferSupplies() throws GameActionException {
+        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED,rc.getTeam());
+        double lowestSupply = rc.getSupplyLevel();
+        double transferAmount = 0;
+        MapLocation suppliesToThisLocation = null;
+        for(RobotInfo ri:nearbyAllies){
+            if(ri.supplyLevel<lowestSupply){
+                lowestSupply = ri.supplyLevel;
+                transferAmount = (rc.getSupplyLevel()-ri.supplyLevel)/2;
+                suppliesToThisLocation = ri.location;
+            }
+        }
+        if(suppliesToThisLocation!=null){
+            rc.transferSupplies((int)transferAmount, suppliesToThisLocation);
+        }
+    }
+    
+    
+    protected Direction getRandomDirection() {
+//        System.out.println("heereeeee" + Direction.values()[(int)(rand.nextDouble()*8)]);
+        return Direction.values()[(int)(rand.nextDouble()*8)];
+    }
+
 
 }
