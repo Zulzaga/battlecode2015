@@ -3,6 +3,18 @@ package iveel.units;
 import battlecode.common.*;
 import iveel.Unit;
 
+
+/*
+ * Spawned at HQ
+ * Only unit that can build structures
+ * One of two units that can mine ore [0.2, 3].
+ * Has a weak attack at short range
+ * Frequently hosed
+ * 
+ * 
+ * 
+ * 
+ */
 public class Beaver extends Unit {
 
     public Beaver(RobotController rc) {
@@ -33,37 +45,5 @@ public class Beaver extends Unit {
 
     }
     
-    
-    /**
-     * SwarmPot example
-     * 
-     * Gather until having more than 500 ore.
-     * Then move toward enemyHQ
-     * @throws GameActionException
-     */
-    public void swarmPot() throws GameActionException{
-        if (rc.isCoreReady()) {
-            if (rc.getTeamOre() < 500) {
-                //mine
-                if (rc.senseOre(rc.getLocation()) > 0) {
-                    rc.mine();
-                }
-                else {
-                    Direction newDir = getMoveDir(this.theirHQ);
-
-                    if (newDir != null) {
-                        rc.move(newDir);
-                    }
-                }
-            }
-            else {
-                //build barracks
-                Direction newDir = getBuildDirection(RobotType.BARRACKS);
-                if (newDir != null) {
-                    rc.build(newDir, RobotType.BARRACKS);
-                }
-            }
-        }
-    }
 
 }
