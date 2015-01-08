@@ -11,6 +11,24 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 
+
+
+/*BaseBot represents Unit and Structure.
+ * General:
+ * 
+ * Starts with 500 ore, and each team automatically receives 5 ore per turn before any mining income
+ * 
+ * USE OF COMMUNICATION CHANNELS.
+ * 
+ * 
+ * #1. 
+ * #2. Number of spawned beavers.
+ * #3.
+ * #4. Path explorer with right preference
+ * #5. Path explorer with left preference
+ * 
+ * 
+ */
 public abstract class BaseBot {
 
     protected RobotController rc;
@@ -27,7 +45,13 @@ public abstract class BaseBot {
         this.theirTeam = this.myTeam.opponent();
         this.rand = new Random(rc.getID());
     }
+    
 
+    /**
+     * Find a list of directions toward destination.
+     * @param dest
+     * @return 
+     */
     public  Direction[] getDirectionsToward(MapLocation dest) {
         Direction toDest = rc.getLocation().directionTo(dest);
         Direction[] dirs = {toDest,

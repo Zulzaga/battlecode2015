@@ -13,14 +13,14 @@ import battlecode.common.TerrainTile;
 
 public abstract class Unit extends BaseBot{
 
-    private Direction facing;
+    protected Direction facing;
 
     public Unit(RobotController rc) {
         super(rc);
         facing = getRandomDirection();
         rand = new Random(rc.getID());
     }
-
+    
     public  Direction getRandomDirection() {
         return Direction.values()[(int)(rand.nextDouble()*8)];
     }
@@ -65,6 +65,7 @@ public abstract class Unit extends BaseBot{
             }
         }
     }
+    
 
     public  Direction getMoveDir(MapLocation dest) {
         Direction[] dirs = getDirectionsToward(dest);
@@ -94,5 +95,38 @@ public abstract class Unit extends BaseBot{
         }
         return null;
     }
+    
+    /**
+     * SwarmPot example
+     * 
+     * Gather until having more than 500 ore.
+     * Then move toward enemyHQ
+     * @throws GameActionException
+     */
+    public void swarmPot() throws GameActionException{
+        if (rc.isCoreReady()) {
+            if (rc.getTeamOre() < 500) {
+                //mine
+                if (rc.senseOre(rc.getLocation()) > 0) {
+                    rc.mine();
+                }
+                else {
+                    Direction newDir = getMoveDir(this.theirHQ);
+
+                    if (newDir != null) {
+                        rc.move(newDir);
+                    }
+                }
+            }
+            else {
+                //build barracks
+                Direction newDir = getBuildDirection(RobotType.BARRACKS);
+                if (newDir != null) {
+                    rc.build(newDir, RobotType.BARRACKS);
+                }
+            }
+        }
+    }
+    
 
 }
