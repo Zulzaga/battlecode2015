@@ -45,7 +45,7 @@ public class RobotPlayer {
             myself = new TechnologyInstitute(rc);
             break;
         case BARRACKS:
-            myself = new Barrack(rc);
+            myself = new Barracks(rc);
             break;
         case HANDWASHSTATION:
             myself = new HandwashStation(rc);
