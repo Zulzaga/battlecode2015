@@ -8,8 +8,82 @@ public class RobotPlayer {
         RobotType myType = rc.getType();
         BaseBot myself;
 
+        switch (myType){
+        //Buildings
+        case HQ: myself = new HQ(rc);
+        break;
+        case SUPPLYDEPOT: ;
+        break;
+        case TECHNOLOGYINSTITUTE: ;
+        break;
+        case BARRACKS: ;
+        break;
+        case HANDWASHSTATION: ;
+        break;
+        case TRAININGFIELD: ;
+        break;
+        case TANKFACTORY:;
+        break;
+        case AEROSPACELAB: ;
+        break;
+        case MINERFACTORY: ;
+        break;
+        case HELIPAD:;
+        break;
+        
+        //Robot
+        case BEAVER: ;
+        break;
+        case COMPUTER: ;
+        break;
+        case SOLDIER: ;
+        break;
+        case BASHER: ;
+        break;
+        case DRONE: ;
+        break;
+        case MINER: ;
+        break;
+        case COMMANDER: ;
+        break;
+        case TANK: ;
+        break;
+        case LAUNCHER: ;
+        break;
+        }
+
+        //Buildings
         if (myType == RobotType.HQ) {
             myself = new HQ(rc);
+        } else if (myType == RobotType.SUPPLYDEPOT) {
+            myself = new Beaver(rc);
+        } else if (myType == RobotType.TECHNOLOGYINSTITUTE) {
+            myself = new Beaver(rc);
+        } else if (myType == RobotType.BARRACKS) {
+            myself = new Beaver(rc);
+        } else if (myType == RobotType.HELIPAD) {
+            myself = new Beaver(rc);
+        } else if (myType == RobotType.HANDWASHSTATION) {
+            myself = new Beaver(rc);
+        } else if (myType == RobotType.TRAININGFIELD) {
+            myself = new Beaver(rc);
+        } else if (myType == RobotType.TANKFACTORY) {
+            myself = new Beaver(rc);
+        } else if (myType == RobotType.AEROSPACELAB) {
+            myself = new Beaver(rc);
+
+
+            //
+        } else if (myType == RobotType.BEAVER) {
+            myself = new Beaver(rc);
+
+        } else if (myType == RobotType.BEAVER) {
+            myself = new Beaver(rc);
+        } else if (myType == RobotType.BEAVER) {
+            myself = new Beaver(rc);
+        } else if (myType == RobotType.BEAVER) {
+            myself = new Beaver(rc);
+
         } else if (myType == RobotType.BEAVER) {
             myself = new Beaver(rc);
         } else if (myType == RobotType.BARRACKS) {
@@ -18,7 +92,17 @@ public class RobotPlayer {
             myself = new Soldier(rc);
         } else if (myType == RobotType.TOWER) {
             myself = new Tower(rc);
-        } else {
+        } else if (myType == RobotType.TOWER) {
+            myself = new Tower(rc);
+        } else if (myType == RobotType.TOWER) {
+            myself = new Tower(rc);
+        }else if (myType == RobotType.TOWER) {
+            myself = new Tower(rc);
+        }
+        else if (myType == RobotType.TOWER) {
+            myself = new Tower(rc);
+        }
+        else {
             myself = new BaseBot(rc);
         }
 
@@ -48,7 +132,7 @@ public class RobotPlayer {
             Direction toDest = rc.getLocation().directionTo(dest);
             Direction[] dirs = {toDest,
                     toDest.rotateLeft(), toDest.rotateRight(),
-                toDest.rotateLeft().rotateLeft(), toDest.rotateRight().rotateRight()};
+                    toDest.rotateLeft().rotateLeft(), toDest.rotateRight().rotateRight()};
 
             return dirs;
         }
@@ -151,7 +235,7 @@ public class RobotPlayer {
             MapLocation rallyPoint;
             if (Clock.getRoundNum() < 600) {
                 rallyPoint = new MapLocation( (this.myHQ.x + this.theirHQ.x) / 2,
-                                              (this.myHQ.y + this.theirHQ.y) / 2);
+                        (this.myHQ.y + this.theirHQ.y) / 2);
             }
             else {
                 rallyPoint = this.theirHQ;
