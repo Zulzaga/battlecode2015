@@ -1,5 +1,7 @@
 package hugo;
 
+import java.util.Random;
+
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -13,6 +15,7 @@ public abstract class BaseBot {
     protected RobotController rc;
     protected MapLocation myHQ, theirHQ;
     protected Team myTeam, theirTeam;
+    protected Random rand;
 
     public BaseBot(RobotController rc) {
         this.rc = rc;
@@ -20,6 +23,7 @@ public abstract class BaseBot {
         this.theirHQ = rc.senseEnemyHQLocation();
         this.myTeam = rc.getTeam();
         this.theirTeam = this.myTeam.opponent();
+        this.rand = new Random(rc.getID());
     }
 
     public  Direction[] getDirectionsToward(MapLocation dest) {
