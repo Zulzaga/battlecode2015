@@ -5,17 +5,18 @@ import java.util.*;
 
 public class RobotPlayer {
     public static void run(RobotController rc) {
+        RobotType myType = rc.getType();
         BaseBot myself;
 
-        if (rc.getType() == RobotType.HQ) {
+        if (myType == RobotType.HQ) {
             myself = new HQ(rc);
-        } else if (rc.getType() == RobotType.BEAVER) {
+        } else if (myType == RobotType.BEAVER) {
             myself = new Beaver(rc);
-        } else if (rc.getType() == RobotType.BARRACKS) {
+        } else if (myType == RobotType.BARRACKS) {
             myself = new Barracks(rc);
-        } else if (rc.getType() == RobotType.SOLDIER) {
+        } else if (myType == RobotType.SOLDIER) {
             myself = new Soldier(rc);
-        } else if (rc.getType() == RobotType.TOWER) {
+        } else if (myType == RobotType.TOWER) {
             myself = new Tower(rc);
         } else {
             myself = new BaseBot(rc);
