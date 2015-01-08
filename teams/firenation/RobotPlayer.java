@@ -13,6 +13,7 @@ import firenation.structures.MinerFactory;
 import firenation.structures.SupplyDepot;
 import firenation.structures.TankFactory;
 import firenation.structures.TechnologyInstitute;
+import firenation.structures.Tower;
 import firenation.structures.TrainingField;
 import firenation.units.Basher;
 import firenation.units.Beaver;
@@ -30,8 +31,10 @@ public class RobotPlayer {
         BaseBot myself = null;
 
         switch (myType){
-        //Structures (refer to all robots that cannot move) -10
+        //Structures (refer to all robots that cannot move) -11
         case HQ: myself = new HQ(rc);
+        break;
+        case TOWER: myself = new Tower(rc);
         break;
         case SUPPLYDEPOT: myself = new SupplyDepot(rc) ;
         break;
