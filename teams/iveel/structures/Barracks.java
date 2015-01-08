@@ -11,10 +11,27 @@ public class Barracks extends Structure{
     }
     
     public void execute() throws GameActionException {
-        spawnUnit(RobotType.SOLDIER);
-        
+        swarmPot();
         transferSupplies();
         rc.yield();
+    }
+    
+    public void player6() throws GameActionException{
+        spawnUnit(RobotType.SOLDIER);
+        transferSupplies();
+    }
+    
+    /**
+     * swarmPot example
+     * @throws GameActionException
+     */
+    public void swarmPot() throws GameActionException{
+        if (rc.isCoreReady() && rc.getTeamOre() > 200) {
+            Direction newDir = getSpawnDirection(RobotType.SOLDIER);
+            if (newDir != null) {
+                rc.spawn(newDir, RobotType.SOLDIER);
+            }
+        }
     }
 
 }

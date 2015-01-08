@@ -10,11 +10,37 @@ public class Soldier extends Unit {
     }
     
     public void execute() throws GameActionException {
-        attackEnemyZero();
-        moveAround();
-        
+        swarmPot();
         transferSupplies();
         rc.yield();
+    }
+    
+    public void player6() throws GameActionException{
+        attackEnemyZero();
+        moveAround();
+        transferSupplies();
+    }
+    
+    public void swarmPot() throws GameActionException{
+        RobotInfo[] enemies = getEnemiesInAttackingRange();
+
+        if (enemies.length > 0) {
+            //attack!
+            if (rc.isWeaponReady()) {
+                attackLeastHealthEnemy(enemies);
+            }
+        }
+        else if (rc.isCoreReady()) {
+            int rallyX = rc.readBroadcast(0);
+            int rallyY = rc.readBroadcast(1);
+            MapLocation rallyPoint = new MapLocation(rallyX, rallyY);
+
+            Direction newDir = getMoveDir(rallyPoint);
+
+            if (newDir != null) {
+                rc.move(newDir);
+            }
+        }
     }
 
 }
