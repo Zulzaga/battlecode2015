@@ -1,7 +1,7 @@
-package firenation.units;
+package hugo.units;
 
 import battlecode.common.RobotController;
-import firenation.Unit;
+import hugo.Unit;
 
 public class Launcher extends Unit {
 

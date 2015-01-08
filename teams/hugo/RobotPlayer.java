@@ -1,29 +1,29 @@
-package firenation;
+package hugo;
 
 import battlecode.common.*;
 
 import java.util.*;
 
-import firenation.structures.AerospaceLab;
-import firenation.structures.Barracks;
-import firenation.structures.HQ;
-import firenation.structures.HandwashStation;
-import firenation.structures.Helipad;
-import firenation.structures.MinerFactory;
-import firenation.structures.SupplyDepot;
-import firenation.structures.TankFactory;
-import firenation.structures.TechnologyInstitute;
-import firenation.structures.Tower;
-import firenation.structures.TrainingField;
-import firenation.units.Basher;
-import firenation.units.Beaver;
-import firenation.units.Commander;
-import firenation.units.Computer;
-import firenation.units.Drone;
-import firenation.units.Launcher;
-import firenation.units.Miner;
-import firenation.units.Soldier;
-import firenation.units.Tank;
+import hugo.structures.AerospaceLab;
+import hugo.structures.Barracks;
+import hugo.structures.HQ;
+import hugo.structures.HandwashStation;
+import hugo.structures.Helipad;
+import hugo.structures.MinerFactory;
+import hugo.structures.SupplyDepot;
+import hugo.structures.TankFactory;
+import hugo.structures.TechnologyInstitute;
+import hugo.structures.Tower;
+import hugo.structures.TrainingField;
+import hugo.units.Basher;
+import hugo.units.Beaver;
+import hugo.units.Commander;
+import hugo.units.Computer;
+import hugo.units.Drone;
+import hugo.units.Launcher;
+import hugo.units.Miner;
+import hugo.units.Soldier;
+import hugo.units.Tank;
 
 public class RobotPlayer {
     public static void run(RobotController rc) {

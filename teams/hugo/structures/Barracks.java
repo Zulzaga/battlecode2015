@@ -1,7 +1,7 @@
-package firenation.structures;
+package hugo.structures;
 
 import battlecode.common.RobotController;
-import firenation.Structure;
+import hugo.Structure;
 
 public class Barracks extends Structure{
 
