@@ -57,14 +57,14 @@ public abstract class Structure extends BaseBot {
         Direction richDirection = Direction.EAST;
         double oreAmount = rc.senseOre(currentLocation.add(richDirection));
         for (Direction d : listOfDirections) {
-            if (rc.senseOre(currentLocation.add(d)) > oreAmount) {
+            if ((rc.senseOre(currentLocation.add(d)) > oreAmount)
+                    && rc.canSpawn(richDirection, type)) {
                 richDirection = d;
             }
         }
 
-        if (rc.isCoreReady() && rc.canSpawn(richDirection, type)) {
+        if (rc.isCoreReady()) {
             rc.spawn(richDirection, type);
         }
     }
-
 }
