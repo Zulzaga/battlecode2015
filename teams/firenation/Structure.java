@@ -1,4 +1,4 @@
-package hugo;
+package firenation;
 
 import battlecode.common.Direction;
 import battlecode.common.RobotController;
