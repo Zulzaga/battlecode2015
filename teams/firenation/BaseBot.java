@@ -27,7 +27,6 @@ public abstract class BaseBot {
         Direction[] dirs = {toDest,
                 toDest.rotateLeft(), toDest.rotateRight(),
                 toDest.rotateLeft().rotateLeft(), toDest.rotateRight().rotateRight()};
-
         return dirs;
     }
 
