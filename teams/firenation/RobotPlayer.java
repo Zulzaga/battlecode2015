@@ -1,6 +1,7 @@
 package firenation;
 
 import battlecode.common.*;
+import firenation.BaseBot;
 
 import java.util.*;
 
@@ -26,7 +27,7 @@ import firenation.units.Soldier;
 import firenation.units.Tank;
 
 public class RobotPlayer {
-    public static void run(RobotController rc) {
+    public static void run(RobotController rc) throws GameActionException {
         RobotType myType = rc.getType();
         BaseBot myself = null;
 
@@ -99,6 +100,7 @@ public class RobotPlayer {
         while (true) {
             try {
                 myself.go();
+                rc.yield();
             } catch (Exception e) {
                 e.printStackTrace();
             }

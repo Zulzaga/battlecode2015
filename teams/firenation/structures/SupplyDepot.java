@@ -3,6 +3,7 @@ package firenation.structures;
 import battlecode.common.RobotController;
 import firenation.Structure;
 
+
 public class SupplyDepot extends Structure {
 
     public SupplyDepot(RobotController rc) {
@@ -11,3 +12,5 @@ public class SupplyDepot extends Structure {
     }
 
 }
+
+

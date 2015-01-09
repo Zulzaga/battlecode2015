@@ -26,8 +26,7 @@ public class HQ extends Structure {
         rc.broadcast(10, 0);
         rc.broadcast(11, 0);
         rc.broadcast(12, 0);
-        
-        
+
     }
 
     public void execute() throws GameActionException {

@@ -10,3 +10,4 @@ public class TechnologyInstitute extends Structure{
     }
 
 }
+
