@@ -11,7 +11,6 @@ public class Barracks extends Structure {
 
     public void execute() throws GameActionException {
         swarmPot();
-        transferSupplies();
     }
 
     public void player6() throws GameActionException {
