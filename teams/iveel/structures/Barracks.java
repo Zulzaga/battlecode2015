@@ -3,7 +3,7 @@ package iveel.structures;
 import battlecode.common.*;
 import iveel.Structure;
 
-public class Barracks extends Structure{
+public class Barracks extends Structure {
 
     public Barracks(RobotController rc) throws GameActionException {
         super(rc);
@@ -11,23 +11,21 @@ public class Barracks extends Structure{
         int num = rc.readBroadcast(7);
         rc.broadcast(7, num +1);
     }
-    
+
     public void execute() throws GameActionException {
         swarmPot();
-        transferSupplies();
-        rc.yield();
     }
-    
-    public void player6() throws GameActionException{
+
+    public void player6() throws GameActionException {
         spawnUnit(RobotType.SOLDIER);
-        transferSupplies();
     }
-    
+
     /**
      * swarmPot example
+     * 
      * @throws GameActionException
      */
-    public void swarmPot() throws GameActionException{
+    public void swarmPot() throws GameActionException {
         if (rc.isCoreReady() && rc.getTeamOre() > 200) {
             Direction newDir = getSpawnDirection(RobotType.SOLDIER);
             if (newDir != null) {

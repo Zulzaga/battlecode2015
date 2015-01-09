@@ -2,9 +2,10 @@ package iveel.structures;
 
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
+import battlecode.common.RobotType;
 import iveel.Structure;
 
-public class Helipad extends Structure{
+public class Helipad extends Structure {
 
     public Helipad(RobotController rc) throws GameActionException {
         super(rc);
@@ -12,6 +13,10 @@ public class Helipad extends Structure{
         
         int num = rc.readBroadcast(10);
         rc.broadcast(10, num +1);
+    }
+
+    public void execute() throws GameActionException {
+        spawnUnit(RobotType.MINER);
     }
 
 }

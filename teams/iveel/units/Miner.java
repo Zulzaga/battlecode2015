@@ -1,12 +1,9 @@
 package iveel.units;
 
-import battlecode.common.Clock;
+import iveel.Unit;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
-import battlecode.common.RobotType;
-import iveel.Unit;
-
 
 /*
  * Spawned at Miner Factory
@@ -19,19 +16,15 @@ public class Miner extends Unit {
 
     public Miner(RobotController rc) {
         super(rc);
-        // TODO Auto-generated constructor stub
     }
 
     public void execute() throws GameActionException {
         attackEnemyZero();
         mineAndMove();
-
-        transferSupplies();
-        rc.yield();
     }
 
-    public void explorePathWithRightPreferenceToward( MapLocation dest){
-        
+    public void explorePathWithRightPreferenceToward(MapLocation dest) {
+
     }
 
 }
