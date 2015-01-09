@@ -26,7 +26,15 @@ import battlecode.common.Team;
  * #3.
  * #4. Path explorer with right preference
  * #5. Path explorer with left preference
- * 
+ * 6.
+ * 7. Barrack   4; 200-700
+ * 8. Miner factory 3; 0-300
+ * 9. HandwashStation 2; 1000-1300
+ * 10. Helipad 2; 500-1000
+ * 11. Tank factory 4; 700-1200
+ * 12. Aerospace lab 2; 1000-1700
+ * 13.
+ * 14.
  * 
  */
 public abstract class BaseBot {

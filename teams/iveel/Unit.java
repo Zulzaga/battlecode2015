@@ -207,7 +207,7 @@ public abstract class Unit extends BaseBot {
      * 
      * @throws GameActionException
      */
-    private void moveAroundAlways() throws GameActionException {
+    protected void moveAroundAlways() throws GameActionException {
         if (rand.nextDouble() < 0.05) {
             if (rand.nextDouble() < 0.5) {
                 facing = facing.rotateRight();

@@ -7,10 +7,27 @@ public class HQ extends Structure {
     
     public MapLocation centerOfMap;
 
-    public HQ(RobotController rc) {
+    public HQ(RobotController rc) throws GameActionException {
         super(rc);
         centerOfMap = new MapLocation( (this.myHQ.x + this.theirHQ.x) / 2,
                 (this.myHQ.y + this.theirHQ.y) / 2);
+        
+        //set number of structures to 0
+//        * 7. Barrack   4; 200-700
+//        * 8. Miner factory 3; 0-300
+//        * 9. HandwashStation 2; 1000-1300
+//        * 10. Helipad 2; 500-1000
+//        * 11. Tank factory 4; 700-1200
+//        * 12. Aerospace lab 2; 1000-1700
+        
+        rc.broadcast(7, 0);
+        rc.broadcast(8, 0);
+        rc.broadcast(9, 0);
+        rc.broadcast(10, 0);
+        rc.broadcast(11, 0);
+        rc.broadcast(12, 0);
+        
+        
     }
     
     public void execute() throws GameActionException {

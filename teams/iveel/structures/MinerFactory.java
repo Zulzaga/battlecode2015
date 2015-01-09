@@ -7,9 +7,12 @@ import iveel.Structure;
 
 public class MinerFactory extends Structure{
 
-    public MinerFactory(RobotController rc) {
+    public MinerFactory(RobotController rc) throws GameActionException {
         super(rc);
         // TODO Auto-generated constructor stub
+        
+        int num = rc.readBroadcast(8);
+        rc.broadcast(8, num +1);
     }
     
     public void execute() throws GameActionException {

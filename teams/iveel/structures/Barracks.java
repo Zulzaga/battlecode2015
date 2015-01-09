@@ -5,9 +5,11 @@ import iveel.Structure;
 
 public class Barracks extends Structure{
 
-    public Barracks(RobotController rc) {
+    public Barracks(RobotController rc) throws GameActionException {
         super(rc);
         // TODO Auto-generated constructor stub
+        int num = rc.readBroadcast(7);
+        rc.broadcast(7, num +1);
     }
     
     public void execute() throws GameActionException {

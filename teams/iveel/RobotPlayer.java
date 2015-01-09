@@ -26,7 +26,7 @@ import iveel.units.Soldier;
 import iveel.units.Tank;
 
 public class RobotPlayer {
-    public static void run(RobotController rc) {
+    public static void run(RobotController rc) throws GameActionException {
         RobotType myType = rc.getType();
         BaseBot myself = null;
 
