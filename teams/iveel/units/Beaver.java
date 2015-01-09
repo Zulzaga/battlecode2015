@@ -49,9 +49,8 @@ public class Beaver extends Unit {
         //      * 12. Aerospace lab 2; 1000-1700   -350
 
         int turn = Clock.getRoundNum();
-        int chance = 3;
 
-        //try build structures in particular steps if ore is enough
+        //try build structures in particular time steps if there is enough amount of ore.
         if (turn % 20 == 0){
             if (turn <= 300 && rc.readBroadcast(8) < 4 ){
                 buildUnit(RobotType.MINERFACTORY);
@@ -74,12 +73,15 @@ public class Beaver extends Unit {
         }
         }
         
-        //if building nothing
-        if (Math.random() < 0.2){
+        //if building nothing.
+        if (Math.random() < 0.3){
             mineAndMove();
         }else{
             moveAroundAlways();
         }
+        
+        
+//        swarmPot() ;
         
         
 
