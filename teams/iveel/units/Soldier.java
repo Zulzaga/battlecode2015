@@ -8,29 +8,25 @@ public class Soldier extends Unit {
     public Soldier(RobotController rc) {
         super(rc);
     }
-    
+
     public void execute() throws GameActionException {
         swarmPot();
-        transferSupplies();
-        rc.yield();
     }
-    
-    public void player6() throws GameActionException{
+
+    public void player6() throws GameActionException {
         attackEnemyZero();
         moveAround();
-        transferSupplies();
     }
-    
-    public void swarmPot() throws GameActionException{
+
+    public void swarmPot() throws GameActionException {
         RobotInfo[] enemies = getEnemiesInAttackingRange();
 
         if (enemies.length > 0) {
-            //attack!
+            // attack!
             if (rc.isWeaponReady()) {
                 attackLeastHealthEnemy(enemies);
             }
-        }
-        else if (rc.isCoreReady()) {
+        } else if (rc.isCoreReady()) {
             int rallyX = rc.readBroadcast(0);
             int rallyY = rc.readBroadcast(1);
             MapLocation rallyPoint = new MapLocation(rallyX, rallyY);
