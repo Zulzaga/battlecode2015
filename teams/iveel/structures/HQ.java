@@ -105,7 +105,7 @@ public class HQ extends Structure implements Channels {
             }
         }
         MapLocation rallyPoint;
-        if (Clock.getRoundNum() < 600) {
+        if (Clock.getRoundNum() < 1400) {
             rallyPoint = centerOfMap;
         } else {
             rallyPoint = this.theirHQ;

@@ -1,6 +1,7 @@
 package hugo;
 
 import battlecode.common.Direction;
+import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
@@ -18,6 +19,13 @@ public abstract class Structure extends BaseBot {
             }
         }
         return null;
+    }
+    
+    public void spawnUnit(RobotType type) throws GameActionException {
+        Direction randomDir = getRandomDirection();
+        if (rc.isCoreReady() && rc.canSpawn(randomDir, type)) {
+            rc.spawn(randomDir, type);
+        }
     }
 
 }
