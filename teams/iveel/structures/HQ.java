@@ -1,14 +1,62 @@
 package iveel.structures;
 
 import battlecode.common.*;
+import iveel.Communication;
 import iveel.Structure;
+import iveel.Channels;
 
-public class HQ extends Structure {
 
+
+/*BaseBot represents Unit and Structure.
+ * General:
+ * 
+ * Starts with 500 ore, and each team automatically receives 5 ore per turn before any mining income
+ * 
+ * 
+ * 
+ * USE OF  CHANNELS.
+ * 1. 
+ * 2. Number of spawned beavers.
+ * 3. 
+ * 4. Path explorer with right preference
+ * 5. Path explorer with left preference
+ * 6.
+ * 7. Barrack   4; 200-700
+ * 8. Miner factory 3; 0-300
+ * 9. HandwashStation 2; 1000-1300
+ * 10. Helipad 2; 500-1000
+ * 11. Tank factory 4; 700-1200
+ * 12. Aerospace lab 2; 1000-1700
+ * 13.
+ *   HQ:
+ *   
+ *   AA BB CC DDD:
+ *   
+ *   AA:  Always 10 (making it different from structures).
+ *   BB: for special purpose. 00 if nothing special.
+ *   CC, DDD: up this stucture's management. 
+ *   
+ *   BB = 01 Total number of spawned each unit. 
+ *   CC = unit's unique number
+ *   DDD = number
+ *   
+ *   
+ * 
+ */
+public class HQ extends Structure implements Channels {
+    
+   //Keep track all info about armies and their last dest.
+   //Each army unit listens its army channel which is unique.
+
+    
     public MapLocation centerOfMap;
+    public static Communication communication;
+//    public HashMap
 
     public HQ(RobotController rc) throws GameActionException {
         super(rc);
+        channelStartWith = 10;
+
         centerOfMap = new MapLocation((this.myHQ.x + this.theirHQ.x) / 2,
                 (this.myHQ.y + this.theirHQ.y) / 2);
         
@@ -19,18 +67,13 @@ public class HQ extends Structure {
 //        * 10. Helipad 2; 500-1000
 //        * 11. Tank factory 4; 700-1200
 //        * 12. Aerospace lab 2; 1000-1700
-        
-        rc.broadcast(7, 0);
-        rc.broadcast(8, 0);
-        rc.broadcast(9, 0);
-        rc.broadcast(10, 0);
-        rc.broadcast(11, 0);
-        rc.broadcast(12, 0);
+  
 
     }
 
     public void execute() throws GameActionException {
-        swarmPot();
+//        swarmPot();
+        buildArmy(10, RobotType.BEAVER, centerOfMap, 1000);
     }
 
     /**
@@ -55,7 +98,7 @@ public class HQ extends Structure {
         int numBeavers = rc.readBroadcast(2);
 
         if (rc.isCoreReady() && rc.getTeamOre() > 100 && numBeavers < 10) {
-            Direction newDir = getSpawnDirection(RobotType.BEAVER);
+            Direction newDir = getSpawnDirection(RobotType.BEAVER, theirHQ);
             if (newDir != null) {
                 rc.spawn(newDir, RobotType.BEAVER);
                 rc.broadcast(2, numBeavers + 1);
@@ -69,6 +112,12 @@ public class HQ extends Structure {
         }
         rc.broadcast(0, rallyPoint.x);
         rc.broadcast(1, rallyPoint.y);
+    }
+
+    @Override
+    public void createChannel() {
+        
+        
     }
 
 }

@@ -5,9 +5,13 @@ import iveel.Structure;
 
 public class Tower extends Structure{
 
-    public Tower(RobotController rc) {
+    public Tower(RobotController rc) throws GameActionException {
         super(rc);
-        // TODO Auto-generated constructor stub
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Tower;
+        initChannelNum(); 
     }
     
     public void execute() throws GameActionException {

@@ -1,5 +1,6 @@
 package iveel.units;
 
+import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import iveel.Unit;
 
@@ -15,9 +16,13 @@ import iveel.Unit;
  */
 public class Launcher extends Unit {
 
-    public Launcher(RobotController rc) {
+    public Launcher(RobotController rc) throws GameActionException {
         super(rc);
-        // TODO Auto-generated constructor stub
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Launcher;
+        initChannelNum(); 
     }
 
 }

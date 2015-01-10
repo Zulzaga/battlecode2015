@@ -19,8 +19,13 @@ import iveel.Unit;
  */
 public class Beaver extends Unit {
 
-    public Beaver(RobotController rc) {
+    public Beaver(RobotController rc) throws GameActionException {
         super(rc);
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Beaver;
+        initChannelNum(); 
     }
 
     public void execute() throws GameActionException {
@@ -54,20 +59,20 @@ public class Beaver extends Unit {
         if (turn % 20 == 0){
             if (turn <= 300 && rc.readBroadcast(8) < 4 ){
                 buildUnit(RobotType.MINERFACTORY);
-            }else if( turn >= 200 && turn <700 && rc.readBroadcast(7)<5 ){
+            }else if( turn >= 200 && turn <700 && rc.readBroadcast(Channel_Barracks)<5 ){
                 buildUnit(RobotType.BARRACKS);
-            }else if ( turn >=700  && turn <= 1200 && rc.readBroadcast(11) < 4){
+            }else if ( turn >=700  && turn <= 1200 && rc.readBroadcast(Channel_Tank) < 4){
                 buildUnit(RobotType.TANK);
             }
             
         }else if (turn % 33 == 0){
-            if ( turn >=1000  && turn <= 1300 && rc.readBroadcast(9) < 3){
+            if ( turn >=1000  && turn <= 1300 && rc.readBroadcast(Channel_HandwashStation) < 3){
                 buildUnit(RobotType.HANDWASHSTATION);
                 
         }else if (turn % 49 == 0){
-            if (turn <= 500 && turn <1000 && rc.readBroadcast(2) < 3 ){
+            if (turn <= 500 && turn <1000 && rc.readBroadcast(Channel_Helipad) < 3 ){
                 buildUnit(RobotType.HELIPAD);
-            }else if( turn >= 1000 && turn <1700 && rc.readBroadcast(12) < 3 ){
+            }else if( turn >= 1000 && turn <1700 && rc.readBroadcast(Channel_AerospaceLab) < 3 ){
                 buildUnit(RobotType.AEROSPACELAB);
             }
         }

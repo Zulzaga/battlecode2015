@@ -9,5 +9,8 @@ public class Computer extends Unit{
         super(rc);
         // TODO Auto-generated constructor stub
     }
-
+    
+    public void execute(){
+    	
+    }
 }

@@ -3,6 +3,7 @@ package iveel;
 import java.util.Arrays;
 import java.util.List;
 
+import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -25,8 +26,8 @@ public abstract class Structure extends BaseBot {
      * @param type
      * @return
      */
-    public Direction getSpawnDirection(RobotType type) {
-        Direction[] dirs = getDirectionsToward(theirHQ);
+    public Direction getSpawnDirection(RobotType type, MapLocation dest) {
+        Direction[] dirs = getDirectionsToward(dest);
         for (Direction d : dirs) {
             if (rc.canSpawn(d, type)) {
                 return d;
@@ -34,12 +35,29 @@ public abstract class Structure extends BaseBot {
         }
         return null;
     }
+    
+    
+    
 
-    public void spawnUnit(RobotType type) throws GameActionException {
+    public boolean spawnUnit(RobotType type) throws GameActionException {
         Direction randomDir = getRandomDirection();
         if (rc.isCoreReady() && rc.canSpawn(randomDir, type)) {
             rc.spawn(randomDir, type);
+            return true;
         }
+        
+        return false;
+    }
+    
+    
+    public boolean spawnArmyUnit(RobotType type, MapLocation dest, double waitTimeToNextDest) throws GameActionException{
+        Direction toDest = getSpawnDirection(type, dest); // canSpawn is checked
+        if (rc.isCoreReady() && toDest != null) {
+            rc.spawn(toDest, type);
+            return true;
+        }
+        
+        return true;
     }
 
     /**
@@ -50,7 +68,7 @@ public abstract class Structure extends BaseBot {
      *            type of the robot to be generated
      * @throws GameActionException
      */
-    private void spawnUnitOreCollector(RobotType type)
+    public void spawnUnitOreCollector(RobotType type)
             throws GameActionException {
 
         MapLocation currentLocation = rc.getLocation();
@@ -65,6 +83,25 @@ public abstract class Structure extends BaseBot {
 
         if (rc.isCoreReady()) {
             rc.spawn(richDirection, type);
+        }
+    }
+    
+    /**
+     * Generate an army which has at most given number of units within a given time.
+     * @param numberOfUnits
+     * @param dest
+     * @param timeLimit
+     * @throws GameActionException 
+     */
+    public void buildArmy(int numberOfUnits, RobotType unitType, MapLocation dest, double timeInterval) throws GameActionException{
+        double startTime = Clock.getRoundNum();
+        double endTime = startTime + timeInterval;
+        double waitAfterLastUnitSpawned = 3;
+        int spawnedNum = 0;
+        while (Clock.getRoundNum() <= endTime && numberOfUnits > spawnedNum){
+            if (spawnArmyUnit(unitType, dest, endTime + waitAfterLastUnitSpawned)){
+                spawnedNum =+1;
+            };
         }
     }
 }

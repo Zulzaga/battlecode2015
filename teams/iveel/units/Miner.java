@@ -14,8 +14,13 @@ import battlecode.common.RobotController;
  */
 public class Miner extends Unit {
 
-    public Miner(RobotController rc) {
+    public Miner(RobotController rc) throws GameActionException {
         super(rc);
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Miner;
+        initChannelNum(); 
     }
 
     public void execute() throws GameActionException {

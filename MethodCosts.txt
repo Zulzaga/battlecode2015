@@ -18,7 +18,7 @@ battlecode/common/RobotController/canAttackLocation           10    true
 battlecode/common/RobotController/canBuild                    10    true
 battlecode/common/RobotController/canLaunch                   10    true
 battlecode/common/RobotController/canMine                     10    true
-battlecode/common/RobotController/canMove                     10    true
+battlecode/common/RobotController/canMove        bi             10    true
 battlecode/common/RobotController/canSenseLocation            5     true
 battlecode/common/RobotController/canSpawn                    10    true
 battlecode/common/RobotController/castFlash                   0     true

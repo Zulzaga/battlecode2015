@@ -1,5 +1,26 @@
 package iveel;
 
+import iveel.structures.AerospaceLab;
+import iveel.structures.Barracks;
+import iveel.structures.HQ;
+import iveel.structures.HandwashStation;
+import iveel.structures.Helipad;
+import iveel.structures.MinerFactory;
+import iveel.structures.SupplyDepot;
+import iveel.structures.TankFactory;
+import iveel.structures.TechnologyInstitute;
+import iveel.structures.Tower;
+import iveel.structures.TrainingField;
+import iveel.units.Basher;
+import iveel.units.Beaver;
+import iveel.units.Commander;
+import iveel.units.Computer;
+import iveel.units.Drone;
+import iveel.units.Launcher;
+import iveel.units.Miner;
+import iveel.units.Soldier;
+import iveel.units.Tank;
+
 import java.util.Random;
 
 import battlecode.common.Direction;
@@ -16,31 +37,100 @@ import battlecode.common.Team;
  * 
  * Starts with 500 ore, and each team automatically receives 5 ore per turn before any mining income
  * 
- * USE OF COMMUNICATION CHANNELS.
+ * USE OF CHANNELS:
+ * Can only use radio channels from 0 to 65535. 
+ * Each robot has its own unique channelNum. 
  * 
- * 
- * #1. 
- * #2. Number of spawned beavers.
- * #3.
- * #4. Path explorer with right preference
- * #5. Path explorer with left preference
- * 6.
- * 7. Barrack   4; 200-700
- * 8. Miner factory 3; 0-300
- * 9. HandwashStation 2; 1000-1300
- * 10. Helipad 2; 500-1000
- * 11. Tank factory 4; 700-1200
- * 12. Aerospace lab 2; 1000-1700
- * 13.
- * 14.
- * 
+ *   5digits used:
+ *   
+ *   
+ * == Structures (except HQ) 
+ *   AA BB C
+ *   
+ *   AA: type of unit.
+ *   BB: spawned order number. 1st or 2nd. 
+ *   C: up this stucture's management. 
+ *   
+ *   10 - Helipad
+ *   11 - tower
+ *   12 - SupplyDepot
+ *   13 - TechnologyInstitute
+ *   14 - Barracks
+ *   15 - HandwashStation
+ *   16 - TrainingField
+ *   17 - TankFactory
+ *   18 - AerospaceLab
+ *   19 - MinerFactory
+ *   
+ * == Units:   
+ *   A BBB C 
+ *   
+ *   A: type of unit
+ *   BBB: spawned order number. 1st or 2nd 
+ *   C: up to this unit's management.
+ *   
+ *   2 - Beaver
+ *   3 - Soldier
+ *   4 - Miner
+ *   5 - Tank 
+ *   6 - Basher // no more than 550
+ *   
+ *   4 digits used:
+ *   Rest of robots (few number) must be 4 digits.
+ *   
+ * == HQ:
+ *   A BBB 
+ *   A:  Always 1 (making it different from structures).
+ *   BBB:  up this stucture's management. 
+ *   
+ * == Drone, Launcher, Computer, Commander
+ *   A BB C - must be 4digits. 
+ *   1 - Drone
+ *   7 - Launcher
+ *   8 - Computer
+ *   9 - Commander
+ *    
+ *   For example: 1st drone's channel is 1 01_
+ *   
+ *   
+ *  
  */
 public abstract class BaseBot {
+    
+    //Channels for keeping track of total number of each robots //
+    public static int Channel_Helipad = 10000;
+    public static int Channel_Tower = 11000;
+    public static int Channel_SupplyDepot = 12000;
+    public static int Channel_TechnologyInstitute = 13000;
+    public static int Channel_Barracks = 14000;
+    public static int Channel_HandwashStation = 15000;
+    public static int Channel_TrainingField = 16000;
+    public static int Channel_TankFactory = 17000;
+    public static int Channel_AerospaceLab = 18000;
+    public static int Channel_MinerFactory = 19000;
+    
+    
+    public static int Channel_Drone = 1000;
+    public static int Channel_Launcher = 7000;
+    public static int Channel_Computer = 8000;
+    public static int Channel_Commander = 9000;
+    
+    public static int Channel_Beaver = 20000;
+    public static int Channel_Soldier = 30000;
+    public static int Channel_Miner = 40000;
+    public static int Channel_Tank = 50000;
+    public static int Channel_Basher = 60000; // no more than 550 bashiers
+    
 
     protected RobotController rc;
     protected MapLocation myHQ, theirHQ;
     protected Team myTeam, theirTeam;
     protected Random rand;
+    
+    //for channeling
+    protected int channelID;  //this channel would be used for this robot's info; unique for each robot.
+    protected int channelStartWith; // should be Channel_Beaver or ...
+    
 
     public BaseBot(RobotController rc) {
         this.rc = rc;
@@ -50,6 +140,19 @@ public abstract class BaseBot {
         this.theirTeam = this.myTeam.opponent();
         this.rand = new Random(rc.getID());
     }
+    
+    /**
+     * Initialize channelNum AA BBB 
+     * 
+     * Increment total number of this robot type.
+     * @throws GameActionException
+     */
+    public void initChannelNum() throws GameActionException{
+        int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
+        rc.broadcast(channelStartWith, spawnedOrder);
+        channelID = channelStartWith + spawnedOrder*10;
+    }
+    
 
     /**
      * Find a list of directions toward destination.
