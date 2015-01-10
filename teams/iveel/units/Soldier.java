@@ -8,10 +8,13 @@ import iveel.Unit;
 
 public class Soldier extends Unit {
 
-    public Soldier(RobotController rc) {
+    public Soldier(RobotController rc) throws GameActionException {
         super(rc);
-        channelStartWith = "32";
-
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Soldier;
+        initChannelNum(); 
     }
 
     public void execute() throws GameActionException {

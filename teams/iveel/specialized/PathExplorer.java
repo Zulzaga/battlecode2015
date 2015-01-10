@@ -16,7 +16,7 @@ public class PathExplorer extends Miner {
     private int recordedLastTimeStamp;
     private Boolean rightHandRuled;  //ruled directions could be only left or right
 
-    public PathExplorer(RobotController rc, boolean rightHandRuled) {
+    public PathExplorer(RobotController rc, boolean rightHandRuled) throws GameActionException {
         super(rc);
         this.rightHandRuled = rightHandRuled;
         recordTimeAndPath();

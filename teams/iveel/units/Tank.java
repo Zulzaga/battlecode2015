@@ -13,9 +13,13 @@ import iveel.Unit;
 
 public class Tank extends Unit {
 
-    public Tank(RobotController rc) {
+    public Tank(RobotController rc) throws GameActionException {
         super(rc);
-        channelStartWith = "38";
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Tank;
+        initChannelNum(); 
     }
 
     public void execute() throws GameActionException {
