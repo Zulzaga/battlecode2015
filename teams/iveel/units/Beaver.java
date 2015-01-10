@@ -19,10 +19,13 @@ import iveel.Unit;
  */
 public class Beaver extends Unit {
 
-    public Beaver(RobotController rc) {
+    public Beaver(RobotController rc) throws GameActionException {
         super(rc);
-        channelStartWith = "31";
-
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Beaver;
+        initChannelNum(); 
     }
 
     public void execute() throws GameActionException {

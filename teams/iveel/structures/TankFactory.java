@@ -9,11 +9,11 @@ public class TankFactory extends Structure {
 
     public TankFactory(RobotController rc) throws GameActionException {
         super(rc);
-        channelStartWith = "17";
-
-        // TODO Auto-generated constructor stub
-        int num = rc.readBroadcast(11);
-        rc.broadcast(11, num +1);
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_TankFactory;
+        initChannelNum(); 
 
     }
 

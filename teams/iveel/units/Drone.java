@@ -14,10 +14,13 @@ import battlecode.common.RobotType;
 
 public class Drone extends Unit {
 
-    public Drone(RobotController rc) {
+    public Drone(RobotController rc) throws GameActionException {
         super(rc);
-        channelStartWith = "35";
-
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Drone;
+        initChannelNum(); 
     }
 
     public void execute() throws GameActionException {

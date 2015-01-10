@@ -53,24 +53,18 @@ import battlecode.common.Team;
  * 11. Tank factory 4; 700-1200
  * 12. Aerospace lab 2; 1000-1700
  * 
- *   channel numbers must be
- *   
- *   HQ:
- *   AA BB CC DDD:
- *   
- * == AA:  Always 10 (making it different from structures).
- *   BB: for special purpose. 00 if nothing special.
- *   CC: 
- *   DDD: up this stucture's management. 
+ * 
+ * Can only use radio channels from 0 to 65535. Each robot has its own unique channelNum. 
+ *   5digits used:
  *   
  * == Structures (except HQ) 
- *   AA BB CC DDD - must be 9 digits.
+ *   AA BB C
  *   
- *   AA: type of unit
- *   BB: for special purpose. 00 if nothing special.
- *   CC: spawned order number. 1st or 2nd. 
- *   DDD: up this stucture's management. 
+ *   AA: type of unit.
+ *   BB: spawned order number. 1st or 2nd. 
+ *   C: up this stucture's management. 
  *   
+ *   10 - Helipad
  *   11 - tower
  *   12 - SupplyDepot
  *   13 - TechnologyInstitute
@@ -80,42 +74,77 @@ import battlecode.common.Team;
  *   17 - TankFactory
  *   18 - AerospaceLab
  *   19 - MinerFactory
- *   20 - Helipad
- *   
  *   
  * == Units:   
- *   31 - Beaver
- *   32 - Soldier
- *   33 - Computer
- *   34 - Basher
- *   35 - Drone
+ *   A BBB C 
  *   
- *   36 - Miner
- *   37 - Commander
- *   38 - Tank
- *   39 - Launcher
+ *   A: type of unit
+ *   BBB: spawned order number. 1st or 2nd 
+ *   C: up to this unit's management.
  *   
- * == Keep track total number of each robot.
- *   AA - must be 2 digits.
- *   AA - type of unit.
+ *   2 - Beaver
+ *   3 - Soldier
+ *   4 - Miner
+ *   5 - Tank 
+ *   6 - Basher // no more than 550
  *   
- * == Armies
- *    Keep track of all info about armies and their last dest.
- *    Each army unit listens its army channel which is unique.  
+ *   4 digits used:
+ *   Rest of robots (few number) must be 4 digits.
+ *   
+ * == HQ:
+ *   A BBB 
+ *   A:  Always 1 (making it different from structures).
+ *   BBB:  up this stucture's management. 
+ *   
+ * == Drone, Launcher, Computer, Commander
+ *   A BB C - must be 4digits. 
+ *   1 - Drone
+ *   7 - Launcher
+ *   8 - Computer
+ *   9 - Commander
  *    
- *    AAA BB 
- *  
- *  
+ *   For example: 1st drone's channel is 1 01_
+ *   
+ *   To keep track of all number of each unit BB(number) 00
  *  
  */
 public abstract class BaseBot {
+    
+    //Channels for keeping track of total number of each robots //
+    public static int Channel_Helipad = 10000;
+    public static int Channel_Tower = 11000;
+    public static int Channel_SupplyDepot = 12000;
+    public static int Channel_TechnologyInstitute = 13000;
+    public static int Channel_Barracks = 14000;
+    public static int Channel_HandwashStation = 15000;
+    public static int Channel_TrainingField = 16000;
+    public static int Channel_TankFactory = 17000;
+    public static int Channel_AerospaceLab = 18000;
+    public static int Channel_MinerFactory = 19000;
+    
+    
+    public static int Channel_Drone = 1000;
+    public static int Channel_Launcher = 7000;
+    public static int Channel_Computer = 8000;
+    public static int Channel_Commander = 9000;
+    
+    public static int Channel_Beaver = 20000;
+    public static int Channel_Soldier = 30000;
+    public static int Channel_Miner = 40000;
+    public static int Channel_Tank = 50000;
+    public static int Channel_Basher = 60000; // no more than 550 bashiers
+    
+
 
     protected RobotController rc;
     protected MapLocation myHQ, theirHQ;
     protected Team myTeam, theirTeam;
     protected Random rand;
-    protected int channelNum;
-    protected String channelStartWith;
+    
+    //for channeling
+    protected int channelID;  //this channel would be used for this robot's info; unique for each robot.
+    protected int channelStartWith; // should be Channel_Beaver or ...
+    
 
     public BaseBot(RobotController rc) {
         this.rc = rc;
@@ -126,8 +155,18 @@ public abstract class BaseBot {
         this.rand = new Random(rc.getID());
     }
     
-    public void initChannelNum() throws NumberFormatException, GameActionException{
-        int spawnedOrder = rc.readBroadcast(Integer.parseInt(channelStartWith));
+    /**
+     * Initialize channelNum AA BBB 00000
+     * AA: robotType num
+     * BBB: spawned order
+     * 
+     * Increment total number of this robot type.
+     * @throws GameActionException
+     */
+    public void initChannelNum() throws GameActionException{
+        int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
+        rc.broadcast(channelStartWith, spawnedOrder);
+        channelID = channelStartWith + spawnedOrder*10;
     }
     
 

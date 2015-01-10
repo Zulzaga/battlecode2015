@@ -1,15 +1,18 @@
 package iveel.units;
 
+import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import iveel.Unit;
 
 public class Basher extends Unit {
 
-    public Basher(RobotController rc) {
+    public Basher(RobotController rc) throws GameActionException {
         super(rc);
-        channelStartWith = "34";
-
-        // TODO Auto-generated constructor stub
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Basher;
+        initChannelNum(); 
     }
 
 }

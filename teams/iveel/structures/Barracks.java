@@ -8,10 +8,11 @@ public class Barracks extends Structure implements Channels {
 
     public Barracks(RobotController rc) throws GameActionException {
         super(rc);
-        channelStartWith = "14";
-        // TODO Auto-generated constructor stub
-        int num = rc.readBroadcast(7);
-        rc.broadcast(7, num +1);
+        
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Barracks;
+        initChannelNum(); 
     }
 
     public void execute() throws GameActionException {

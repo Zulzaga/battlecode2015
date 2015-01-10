@@ -39,6 +39,11 @@ public class HQ extends Structure {
         String a = "hello";
         String b = a + "aa";
         System.out.println(b);
+        int test = rc.readBroadcast(111111);
+        System.out.println("heeeeeeee");
+        System.out.println(test);
+        System.out.println("heeeeeeee");
+
         rc.broadcast(7, 0);
         rc.broadcast(8, 0);
         rc.broadcast(9, 0);
