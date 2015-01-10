@@ -67,18 +67,7 @@ public class HQ extends Structure implements Channels {
 //        * 10. Helipad 2; 500-1000
 //        * 11. Tank factory 4; 700-1200
 //        * 12. Aerospace lab 2; 1000-1700
-        
-        
-        //Initialized total number of each robotType
-        rc.broadcast(11, 0);
-        rc.broadcast(12, 0);
-        rc.broadcast(13, 0);
-        rc.broadcast(14, 0);
-        rc.broadcast(15, 0);
-        rc.broadcast(16, 0);
-        System.out.println("here");
-        System.out.println(rc.readBroadcast(111111));
-        System.out.println("here end");
+  
 
     }
 

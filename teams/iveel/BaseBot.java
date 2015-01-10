@@ -37,25 +37,12 @@ import battlecode.common.Team;
  * 
  * Starts with 500 ore, and each team automatically receives 5 ore per turn before any mining income
  * 
+ * USE OF CHANNELS:
+ * Can only use radio channels from 0 to 65535. 
+ * Each robot has its own unique channelNum. 
  * 
- * 
- * USE OF  CHANNELS.
- * 1. 
- * 2. Number of spawned beavers.
- * 3. 
- * 4. Path explorer with right preference
- * 5. Path explorer with left preference
- * 6.
- * 7. Barrack   4; 200-700
- * 8. Miner factory 3; 0-300
- * 9. HandwashStation 2; 1000-1300
- * 10. Helipad 2; 500-1000
- * 11. Tank factory 4; 700-1200
- * 12. Aerospace lab 2; 1000-1700
- * 
- * 
- * Can only use radio channels from 0 to 65535. Each robot has its own unique channelNum. 
  *   5digits used:
+ *   
  *   
  * == Structures (except HQ) 
  *   AA BB C
@@ -105,7 +92,7 @@ import battlecode.common.Team;
  *    
  *   For example: 1st drone's channel is 1 01_
  *   
- *   To keep track of all number of each unit BB(number) 00
+ *   
  *  
  */
 public abstract class BaseBot {
@@ -135,7 +122,6 @@ public abstract class BaseBot {
     public static int Channel_Basher = 60000; // no more than 550 bashiers
     
 
-
     protected RobotController rc;
     protected MapLocation myHQ, theirHQ;
     protected Team myTeam, theirTeam;
@@ -156,9 +142,7 @@ public abstract class BaseBot {
     }
     
     /**
-     * Initialize channelNum AA BBB 00000
-     * AA: robotType num
-     * BBB: spawned order
+     * Initialize channelNum AA BBB 
      * 
      * Increment total number of this robot type.
      * @throws GameActionException
