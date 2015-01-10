@@ -9,6 +9,8 @@ public class Helipad extends Structure {
 
     public Helipad(RobotController rc) throws GameActionException {
         super(rc);
+        channelStartWith = "20";
+
         // TODO Auto-generated constructor stub
         
         int num = rc.readBroadcast(10);

@@ -10,6 +10,8 @@ public class Soldier extends Unit {
 
     public Soldier(RobotController rc) {
         super(rc);
+        channelStartWith = "32";
+
     }
 
     public void execute() throws GameActionException {

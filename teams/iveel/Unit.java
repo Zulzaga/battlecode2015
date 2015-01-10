@@ -31,6 +31,10 @@ public abstract class Unit extends BaseBot {
         if (rc.senseOre(rc.getLocation()) > 1) {// there is ore, so try to mine
             if (rc.isCoreReady() && rc.canMine()) {
                 rc.mine();
+     
+            
+            
+            
             }
         } else {// no ore, so look for ore
             moveAround();

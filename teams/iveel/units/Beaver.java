@@ -21,6 +21,8 @@ public class Beaver extends Unit {
 
     public Beaver(RobotController rc) {
         super(rc);
+        channelStartWith = "31";
+
     }
 
     public void execute() throws GameActionException {

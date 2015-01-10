@@ -17,6 +17,8 @@ public class Launcher extends Unit {
 
     public Launcher(RobotController rc) {
         super(rc);
+        channelStartWith = "39";
+
         // TODO Auto-generated constructor stub
     }
 

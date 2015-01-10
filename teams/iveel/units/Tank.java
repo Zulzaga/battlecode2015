@@ -15,6 +15,7 @@ public class Tank extends Unit {
 
     public Tank(RobotController rc) {
         super(rc);
+        channelStartWith = "38";
     }
 
     public void execute() throws GameActionException {

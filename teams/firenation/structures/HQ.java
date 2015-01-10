@@ -8,6 +8,16 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import firenation.Structure;
 
+
+/*
+ * Channels:  
+ *   AA BB CC DDD:
+ *   AA:  Always 10 (making it different from structures).
+ *   BB: for special purpose. 00 if nothing special.
+ *   CC: 
+ *   DDD: up this stucture's management. 
+ *   
+ */
 public class HQ extends Structure {
 
     public MapLocation centerOfMap;
@@ -16,7 +26,9 @@ public class HQ extends Structure {
         super(rc);
         centerOfMap = new MapLocation((this.myHQ.x + this.theirHQ.x) / 2,
                 (this.myHQ.y + this.theirHQ.y) / 2);
-        
+        System.out.println("x ---" +centerOfMap.x);
+        System.out.println("y ---" +centerOfMap.y);
+
         //set number of structures to 0
 //        * 7. Barrack   4; 200-700
 //        * 8. Miner factory 3; 0-300
@@ -24,7 +36,9 @@ public class HQ extends Structure {
 //        * 10. Helipad 2; 500-1000
 //        * 11. Tank factory 4; 700-1200
 //        * 12. Aerospace lab 2; 1000-1700
-        
+        String a = "hello";
+        String b = a + "aa";
+        System.out.println(b);
         rc.broadcast(7, 0);
         rc.broadcast(8, 0);
         rc.broadcast(9, 0);
@@ -32,6 +46,10 @@ public class HQ extends Structure {
         rc.broadcast(11, 0);
         rc.broadcast(12, 0);
 
+        
+        
+        
+        
     }
 
     public void execute() throws GameActionException {

@@ -16,6 +16,8 @@ public class Drone extends Unit {
 
     public Drone(RobotController rc) {
         super(rc);
+        channelStartWith = "35";
+
     }
 
     public void execute() throws GameActionException {

@@ -7,6 +7,7 @@ public class Tower extends Structure{
 
     public Tower(RobotController rc) {
         super(rc);
+        channelStartWith = "11";
         // TODO Auto-generated constructor stub
     }
     

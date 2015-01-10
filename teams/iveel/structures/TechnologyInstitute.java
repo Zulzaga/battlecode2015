@@ -7,6 +7,7 @@ public class TechnologyInstitute extends Structure{
 
     public TechnologyInstitute(RobotController rc) {
         super(rc);
+        channelStartWith = "13";
     }
 
 }

@@ -1,12 +1,14 @@
 package iveel.structures;
 
 import battlecode.common.*;
+import iveel.Channels;
 import iveel.Structure;
 
-public class Barracks extends Structure {
+public class Barracks extends Structure implements Channels {
 
     public Barracks(RobotController rc) throws GameActionException {
         super(rc);
+        channelStartWith = "14";
         // TODO Auto-generated constructor stub
         int num = rc.readBroadcast(7);
         rc.broadcast(7, num +1);
@@ -27,11 +29,16 @@ public class Barracks extends Structure {
      */
     public void swarmPot() throws GameActionException {
         if (rc.isCoreReady() && rc.getTeamOre() > 200) {
-            Direction newDir = getSpawnDirection(RobotType.SOLDIER);
+            Direction newDir = getSpawnDirection(RobotType.SOLDIER, theirHQ);
             if (newDir != null) {
                 rc.spawn(newDir, RobotType.SOLDIER);
             }
         }
+    }
+
+    @Override
+    public void createChannel() {
+        
     }
 
 }

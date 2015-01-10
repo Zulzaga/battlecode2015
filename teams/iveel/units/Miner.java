@@ -16,6 +16,8 @@ public class Miner extends Unit {
 
     public Miner(RobotController rc) {
         super(rc);
+        channelStartWith = "36";
+
     }
 
     public void execute() throws GameActionException {

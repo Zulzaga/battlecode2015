@@ -1,5 +1,26 @@
 package iveel;
 
+import iveel.structures.AerospaceLab;
+import iveel.structures.Barracks;
+import iveel.structures.HQ;
+import iveel.structures.HandwashStation;
+import iveel.structures.Helipad;
+import iveel.structures.MinerFactory;
+import iveel.structures.SupplyDepot;
+import iveel.structures.TankFactory;
+import iveel.structures.TechnologyInstitute;
+import iveel.structures.Tower;
+import iveel.structures.TrainingField;
+import iveel.units.Basher;
+import iveel.units.Beaver;
+import iveel.units.Commander;
+import iveel.units.Computer;
+import iveel.units.Drone;
+import iveel.units.Launcher;
+import iveel.units.Miner;
+import iveel.units.Soldier;
+import iveel.units.Tank;
+
 import java.util.Random;
 
 import battlecode.common.Direction;
@@ -16,14 +37,14 @@ import battlecode.common.Team;
  * 
  * Starts with 500 ore, and each team automatically receives 5 ore per turn before any mining income
  * 
- * USE OF COMMUNICATION CHANNELS.
  * 
  * 
- * #1. 
- * #2. Number of spawned beavers.
- * #3.
- * #4. Path explorer with right preference
- * #5. Path explorer with left preference
+ * USE OF  CHANNELS.
+ * 1. 
+ * 2. Number of spawned beavers.
+ * 3. 
+ * 4. Path explorer with right preference
+ * 5. Path explorer with left preference
  * 6.
  * 7. Barrack   4; 200-700
  * 8. Miner factory 3; 0-300
@@ -31,9 +52,69 @@ import battlecode.common.Team;
  * 10. Helipad 2; 500-1000
  * 11. Tank factory 4; 700-1200
  * 12. Aerospace lab 2; 1000-1700
- * 13.
- * 14.
  * 
+ *   channel numbers must be
+ *   
+ *   HQ:
+ *   AA BB CC DDD:
+ *   
+ * == AA:  Always 10 (making it different from structures).
+ *   BB: for special purpose. 00 if nothing special.
+ *   CC: 
+ *   DDD: up this stucture's management. 
+ *   
+ * == Structures (except HQ) 
+ *   AA BB CC DDD - must be 9 digits.
+ *   
+ *   AA: type of unit
+ *   BB: for special purpose. 00 if nothing special.
+ *   CC: spawned order number. 1st or 2nd. 
+ *   DDD: up this stucture's management. 
+ *   
+ *   11 - tower
+ *   12 - SupplyDepot
+ *   13 - TechnologyInstitute
+ *   14 - Barracks
+ *   15 - HandwashStation
+ *   16 - TrainingField
+ *   17 - TankFactory
+ *   18 - AerospaceLab
+ *   19 - MinerFactory
+ *   20 - Helipad
+ *   
+ *   
+ * == Units:
+ *   AA BB CC DD - must be 8digits. 
+ *   
+ *   AA: type of unit
+ *   BB: 00 if it is not in army. Otherwise, it's army number.
+ *   CC: spawned order number. 1st or 2nd 
+ *   DD: up to this unit's management.
+ *   
+ *   31 - Beaver
+ *   32 - Soldier
+ *   33 - Computer
+ *   34 - Basher
+ *   35 - Drone
+ *   
+ *   36 - Miner
+ *   37 - Commander
+ *   38 - Tank
+ *   39 - Launcher
+ *   
+ * == Keep track total number of each robot.
+ *   AA BBB - must be 5 digits.
+ *   AA - type of unit.
+ *   BBB - number 0-999.
+ *   
+ * == Armies
+ *    Keep track all info about armies and their last dest.
+ *    Each army unit listens its army channel which is unique.  
+ *    
+ *    AAA BB 
+ *  
+ *  
+ *  
  */
 public abstract class BaseBot {
 
@@ -41,6 +122,7 @@ public abstract class BaseBot {
     protected MapLocation myHQ, theirHQ;
     protected Team myTeam, theirTeam;
     protected Random rand;
+    protected String channelStartWith;
 
     public BaseBot(RobotController rc) {
         this.rc = rc;
@@ -49,6 +131,12 @@ public abstract class BaseBot {
         this.myTeam = rc.getTeam();
         this.theirTeam = this.myTeam.opponent();
         this.rand = new Random(rc.getID());
+    }
+    
+    public static int initChannel(RobotController rc, int numToType) throws GameActionException{
+        int totalNum = rc.readBroadcast(numToType);
+        
+        return 1;
     }
 
     /**

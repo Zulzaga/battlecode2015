@@ -9,6 +9,8 @@ public class MinerFactory extends Structure {
 
     public MinerFactory(RobotController rc) throws GameActionException {
         super(rc);    
+        channelStartWith = "19";
+
         int num = rc.readBroadcast(8);
         rc.broadcast(8, num +1);
 

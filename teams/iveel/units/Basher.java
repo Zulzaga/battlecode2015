@@ -7,6 +7,8 @@ public class Basher extends Unit {
 
     public Basher(RobotController rc) {
         super(rc);
+        channelStartWith = "34";
+
         // TODO Auto-generated constructor stub
     }
 
