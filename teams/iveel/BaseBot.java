@@ -83,14 +83,7 @@ import battlecode.common.Team;
  *   20 - Helipad
  *   
  *   
- * == Units:
- *   AA BB CC DD - must be 8digits. 
- *   
- *   AA: type of unit
- *   BB: 00 if it is not in army. Otherwise, it's army number.
- *   CC: spawned order number. 1st or 2nd 
- *   DD: up to this unit's management.
- *   
+ * == Units:   
  *   31 - Beaver
  *   32 - Soldier
  *   33 - Computer
@@ -103,12 +96,11 @@ import battlecode.common.Team;
  *   39 - Launcher
  *   
  * == Keep track total number of each robot.
- *   AA BBB - must be 5 digits.
+ *   AA - must be 2 digits.
  *   AA - type of unit.
- *   BBB - number 0-999.
  *   
  * == Armies
- *    Keep track all info about armies and their last dest.
+ *    Keep track of all info about armies and their last dest.
  *    Each army unit listens its army channel which is unique.  
  *    
  *    AAA BB 
@@ -122,6 +114,7 @@ public abstract class BaseBot {
     protected MapLocation myHQ, theirHQ;
     protected Team myTeam, theirTeam;
     protected Random rand;
+    protected int channelNum;
     protected String channelStartWith;
 
     public BaseBot(RobotController rc) {
@@ -133,11 +126,10 @@ public abstract class BaseBot {
         this.rand = new Random(rc.getID());
     }
     
-    public static int initChannel(RobotController rc, int numToType) throws GameActionException{
-        int totalNum = rc.readBroadcast(numToType);
-        
-        return 1;
+    public void initChannelNum() throws NumberFormatException, GameActionException{
+        int spawnedOrder = rc.readBroadcast(Integer.parseInt(channelStartWith));
     }
+    
 
     /**
      * Find a list of directions toward destination.
