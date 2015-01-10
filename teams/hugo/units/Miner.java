@@ -17,6 +17,9 @@ public class Miner extends Unit {
 
     public void execute() throws GameActionException{
     	try{
+    		
+    		attackEnemyZero();
+    		
     		if(rc.isCoreReady()){
 				
 				/* in every 5 turns, beaver randomly moves
@@ -25,13 +28,25 @@ public class Miner extends Unit {
 				} */
     			if(rc.senseOre(rc.getLocation()) > 0 && Clock.getRoundNum() % 20 != 0)
     				mine();
-    			else
-    				randomlyMove();
+    			else{
+    				int roundNum = Clock.getRoundNum();
+    				if(roundNum % 10 == 0){
+    					moveAwayFromHQ();
+    				}
+    				else{
+    					randomlyMove();
+    				}
+    			}
+    				
+    				
     		}
+    		
+    		transferSupplies();
     	}
     	catch (GameActionException e) {
 	        e.printStackTrace();
 	    }
+    	
     	
     	rc.yield();
     }
@@ -45,11 +60,22 @@ public class Miner extends Unit {
 	}
 
 	private void randomlyMove() throws GameActionException {
-		Direction newDir = getMoveDir(new MapLocation((int)(100*rand.nextDouble()*myHQ.x), (int)(rand.nextDouble()*myHQ.y)));
+		Direction newDir = getMoveDir(new MapLocation((int)(2*rand.nextDouble()*myHQ.x), (int)(2*rand.nextDouble()*myHQ.y)));
 
         if (newDir != null) {
             rc.move(newDir);
         }
 	}
     
+	
+	private void moveAwayFromHQ() throws GameActionException {
+		
+		Direction newDir = getMoveDir(rc.getLocation().add(rc.getLocation().directionTo(myHQ).opposite()));
+		//Direction newDir = rc.getLocation().subtract(Direction.)
+				//getMoveDir(new MapLocation((int)(2*rand.nextDouble()*myHQ.x), (int)(2*rand.nextDouble()*myHQ.y)));
+
+        if (newDir != null) {
+            rc.move(newDir);
+        }
+	}
 }

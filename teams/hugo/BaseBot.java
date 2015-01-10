@@ -4,6 +4,7 @@ import java.util.Random;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
@@ -62,6 +63,36 @@ public abstract class BaseBot {
         rc.attackLocation(toAttack);
     }
 
+    protected void attackEnemyZero() throws GameActionException {
+        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(rc.getLocation(),
+                rc.getType().attackRadiusSquared, rc.getTeam().opponent());
+        if (nearbyEnemies.length > 0) {// there are enemies nearby
+            // try to shoot at them
+            // specifically, try to shoot at enemy specified by nearbyEnemies[0]
+            if (rc.isWeaponReady()
+                    && rc.canAttackLocation(nearbyEnemies[0].location)) {
+                rc.attackLocation(nearbyEnemies[0].location);
+            }
+        }
+    }
+    
+    public void transferSupplies() throws GameActionException {
+        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+                GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+        double lowestSupply = rc.getSupplyLevel();
+        double transferAmount = 0;
+        MapLocation suppliesToThisLocation = null;
+        for (RobotInfo ri : nearbyAllies) {
+            if (ri.supplyLevel < lowestSupply) {
+                lowestSupply = ri.supplyLevel;
+                transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                suppliesToThisLocation = ri.location;
+            }
+        }
+        if (suppliesToThisLocation != null) {
+            rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
+        }
+    }
 
     public  void beginningOfTurn() {
         if (rc.senseEnemyHQLocation() != null) {
@@ -76,6 +107,12 @@ public abstract class BaseBot {
         beginningOfTurn();
         execute();
         endOfTurn();
+    }
+    
+    protected Direction getRandomDirection() {
+        // System.out.println("heereeeee" +
+        // Direction.values()[(int)(rand.nextDouble()*8)]);
+        return Direction.values()[(int) (rand.nextDouble() * 8)];
     }
 
     public  void execute() throws GameActionException {
