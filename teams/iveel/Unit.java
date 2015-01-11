@@ -33,13 +33,21 @@ public abstract class Unit extends BaseBot {
      * @param armyChannel
      * @throws GameActionException 
      */
-    public void mayArmyUnit() throws GameActionException{
+    public void tryArmyUnit() throws GameActionException{
         int newArmyChannel = rc.readBroadcast(Channel_ArmyMode);
         if (newArmyChannel > 0){
             // Army unit!
             this.armyUnit = true;
             this.armyChannel = newArmyChannel ;
         }
+    }
+    
+    public void playWithArmyUnit() throws GameActionException{
+        if (!armyUnit){
+            swarmPot();
+        }else{
+            swarmArmy();
+            }
     }
     
     /**
@@ -49,6 +57,7 @@ public abstract class Unit extends BaseBot {
      */
     public MapLocation getArmyDestination() throws GameActionException{
         assert(!this.armyUnit);
+//        System.out.println("armyChannel is  " + this.armyChannel);
         int x = rc.readBroadcast(this.armyChannel +1);
         int y = rc.readBroadcast(this.armyChannel +2);
         return new MapLocation(x,y); 
@@ -322,6 +331,28 @@ public abstract class Unit extends BaseBot {
             }
         }
         return tileInFrontSafe;
+    }
+    
+    
+    public void swarmArmy() throws GameActionException {
+        RobotInfo[] enemies = getEnemiesInAttackingRange();
+
+        if (enemies.length > 0) {
+            // attack!
+            if (rc.isWeaponReady()) {
+                attackLeastHealthEnemy(enemies);
+            }
+        } else if (rc.isCoreReady()) {
+            MapLocation dest = getArmyDestination();
+            Direction newDir = getMoveDir(dest);
+//            System.out.println("Army destination x: " + dest.x);
+//            System.out.println("Army destination y: " + dest.y);
+
+
+            if (newDir != null) {
+                rc.move(newDir);
+            }
+        }
     }
 
 }

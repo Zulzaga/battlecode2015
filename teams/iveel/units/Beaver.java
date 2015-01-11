@@ -31,7 +31,7 @@ public class Beaver extends Unit {
     public void execute() throws GameActionException {
         basicDistributedConstruction();
         transferSupplies();
-
+        playWithArmyUnit();
         rc.yield();
     }
 

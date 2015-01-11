@@ -36,9 +36,6 @@ public abstract class Structure extends BaseBot {
         }
         return null;
     }
-    
-    
-    
 
     public boolean spawnUnit(RobotType type) throws GameActionException {
         Direction randomDir = getRandomDirection();
@@ -48,17 +45,6 @@ public abstract class Structure extends BaseBot {
         }
         
         return false;
-    }
-    
-    
-    public boolean spawnArmyUnit(RobotType type, MapLocation dest, double waitTimeToNextDest) throws GameActionException{
-        Direction toDest = getSpawnDirection(type, dest); // canSpawn is checked
-        if (rc.isCoreReady() && toDest != null) {
-            rc.spawn(toDest, type);
-            return true;
-        }
-        
-        return true;
     }
 
     /**
@@ -84,25 +70,6 @@ public abstract class Structure extends BaseBot {
 
         if (rc.isCoreReady()) {
             rc.spawn(richDirection, type);
-        }
-    }
-    
-    /**
-     * Generate an army which has at most given number of units within a given time.
-     * @param numberOfUnits
-     * @param dest
-     * @param timeLimit
-     * @throws GameActionException 
-     */
-    public void buildArmy(int numberOfUnits, RobotType unitType, MapLocation dest, double timeInterval) throws GameActionException{
-        double startTime = Clock.getRoundNum();
-        double endTime = startTime + timeInterval;
-        double waitAfterLastUnitSpawned = 3;
-        int spawnedNum = 0;
-        while (Clock.getRoundNum() <= endTime && numberOfUnits > spawnedNum){
-            if (spawnArmyUnit(unitType, dest, endTime + waitAfterLastUnitSpawned)){
-                spawnedNum =+1;
-            };
         }
     }
 }

@@ -93,7 +93,14 @@ public class HQ extends Structure implements Channels {
             int armyChannel = newArmyGetChannelID();
             armies.put(armyChannel, dest);
             rc.broadcast(Channel_ArmyMode, armyChannel);
+            giveDestinationToArmy(armyChannel, dest);
         }
+    }
+    
+    public void giveDestinationToArmy(int armyChannel, MapLocation dest) throws GameActionException{
+        rc.broadcast(armyChannel +1 , dest.x); 
+        rc.broadcast(armyChannel +2, dest.y); 
+        
     }
     
     
@@ -164,7 +171,14 @@ public class HQ extends Structure implements Channels {
             }
         }
         
-        if(Clock.getRoundNum() == 500){
+//        stopBuildArmy();
+//        if(Clock.getRoundNum() == 100){startBuildArmy(centerOfMap);}
+        
+        if(Clock.getRoundNum() == 100){
+            stopBuildArmy();
+            startBuildArmy(centerOfMap);
+            
+        }else if (Clock.getRoundNum() == 500){
             stopBuildArmy();
             int x = centerOfMap.x - 10;
             int y = centerOfMap.y + 10;
@@ -172,7 +186,7 @@ public class HQ extends Structure implements Channels {
             MapLocation dest = new MapLocation(x,y);
             startBuildArmy(dest);
             
-        }else if (Clock.getRoundNum() == 1300){
+        }else if (Clock.getRoundNum() == 900){
             stopBuildArmy();
             int x = centerOfMap.x + 10 ;
             int y = centerOfMap.y - 10;  
