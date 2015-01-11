@@ -65,9 +65,9 @@ public abstract class Unit extends BaseBot {
      */
     public boolean workAsArmyUnit() throws GameActionException{
         if (rc.readBroadcast(armyChannel + 5) == 0){
-            return false;
+            return true;
         }
-        return true;
+        return false;
     }
     
     /**

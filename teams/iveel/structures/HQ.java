@@ -46,8 +46,8 @@ import iveel.Channels;
  *       2__2: y coordinate of destination.
  *       2__3: AA BBB ->  AA = quantity limit (<65) and BBB = time limit (< 1000)
  *       
- *       2__5:  0 if each army unit should work on its own. 
- *              1 if units should go to specified destination.
+ *       2__5:  1 if each army unit should work on its own. 
+ *              0 if units should go to specified destination.
  *       
  *   
  *   
@@ -144,7 +144,7 @@ public class HQ extends Structure implements Channels {
     public void sendAllArmiesToDest(MapLocation dest) throws GameActionException{
         for( int armyChannel: armies.keySet()){
             rc.broadcast(armyChannel +1, dest.x);
-            rc.broadcast(armyChannel +1, dest.y);
+            rc.broadcast(armyChannel +2, dest.y);
         }
     }
     
@@ -225,11 +225,12 @@ public class HQ extends Structure implements Channels {
 //        stopBuildArmy();
 //        if(Clock.getRoundNum() == 100){startBuildArmy(centerOfMap);}
         
-        if(Clock.getRoundNum() == 100){
+        int currentTurn = Clock.getRoundNum();
+        if(currentTurn == 100 || currentTurn == 900 ){
             stopBuildArmy();
             startBuildArmy(centerOfMap);
             
-        }else if (Clock.getRoundNum() == 500){
+        }else if (currentTurn == 700 ){
             stopBuildArmy();
             int x = centerOfMap.x - 10;
             int y = centerOfMap.y + 10;
@@ -237,13 +238,18 @@ public class HQ extends Structure implements Channels {
             MapLocation dest = new MapLocation(x,y);
             startBuildArmy(dest);
             
-        }else if (Clock.getRoundNum() == 900){
+//        }else if (currentTurn == 700  ){
+//            stopBuildArmy();
+//            int x = centerOfMap.x + 10 ;
+//            int y = centerOfMap.y - 10;  
+//            MapLocation dest = new MapLocation(x,y);
+//            startBuildArmy(dest);
+        }else if (currentTurn == 1100){
             stopBuildArmy();
-            int x = centerOfMap.x + 10 ;
-            int y = centerOfMap.y - 10;  
-            MapLocation dest = new MapLocation(x,y);
-            startBuildArmy(dest);
+            startBuildArmy(centerOfMap);
+            sendAllArmiesToDest(theirHQ);
         }
+        
         
     }
 
