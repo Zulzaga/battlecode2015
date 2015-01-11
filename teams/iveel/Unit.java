@@ -18,6 +18,7 @@ public abstract class Unit extends BaseBot {
     protected Direction facing;
     protected boolean armyUnit = false;
     protected int armyChannel;
+    protected MapLocation destination;
 
     public Unit(RobotController rc) {
         super(rc);
@@ -26,13 +27,34 @@ public abstract class Unit extends BaseBot {
     }
     
     /**
-     * Makes this unit army unit. Each army unit will listen only army order.
+     * If game mode is armyMode, then make it armyUnit. 
+     * 
+     * Each armyUnit goes to specific mapLocation.
      * @param armyChannel
+     * @throws GameActionException 
      */
-    public void setArmyUnit(int armyChannel){
-        armyUnit = true;
-        armyChannel = armyChannel;
+    public void mayArmyUnit() throws GameActionException{
+        int newArmyChannel = rc.readBroadcast(Channel_ArmyMode);
+        if (newArmyChannel > 0){
+            // Army unit!
+            this.armyUnit = true;
+            this.armyChannel = newArmyChannel ;
+        }
     }
+    
+    /**
+     * This unit must be armyUnit
+     * @return its army destination
+     * @throws GameActionException
+     */
+    public MapLocation getArmyDestination() throws GameActionException{
+        assert(!this.armyUnit);
+        int x = rc.readBroadcast(this.armyChannel +1);
+        int y = rc.readBroadcast(this.armyChannel +2);
+        return new MapLocation(x,y); 
+    }
+    
+    
 
     public Direction getRandomDirection() {
         return Direction.values()[(int) (rand.nextDouble() * 8)];

@@ -11,14 +11,19 @@ public class Soldier extends Unit {
     public Soldier(RobotController rc) throws GameActionException {
         super(rc);
         
-        
         //Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Soldier;
         initChannelNum(); 
+        mayArmyUnit();
+        
     }
-
+    
     public void execute() throws GameActionException {
-        swarmPot();
+        if (!armyUnit){
+            swarmPot();
+        }else{
+            swarmArmy();
+            }
     }
 
     public void player6() throws GameActionException {
@@ -40,6 +45,24 @@ public class Soldier extends Unit {
             MapLocation rallyPoint = new MapLocation(rallyX, rallyY);
 
             Direction newDir = getMoveDir(rallyPoint);
+
+            if (newDir != null) {
+                rc.move(newDir);
+            }
+        }
+    }
+    
+    
+    public void swarmArmy() throws GameActionException {
+        RobotInfo[] enemies = getEnemiesInAttackingRange();
+
+        if (enemies.length > 0) {
+            // attack!
+            if (rc.isWeaponReady()) {
+                attackLeastHealthEnemy(enemies);
+            }
+        } else if (rc.isCoreReady()) {
+            Direction newDir = getMoveDir(getArmyDestination());
 
             if (newDir != null) {
                 rc.move(newDir);

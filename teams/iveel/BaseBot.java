@@ -75,23 +75,23 @@ import battlecode.common.Team;
  *   5 - Tank 
  *   6 - Basher // no more than 550
  *   
- *   ////////   4 digits used: DON'T USE 4digit channels begin with 1,2, 7-9.///////////
+ * ////////   4 digits used: DON'T USE 4digit channels begin with 1,2, 7-9.///////////
  *   Rest of robots (few number) must be 4 digits.
  *   
- * == HQ:
- *   A BBB 
- *   A:  Always 1 (making it different from structures).
- *   BBB:  up this stucture's management. 
- *   
  * == Drone, Launcher, Computer, Commander
- *   A BB C - must be 4digits. 
- *   1 - Drone
+ *   A BB C - must be 4digits.
+ *   
+ *   6 - Drone
  *   7 - Launcher
  *   8 - Computer
  *   9 - Commander
  *    
  *   For example: 1st drone's channel is 1 01_
  *   
+ * == HQ:  //all important global info
+ *   A BBB 
+ *   A:  Always 1 (making it different from structures).
+ *   BBB:  up this stucture's management. 
  *   
  * == Army:
  *  A BB C
@@ -116,21 +116,21 @@ public abstract class BaseBot {
     public static int Channel_MinerFactory = 19000;
     
     
-    public static int Channel_Drone = 1000;
-    public static int Channel_Launcher = 7000;
-    public static int Channel_Computer = 8000;
-    public static int Channel_Commander = 9000;
-    public static int Channel_Army = 2000;
-
-    
     public static int Channel_Beaver = 20000;
     public static int Channel_Soldier = 30000;
     public static int Channel_Miner = 40000;
     public static int Channel_Tank = 50000;
     public static int Channel_Basher = 60000; // no more than 550 bashiers
     
+    public static int Channel_Drone = 6000;
+    public static int Channel_Launcher = 7000;
+    public static int Channel_Computer = 8000;
+    public static int Channel_Commander = 9000;
+    public static int Channel_Army = 2000;
+
+
     //////////Specific channels///////////////
-    public static int Channel_ArmyMode = 1000;
+    public static int Channel_ArmyMode = 1001;
     
     //////////////////////////////////////
     

@@ -1,5 +1,7 @@
 package iveel.structures;
 
+import java.util.HashMap;
+
 import battlecode.common.*;
 import iveel.Communication;
 import iveel.Structure;
@@ -53,6 +55,8 @@ public class HQ extends Structure implements Channels {
     
    //Keep track all info about armies and their last dest.
    //Each army unit listens its army channel which is unique.
+    public int MAX_NUM_ARMIES = 99;
+    public HashMap<Integer, MapLocation> armies = new HashMap<Integer, MapLocation>();
 
     
     public MapLocation centerOfMap;
@@ -76,10 +80,38 @@ public class HQ extends Structure implements Channels {
   
 
     }
+    
+    
+    /**
+     * Order building armies and broadcast it.
+     * To stop building that particular army, one should call stopBuildArmy()
+     * @param dest
+     * @throws GameActionException
+     */
+    public void startBuildArmy(MapLocation dest) throws GameActionException{
+        if (armies.size() <  MAX_NUM_ARMIES){
+            int armyChannel = newArmyGetChannelID();
+            armies.put(armyChannel, dest);
+            rc.broadcast(Channel_ArmyMode, armyChannel);
+        }
+    }
+    
+    
+    /**
+     * If building any army, stops that process.
+     * @throws GameActionException
+     */
+    public void stopBuildArmy() throws GameActionException{
+        rc.broadcast(Channel_ArmyMode, 0);
+    }
+    
+    
+    
 
     public void execute() throws GameActionException {
 //        swarmPot();
-        buildArmy(10, RobotType.BEAVER, centerOfMap, 1000);
+        armyMode();
+//        buildArmy(10, RobotType.BEAVER, centerOfMap, 1000);
     }
 
     /**
@@ -118,6 +150,37 @@ public class HQ extends Structure implements Channels {
         }
         rc.broadcast(0, rallyPoint.x);
         rc.broadcast(1, rallyPoint.y);
+    }
+    
+    
+    public void armyMode() throws GameActionException {
+        int numBeavers = rc.readBroadcast(2);
+
+        if (rc.isCoreReady() && rc.getTeamOre() > 100 && numBeavers < 10) {
+            Direction newDir = getSpawnDirection(RobotType.BEAVER, theirHQ);
+            if (newDir != null) {
+                rc.spawn(newDir, RobotType.BEAVER);
+                rc.broadcast(2, numBeavers + 1);
+            }
+        }
+        
+        if(Clock.getRoundNum() == 500){
+            stopBuildArmy();
+            int x = centerOfMap.x - 10;
+            int y = centerOfMap.y + 10;
+                    
+            MapLocation dest = new MapLocation(x,y);
+            startBuildArmy(dest);
+            
+        }else if (Clock.getRoundNum() == 1300){
+            stopBuildArmy();
+            int x = centerOfMap.x + 10 ;
+            int y = centerOfMap.y - 10;  
+            MapLocation dest = new MapLocation(x,y);
+            startBuildArmy(dest);
+            
+        }
+        
     }
 
     @Override
