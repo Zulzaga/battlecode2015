@@ -41,12 +41,14 @@ import iveel.Channels;
  *   If it broadcasts 0, then not building any army.
  *   Otherwise, it is new army's channel number.
  *   For each army channel 2___:
- *       2__0: broadcasting AA BBB. 
- *       AA - unit limit. (must be less than 65)
- *       BBB - clock turn limit. (must be less than 1000)
- *       
+ *       2__0: broadcasting total number of that army units.
  *       2__1: x coordinate of destination.
  *       2__2: y coordinate of destination.
+ *       2__3: AA BBB ->  AA = quantity limit (<65) and BBB = time limit (< 1000)
+ *       
+ *       2__5:  0 if each army unit should work on its own. 
+ *              1 if units should go to specified destination.
+ *       
  *   
  *   
  * 
@@ -57,6 +59,7 @@ public class HQ extends Structure implements Channels {
    //Each army unit listens its army channel which is unique.
     public int MAX_NUM_ARMIES = 99;
     public HashMap<Integer, MapLocation> armies = new HashMap<Integer, MapLocation>();
+    public int timeLimetBuildingArmy = 0;
 
     
     public MapLocation centerOfMap;
@@ -110,6 +113,48 @@ public class HQ extends Structure implements Channels {
      */
     public void stopBuildArmy() throws GameActionException{
         rc.broadcast(Channel_ArmyMode, 0);
+    }
+    
+    /**
+     * If the game is army mode, then HQ stops any kind of army building 
+     * if specified time or quantity of specified army units is exceeded. 
+     * @param untilTurn
+     * @param quantityLimit
+     * @throws GameActionException 
+     * @return true if stopBuildArmy is called.(Does not necessarily mean there was army building).
+     */
+    public boolean stopArmyBuildingRestrictedTo(int armyChannel, int untilTurn, int quantityLimit) throws GameActionException{
+        if (Clock.getRoundNum() > untilTurn){
+            stopBuildArmy();
+            return true;
+        }else if (rc.readBroadcast(armyChannel) > quantityLimit){
+            stopBuildArmy();
+            return true;
+        }
+        return false;
+        
+    }
+    
+    
+    /**
+     * Send all armies to a targeted destination.
+     * @param dest
+     * @throws GameActionException 
+     */
+    public void sendAllArmiesToDest(MapLocation dest) throws GameActionException{
+        for( int armyChannel: armies.keySet()){
+            rc.broadcast(armyChannel +1, dest.x);
+            rc.broadcast(armyChannel +1, dest.y);
+        }
+    }
+    
+    
+    public void freeArmyUnits(int armyChannel){
+        
+    }
+    
+    public void formBackArmyUnits( int armyChannel){
+        
     }
     
     

@@ -29,7 +29,7 @@ public abstract class Unit extends BaseBot {
     /**
      * If game mode is armyMode, then make it armyUnit. 
      * 
-     * Each armyUnit goes to specific mapLocation.
+     * Each armyUnit goes listens the it's army channel for destination. 
      * @param armyChannel
      * @throws GameActionException 
      */
@@ -42,16 +42,37 @@ public abstract class Unit extends BaseBot {
         }
     }
     
-    public void playWithArmyUnit() throws GameActionException{
-        if (!armyUnit){
-            swarmPot();
-        }else{
-            swarmArmy();
+    /**
+     * Should listen army order from HQ.
+     * @throws GameActionException
+     */
+    public void playWithArmyUnit() throws GameActionException{   
+        if (armyUnit){
+            if ( workAsArmyUnit()){
+                swarmArmy();
+                return;
             }
+        }
+        swarmPot();
+    }
+    
+    /**
+     * This unit must be armyUnit.
+     * 
+     * Check HQ order and know if this unit should work on own or as army unit, going specified destination.
+     * @return true if this unit should work as an army unit. 
+     * @throws GameActionException
+     */
+    public boolean workAsArmyUnit() throws GameActionException{
+        if (rc.readBroadcast(armyChannel + 5) == 0){
+            return false;
+        }
+        return true;
     }
     
     /**
      * This unit must be armyUnit
+     * 
      * @return its army destination
      * @throws GameActionException
      */
