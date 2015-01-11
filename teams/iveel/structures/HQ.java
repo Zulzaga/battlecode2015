@@ -116,8 +116,10 @@ public class HQ extends Structure implements Channels {
     
 
     public void execute() throws GameActionException {
-//        swarmPot();
-        armyMode();
+
+        armyMode(); // Example of building 3 swarmPot armies!!
+        
+//      swarmPot();
 //        buildArmy(10, RobotType.BEAVER, centerOfMap, 1000);
     }
 
@@ -160,6 +162,10 @@ public class HQ extends Structure implements Channels {
     }
     
     
+    /**
+     * Example of building 3 swarmPot armies!!
+     * @throws GameActionException
+     */
     public void armyMode() throws GameActionException {
         int numBeavers = rc.readBroadcast(2);
 
@@ -192,7 +198,6 @@ public class HQ extends Structure implements Channels {
             int y = centerOfMap.y - 10;  
             MapLocation dest = new MapLocation(x,y);
             startBuildArmy(dest);
-            
         }
         
     }
