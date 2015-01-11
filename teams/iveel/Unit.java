@@ -16,11 +16,22 @@ import battlecode.common.TerrainTile;
 public abstract class Unit extends BaseBot {
 
     protected Direction facing;
+    protected boolean armyUnit = false;
+    protected int armyChannel;
 
     public Unit(RobotController rc) {
         super(rc);
         facing = getRandomDirection();
         rand = new Random(rc.getID());
+    }
+    
+    /**
+     * Makes this unit army unit. Each army unit will listen only army order.
+     * @param armyChannel
+     */
+    public void setArmyUnit(int armyChannel){
+        armyUnit = true;
+        armyChannel = armyChannel;
     }
 
     public Direction getRandomDirection() {
@@ -31,9 +42,6 @@ public abstract class Unit extends BaseBot {
         if (rc.senseOre(rc.getLocation()) > 1) {// there is ore, so try to mine
             if (rc.isCoreReady() && rc.canMine()) {
                 rc.mine();
-     
-            
-            
             
             }
         } else {// no ore, so look for ore

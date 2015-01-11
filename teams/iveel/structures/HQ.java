@@ -28,17 +28,23 @@ import iveel.Channels;
  * 11. Tank factory 4; 700-1200
  * 12. Aerospace lab 2; 1000-1700
  * 13.
- *   HQ:
+ * 
+ *  == HQ Channel:
+ *   A BBB 
+ *   A:  Always 1 (making it different from structures).
+ *   BBB:  up this stucture's management. 
+ *   Handling producing armies (swarm pots)
  *   
- *   AA BB CC DDD:
- *   
- *   AA:  Always 10 (making it different from structures).
- *   BB: for special purpose. 00 if nothing special.
- *   CC, DDD: up this stucture's management. 
- *   
- *   BB = 01 Total number of spawned each unit. 
- *   CC = unit's unique number
- *   DDD = number
+ *  ARMY MODE CHANNEL: 1000 (all barraks listen to this channel to decide to build armies).
+ *   If it broadcasts 0, then not building any army.
+ *   Otherwise, it is new army's channel number.
+ *   For each army channel 2___:
+ *       2__0: broadcasting AA BBB. 
+ *       AA - unit limit. (must be less than 65)
+ *       BBB - clock turn limit. (must be less than 1000)
+ *       
+ *       2__1: x coordinate of destination.
+ *       2__2: y coordinate of destination.
  *   
  *   
  * 

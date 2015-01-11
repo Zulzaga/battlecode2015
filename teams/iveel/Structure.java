@@ -11,6 +11,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
 public abstract class Structure extends BaseBot {
+    
 
     private static List<Direction> listOfDirections = Arrays.asList(
             Direction.EAST, Direction.NORTH, Direction.NORTH_EAST,
