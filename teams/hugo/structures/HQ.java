@@ -216,7 +216,8 @@ public class HQ extends Structure {
             }
         }
 
-        rc.broadcast(100, strategy);
+        //rc.broadcast(100, strategy);
+        rc.broadcast(100,1);
     }
     
     

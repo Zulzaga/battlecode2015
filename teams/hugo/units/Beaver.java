@@ -35,7 +35,13 @@ public class Beaver extends Unit {
 	    			int neededFactory = 0;
 	    			
                     RobotType toBuild = RobotType.BARRACKS;
-                    if (strategy == 1) toBuild = RobotType.HELIPAD;
+                    if (strategy == 1) {
+                    	toBuild = RobotType.HELIPAD;
+                    	Direction newDir = getBuildDirection(toBuild);
+	                    if (newDir != null) {
+	                        rc.build(newDir, toBuild);
+	                    }
+                    }
                     else if (strategy == 0) {
                         if (rc.checkDependencyProgress(RobotType.BARRACKS) == DependencyProgress.DONE) {
                             toBuild = RobotType.TANKFACTORY;
