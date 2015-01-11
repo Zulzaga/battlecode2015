@@ -89,7 +89,7 @@ public class Tank extends Unit {
      */
     static class RobotHealthComparator implements Comparator<RobotInfo> {
 
-        @Override
+        //@Override
         public int compare(RobotInfo o1, RobotInfo o2) {
             if (o1.health > o2.health) {
                 return 1;
