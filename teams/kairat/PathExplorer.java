@@ -1,6 +1,4 @@
-package iveel.specialized;
-
-import iveel.units.Miner;
+package kairat;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,26 +6,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.TerrainTile;
 
-public class PathExplorer extends Miner {
+public class PathExplorer {
     private MapLocation enemyHQ;
     private int enemyHQx;
     private int enemyHQy;
+    private RobotController rc;
 
-    public PathExplorer(RobotController rc) throws GameActionException {
-        super(rc);
+    public PathExplorer(RobotController rc) {
+        this.rc = rc;
         enemyHQ = rc.senseEnemyHQLocation();
         enemyHQx = enemyHQ.x;
         enemyHQy = enemyHQ.y;
-    }
-
-    public void execute() throws GameActionException {
-        transferSupplies();
-        rc.yield();
     }
 
     private boolean goalTest(MapLocation loc) {
@@ -71,10 +64,10 @@ public class PathExplorer extends Miner {
     }
 
     public class PriorityQueue {
-        public List<SearchNode> data = new ArrayList<SearchNode>();
+        public List<SearchNode> data;
 
         public PriorityQueue() {
-
+            data = new ArrayList<SearchNode>();
         }
 
         public void push(SearchNode node) {
@@ -134,4 +127,7 @@ public class PathExplorer extends Miner {
         return locationsAround;
     }
 
+    public static void main(String[] args) {
+
+    }
 }

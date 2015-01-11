@@ -27,6 +27,7 @@ public class RobotPlayer {
             Direction.NORTH, Direction.NORTH_EAST, Direction.NORTH_WEST,
             Direction.SOUTH, Direction.SOUTH_EAST, Direction.SOUTH_WEST,
             Direction.WEST);
+    static PathExplorer pex;
 
     public static void run(RobotController myrc) {
 
@@ -34,8 +35,14 @@ public class RobotPlayer {
         rand = new Random(rc.getID());
         // randomize starting direction
         facing = getRandomDirection();
+        pex = new PathExplorer(rc);
 
         while (true) {
+            if (Clock.getRoundNum() > 1000) {
+                System.out.println("LOOK HERE BELOW THIS+++++++++++++");
+                System.out.println(pex.aStar(rc.senseHQLocation()));
+                System.out.println("LOOK HERE ABOVE THIS+++++++++++++");
+            }
             try {
                 if (rc.getType() == RobotType.HQ) {
                     attackEnemyWithLowestHealth();
