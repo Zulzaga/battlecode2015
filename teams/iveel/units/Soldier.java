@@ -11,21 +11,22 @@ public class Soldier extends Unit {
     public Soldier(RobotController rc) throws GameActionException {
         super(rc);
         
-        
         //Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Soldier;
         initChannelNum(); 
+        tryArmyUnit();
+        
     }
-
+    
     public void execute() throws GameActionException {
-        swarmPot();
+        playWithArmyUnit();
     }
 
     public void player6() throws GameActionException {
         attackTower();
         moveAround();
     }
-
+    
     public void swarmPot() throws GameActionException {
         RobotInfo[] enemies = getEnemiesInAttackingRange();
 
