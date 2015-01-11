@@ -18,6 +18,7 @@ public class Barracks extends Structure implements Channels {
     public void execute() throws GameActionException {
         swarmPot();
     }
+    
 
     public void player6() throws GameActionException {
         spawnUnit(RobotType.SOLDIER);
