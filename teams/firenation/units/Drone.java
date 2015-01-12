@@ -191,13 +191,40 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-    	int roundNum = Clock.getRoundNum();
-    	if(roundNum < 1800) 
-    		explore();
-    	else
-    		startAttackingTowersAndHQ();
-        transferSupplies();
+    	hugoPlan();
         rc.yield();
+    }
+    
+    public void hugoPlan(){
+    	try{
+	    	int roundNum = Clock.getRoundNum();
+	    	if(roundNum < 1800){
+	    		if(roundNum < 400) // start exploring
+	    			explore();
+	    		else if(roundNum < 1500){
+	    			if((roundNum / 40) % 5 == 0){
+	    				// retreat
+	    				MapLocation loc = rc.getLocation();
+	    				harassToLocation(loc.add(loc.directionTo(theirHQ).opposite()));
+	    			}
+	    			else { // advance
+	    				explore();
+	    			}
+	    		}
+	    		else  // advance
+    				explore();
+	    	}
+	    		
+	    	else{ // after round 1800
+	    		startAttackingTowersAndHQ();
+	    	}
+	    	if(Clock.getBytecodesLeft() > 500)
+	    		transferSupplies();
+    	}
+    	catch(GameActionException e){
+    		e.printStackTrace();
+    	}
+    	rc.yield();
     }
     
     public void startAttackingTowersAndHQ() throws GameActionException{
