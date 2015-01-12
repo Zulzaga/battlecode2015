@@ -35,23 +35,36 @@ public class Drone extends Unit{
 	    	int distanceToEnemy = rc.getLocation().distanceSquaredTo(nearestEnemy.location);
 	    	if(distanceToEnemy <= rc.getType().attackRadiusSquared){
 	    		attack();
+	    		//attackRobot(nearestEnemy.location);
 	    		avoid(nearestEnemy);
 	    	}
 	    	else{
-	    		if(nearestEnemy.type != RobotType.TANK){
+	    		if(nearestEnemy.type != RobotType.TANK && nearestEnemy.type != RobotType.DRONE){
 	    			moveToLocation(nearestEnemy.location);
 	    			attack();
+	    			//attackRobot(nearestEnemy.location);
 	    		}
 	    		else{
 	    			avoid(nearestEnemy);
+	    			attack();
+	    			//attackRobot(nearestEnemy.location);
 	    		}
 	    	}
     	}
     	else{
     		moveToLocation(ml);
+    		attack();
+    		//attackRobot(nearestEnemy.location);
     	}
     	
     }
+    
+    public void attackRobot(MapLocation ml) throws GameActionException{
+    	if(rc.isWeaponReady()){
+    		rc.attackLocation(ml);
+    	}
+    }
+    
     
     // return the nearest enemy robot
     public RobotInfo senseNearestEnemy(RobotType type){
@@ -264,6 +277,30 @@ public class Drone extends Unit{
 			}
 		}
 	}
+
+	// if the location is not in range of Towers and HQ
+    public boolean safeToMove(MapLocation ml) {
+        return safeFromTowers(ml) && safeFromHQ(ml);
+        	
+    }
+    
+    // if the location is not in range of Towers
+    public boolean safeFromTowers(MapLocation ml){
+    	MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
+        boolean tileInFrontSafe = true;
+        for (MapLocation m : enemyTowers) {
+            if (m.distanceSquaredTo(ml) <= RobotType.TOWER.attackRadiusSquared) {
+                tileInFrontSafe = false;
+                break;
+            }
+        }
+        return tileInFrontSafe;
+    }
+    
+    // if the location is not in range of their HQ
+    public boolean safeFromHQ(MapLocation location){
+    	return location.distanceSquaredTo(theirHQ) > RobotType.HQ.attackRadiusSquared;
+    }
 	
 	
 }
