@@ -8,9 +8,10 @@ public class HandwashStation extends Structure{
 
     public HandwashStation(RobotController rc) throws GameActionException {
         super(rc);
-        // TODO Auto-generated constructor stub
-        int num = rc.readBroadcast(9);
-        rc.broadcast(9, num +1);
+
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_HandwashStation;
+        initChannelNum(); 
     }
 
 }

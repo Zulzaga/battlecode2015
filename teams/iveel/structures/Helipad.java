@@ -17,7 +17,7 @@ public class Helipad extends Structure {
     }
 
     public void execute() throws GameActionException {
-        spawnUnit(RobotType.MINER);
+        spawnUnit(RobotType.DRONE);
     }
 
 }

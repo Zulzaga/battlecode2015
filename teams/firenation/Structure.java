@@ -69,4 +69,20 @@ public abstract class Structure extends BaseBot {
             rc.spawn(richDirection, type);
         }
     }
+    
+
+    /**
+     * 
+     * @param type
+     * @return
+     */
+    public Direction getSpawnDirection(RobotType type, MapLocation dest) {
+        Direction[] dirs = getDirectionsToward(dest);
+        for (Direction d : dirs) {
+            if (rc.canSpawn(d, type)) {
+                return d;
+            }
+        }
+        return null;
+    }
 }
