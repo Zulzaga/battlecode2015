@@ -151,5 +151,8 @@ public abstract class BaseBot {
         // Direction.values()[(int)(rand.nextDouble()*8)]);
         return Direction.values()[(int) (rand.nextDouble() * 8)];
     }
+    
+    
+ 
 
 }

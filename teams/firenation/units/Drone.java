@@ -20,7 +20,14 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-        swarmPot();
+        harassToLocation(theirHQ);
+    }
+    
+    public void harassStrategy(MapLocation ml) throws GameActionException{
+    	harassToLocation(ml);  	
+    	
+        transferSupplies();
+        rc.yield();
     }
 
     public void player6() throws GameActionException {
