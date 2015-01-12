@@ -77,9 +77,6 @@ public class Miner extends Unit {
             destination = new MapLocation(coordX , coordY);
         }
         System.out.println( "DESTINATION for ore ----" + destination);
-
-      
-
     }
 
     public void execute() throws GameActionException {
