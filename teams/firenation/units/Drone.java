@@ -104,12 +104,26 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-        if (Clock.getRoundNum() < 1000) {
+        if (Clock.getRoundNum() < 1800) {
             harassStrategy(theirHQ);
         } else {
             MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
+            
+            
             if (enemyTowers.length > 0) {
-                moveToLocationNotSafe(enemyTowers[0]);
+            	MapLocation nearestEnemyTower = enemyTowers[0];
+            	int minDist = Integer.MAX_VALUE;
+            	MapLocation myLocation = rc.getLocation();
+            	
+            	for(MapLocation current : enemyTowers){
+            		int dist = myLocation.distanceSquaredTo(current);
+            		if(dist < minDist){
+            			minDist = dist;
+            			nearestEnemyTower = current;
+            		}
+            	}
+            	
+                moveToLocationNotSafe(nearestEnemyTower);
                 attackTower();
             } else {
                 moveToLocationNotSafe(theirHQ);

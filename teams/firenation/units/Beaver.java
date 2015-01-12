@@ -40,14 +40,14 @@ public class Beaver extends Unit {
 			attackLeastHealthEnemy();
 			if (rc.isCoreReady()) {
 				int roundNum = Clock.getRoundNum();
-				if (roundNum < 10 && rc.getTeamOre() >= 300) {
+				if ((roundNum < 10 || (roundNum > 400 && rc.getTeamOre() > 600))&& rc.getTeamOre() >= 300) {
 					Direction newDir = getBuildDirection(RobotType.HELIPAD);
 					if (newDir != null) {
 						rc.build(newDir, RobotType.HELIPAD);
 					}
 				}
 
-				else if (roundNum > 150 && roundNum < 300
+				else if (roundNum > 150 && roundNum < 600
 						&& rc.getTeamOre() >= 500) {
 					Direction newDir = getBuildDirection(RobotType.MINERFACTORY);
 					if (newDir != null) {
