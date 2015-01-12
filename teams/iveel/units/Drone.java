@@ -31,6 +31,7 @@ public class Drone extends Unit {
      * @throws GameActionException
      */
     public void initChannelNum() throws GameActionException{
+        int maxDistBetweenDrones = 5;
         int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
         
         //first three drones are going to explore map.
@@ -45,6 +46,20 @@ public class Drone extends Unit {
         }else if(spawnedOrder ==3 ){
             
         }
+        
+        Direction toEnemy = myHQ.directionTo(theirHQ);
+        Direction toLeft = toEnemy.rotateLeft();
+        Direction toRight = toEnemy.rotateRight();
+        
+        MapLocation startPoint0 = myHQ.add(toEnemy, 5);
+        MapLocation startPoint1 = myHQ.add(toLeft, 5);
+        MapLocation startPoint2 = myHQ.add(toRight, 5);
+        
+        MapLocation endPoint0 = theirHQ.add(toEnemy.opposite(), 5);
+        MapLocation endPoint1 = theirHQ.add(toLeft.opposite(), 5);
+        MapLocation endPoint2 = theirHQ.add(toRight.opposite(), 5);
+
+        
         
         
         
