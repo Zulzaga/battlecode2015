@@ -127,8 +127,10 @@ public class Drone extends Unit {
         if (destination != null){
             //check if it has reached its destination
             MapLocation currentDest = rc.getLocation();
+
             int diff = currentDest.distanceSquaredTo(destination);
             //            System.out.println("difference -----" + Math.abs(diff));
+
             if  ( Math.abs(diff) < 6){
                 destination = theirHQ;
                 //                System.out.println("here we seee-------" + exploredDeadLock);
@@ -142,6 +144,7 @@ public class Drone extends Unit {
                 broadcastExporation(2);
 
             }
+
             harassToLocation(destination);
             extendExploration();
             //            System.out.println("here we seee-------");
@@ -174,15 +177,83 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-        explore();
-
+        hugoPlan();
+        rc.yield();
     }
-
+    
+    public void hugoPlan(){
+        try{
+            int roundNum = Clock.getRoundNum();
+            if(roundNum < 1800){
+                if(roundNum < 400) // start exploring
+                    explore();
+                else if(roundNum < 1500){
+                    if((roundNum / 40) % 5 == 0){
+                        // retreat
+                        MapLocation loc = rc.getLocation();
+                        harassToLocation(loc.add(loc.directionTo(theirHQ).opposite()));
+                    }
+                    else { // advance
+                        explore();
+                    }
+                }
+                else  // advance
+                    explore();
+            }
+                
+            else{ // after round 1800
+                startAttackingTowersAndHQ();
+            }
+            if(Clock.getBytecodesLeft() > 500)
+                transferSupplies();
+        }
+        catch(GameActionException e){
+            e.printStackTrace();
+        }
+        rc.yield();
+    }
+    
+    public void startAttackingTowersAndHQ() throws GameActionException{
+        MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
+        
+        MapLocation nearestAttackableTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(enemyTowers);
+        
+        if(nearestAttackableTowerSafeFromHQ != null){
+            attackTower();
+            moveToLocationSafeFromHQ(nearestAttackableTowerSafeFromHQ);
+        }
+        else if(enemyTowers.length > 0){
+            attackTower();
+            moveToLocationNotSafe(enemyTowers[0]);
+        }
+        else{
+            attackTower();
+            moveToLocationNotSafe(theirHQ);
+        }
+    }
+    
+    public MapLocation nearestAttackableTowerSafeFromHQ(MapLocation[] enemyTowers){
+        MapLocation towerLocation = null;
+        int distance = Integer.MAX_VALUE;
+        MapLocation droneLocation = rc.getLocation();
+        
+        for(MapLocation location : enemyTowers){
+            int tempDistance = droneLocation.distanceSquaredTo(location);
+            if(tempDistance < distance && safelyAttackableFromHQ(location)){
+                distance = tempDistance;
+                towerLocation = location;
+            }
+        }
+        
+        return towerLocation;
+    }
+    
+    public boolean safelyAttackableFromHQ(MapLocation location){
+        return location.distanceSquaredTo(theirHQ) > 1;
+    }
+    
     public void harassStrategy(MapLocation ml) throws GameActionException {
         harassToLocation(ml);
-
-        transferSupplies();
-        rc.yield();
     }
 
     public void player6() throws GameActionException {

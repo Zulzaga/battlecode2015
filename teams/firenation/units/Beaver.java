@@ -29,33 +29,42 @@ public class Beaver extends Unit {
 
     public void execute() throws GameActionException {
         // basicDistributedConstruction();
-        // hugoDroneStrategy();
-        kairatCombinedStrategyPart1();
+        hugoDroneStrategySmallMap();
+        // kairatCombinedStrategyPart1();
         kairatCombinedStrategyPart2();
         transferSupplies();
 
         rc.yield();
     }
 
-    public void hugoDroneStrategy() throws GameActionException {
+    public void hugoDroneStrategySmallMap() throws GameActionException {
 
-        attackLeastHealthEnemy();
-        if (rc.isCoreReady()) {
-            int roundNum = Clock.getRoundNum();
-            if (roundNum < 10 && rc.getTeamOre() >= 300) {
-                Direction newDir = getBuildDirection(RobotType.HELIPAD);
-                if (newDir != null) {
-                    rc.build(newDir, RobotType.HELIPAD);
-                }
-            }
-
-            else if (roundNum > 150 && roundNum < 300 && rc.getTeamOre() >= 500) {
-                Direction newDir = getBuildDirection(RobotType.MINERFACTORY);
-                if (newDir != null) {
-                    rc.build(newDir, RobotType.MINERFACTORY);
+        try {
+            attackLeastHealthEnemy();
+            if (rc.isCoreReady()) {
+                int roundNum = Clock.getRoundNum();
+                if ((roundNum < 10 || (roundNum > 400 && roundNum < 1300))
+                        && rc.getTeamOre() >= 300
+                        && rc.readBroadcast(Channel_Helipad) < 1) {
+                    Direction newDir = getBuildDirection(RobotType.HELIPAD);
+                    if (newDir != null) {
+                        rc.build(newDir, RobotType.HELIPAD);
+                    }
                 }
 
+                else if (roundNum > 150 && roundNum < 1000
+                        && rc.getTeamOre() >= 500
+                        && rc.readBroadcast(Channel_MinerFactory) < 1) {
+                    Direction newDir = getBuildDirection(RobotType.MINERFACTORY);
+                    if (newDir != null) {
+                        rc.build(newDir, RobotType.MINERFACTORY);
+                    }
+                } else {
+                    mineAndMove();
+                }
             }
+        } catch (GameActionException e) {
+            e.printStackTrace();
         }
 
     }
@@ -94,30 +103,18 @@ public class Beaver extends Unit {
         int turn = Clock.getRoundNum();
 
         if (turn % 2 == 0) {
-            if (turn <= 300 && rc.readBroadcast(Channel_MinerFactory) < 4) {
-                buildUnit(RobotType.MINERFACTORY);
-            } else if (turn >= 200 && turn < 700
-                    && rc.readBroadcast(Channel_Barracks) < 5) {
+            if (turn >= 200 && turn < 700
+                    && rc.readBroadcast(Channel_Barracks) < 1) {
                 buildUnit(RobotType.BARRACKS);
             } else if (turn >= 700 && turn <= 1200
                     && rc.readBroadcast(Channel_Tank) < 4) {
-                buildUnit(RobotType.TANK);
+                buildUnit(RobotType.TANKFACTORY);
             }
 
         } else if (turn % 3 == 0) {
             if (turn >= 1000 && turn <= 1300
                     && rc.readBroadcast(Channel_HandwashStation) < 3) {
-                Direction buildDir = getBuildingDirectionRetreat(RobotType.HANDWASHSTATION);
-                if (buildDir != null
-                        && rc.canBuild(buildDir, RobotType.HANDWASHSTATION)
-                        && rc.isCoreReady()) {
-                    rc.build(buildDir, RobotType.HANDWASHSTATION);
-                }
-            } else if (turn % 5 == 0) {
-                if (turn <= 500 && turn < 1000
-                        && rc.readBroadcast(Channel_Helipad) < 3) {
-                    buildUnit(RobotType.HELIPAD);
-                }
+                buildUnit(RobotType.HANDWASHSTATION);
             }
         }
 

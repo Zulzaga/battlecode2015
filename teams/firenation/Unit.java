@@ -17,6 +17,8 @@ import battlecode.common.RobotType;
 import battlecode.common.TerrainTile;
 
 public abstract class Unit extends BaseBot {
+	
+	protected boolean shouldStand = true;
 
     protected Direction facing;
     protected boolean armyUnit = false;
@@ -409,7 +411,6 @@ public abstract class Unit extends BaseBot {
     // if the location is not in range of Towers and HQ
     public boolean safeToMove2(MapLocation ml) {
         return safeFromTowers(ml) && safeFromHQ(ml);
-
     }
 
     // if the location is not in range of Towers
@@ -468,6 +469,23 @@ public abstract class Unit extends BaseBot {
             }
         }
     }
+    
+    public void moveToLocationSafeFromHQ(MapLocation location) throws GameActionException {
+    	if (rc.isCoreReady()) {
+            Direction dirs[] = getDirectionsToward(location);
+
+            for (Direction newDir : dirs) {
+                if (rc.canMove(newDir)) {
+                    if (!safeFromHQ(rc.getLocation().add(newDir))) {
+                        continue;
+                    } else if (rc.canMove(newDir)) {
+                        rc.move(newDir);
+                        return;
+                    }
+                }
+            }
+        }
+    }
 
     // run to the opposite direction of the robot
     public void avoid(RobotInfo robot) throws GameActionException {
@@ -510,20 +528,27 @@ public abstract class Unit extends BaseBot {
                 // attackRobot(nearestEnemy.location);
                 avoid(nearestEnemy);
             } else {
-                if (nearestEnemy.type != RobotType.TANK
-                        && nearestEnemy.type != RobotType.DRONE) {
+                if (nearestEnemy.type == RobotType.DRONE){
+                	if(shouldStand){
+                		shouldStand = false; // waited once
+                	}
+                	else{
+                		moveToLocation(nearestEnemy.location);
+                		shouldStand = true;
+                	}
+                }else if (nearestEnemy.type != RobotType.TANK) {
                     moveToLocation(nearestEnemy.location);
-                    attack();
+                    //attack();
                     // attackRobot(nearestEnemy.location);
-                } else {
+                
+                } else{
                     avoid(nearestEnemy);
-                    attack();
+                    //attack();
                     // attackRobot(nearestEnemy.location);
                 }
             }
         } else {
             moveToLocation(ml);
-            attack();
             // attackRobot(nearestEnemy.location);
         }
 
