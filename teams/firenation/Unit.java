@@ -18,7 +18,6 @@ import battlecode.common.TerrainTile;
 
 public abstract class Unit extends BaseBot {
 
-
     protected Direction facing;
     protected boolean armyUnit = false;
     protected int armyChannel;
@@ -31,28 +30,30 @@ public abstract class Unit extends BaseBot {
     }
 
     /**
-     * If game mode is armyMode, then make it armyUnit. 
+     * If game mode is armyMode, then make it armyUnit.
      * 
-     * Each armyUnit goes listens the it's army channel for destination. 
+     * Each armyUnit goes listens the it's army channel for destination.
+     * 
      * @param armyChannel
-     * @throws GameActionException 
+     * @throws GameActionException
      */
-    public void tryArmyUnit() throws GameActionException{
+    public void tryArmyUnit() throws GameActionException {
         int newArmyChannel = rc.readBroadcast(Channel_ArmyMode);
-        if (newArmyChannel > 0){
+        if (newArmyChannel > 0) {
             // Army unit!
             this.armyUnit = true;
-            this.armyChannel = newArmyChannel ;
+            this.armyChannel = newArmyChannel;
         }
     }
 
     /**
      * Should listen army order from HQ.
+     * 
      * @throws GameActionException
      */
-    public void playWithArmyUnit() throws GameActionException{   
-        if (armyUnit){
-            if ( workAsArmyUnit()){
+    public void playWithArmyUnit() throws GameActionException {
+        if (armyUnit) {
+            if (workAsArmyUnit()) {
                 swarmArmy();
                 return;
             }
@@ -63,12 +64,14 @@ public abstract class Unit extends BaseBot {
     /**
      * This unit must be armyUnit.
      * 
-     * Check HQ order and know if this unit should work on own or as army unit, going specified destination.
-     * @return true if this unit should work as an army unit. 
+     * Check HQ order and know if this unit should work on own or as army unit,
+     * going specified destination.
+     * 
+     * @return true if this unit should work as an army unit.
      * @throws GameActionException
      */
-    public boolean workAsArmyUnit() throws GameActionException{
-        if (rc.readBroadcast(armyChannel + 5) == 0){
+    public boolean workAsArmyUnit() throws GameActionException {
+        if (rc.readBroadcast(armyChannel + 5) == 0) {
             return true;
         }
         return false;
@@ -80,15 +83,13 @@ public abstract class Unit extends BaseBot {
      * @return its army destination
      * @throws GameActionException
      */
-    public MapLocation getArmyDestination() throws GameActionException{
-        assert(!this.armyUnit);
-        //        System.out.println("armyChannel is  " + this.armyChannel);
-        int x = rc.readBroadcast(this.armyChannel +1);
-        int y = rc.readBroadcast(this.armyChannel +2);
-        return new MapLocation(x,y); 
+    public MapLocation getArmyDestination() throws GameActionException {
+        assert (!this.armyUnit);
+        // System.out.println("armyChannel is  " + this.armyChannel);
+        int x = rc.readBroadcast(this.armyChannel + 1);
+        int y = rc.readBroadcast(this.armyChannel + 2);
+        return new MapLocation(x, y);
     }
-
-
 
     public Direction getRandomDirection() {
         return Direction.values()[(int) (rand.nextDouble() * 8)];
@@ -137,13 +138,6 @@ public abstract class Unit extends BaseBot {
             }
         }
     }
-
-
-
-
-
-
-
 
     /**
      * Method that would make the robot rotate right until it reaches the
@@ -257,21 +251,14 @@ public abstract class Unit extends BaseBot {
         return tileInFrontSafe;
     }
 
-
     public void swarmArmy() throws GameActionException {
-        RobotInfo[] enemies = getEnemiesInAttackingRange();
+        attackLeastHealthEnemy();
 
-        if (enemies.length > 0) {
-            // attack!
-            if (rc.isWeaponReady()) {
-                attackLeastHealthEnemy(enemies);
-            }
-        } else if (rc.isCoreReady()) {
+        if (rc.isCoreReady()) {
             MapLocation dest = getArmyDestination();
             Direction newDir = getMoveDir(dest);
-            //            System.out.println("Army destination x: " + dest.x);
-            //            System.out.println("Army destination y: " + dest.y);
-
+            // System.out.println("Army destination x: " + dest.x);
+            // System.out.println("Army destination y: " + dest.y);
 
             if (newDir != null) {
                 rc.move(newDir);
@@ -387,7 +374,6 @@ public abstract class Unit extends BaseBot {
         }
     }
 
-
     // if the location is not in range of Towers and HQ
     public boolean safeToMove2(MapLocation ml) {
         return safeFromTowers(ml) && safeFromHQ(ml);
@@ -395,7 +381,7 @@ public abstract class Unit extends BaseBot {
     }
 
     // if the location is not in range of Towers
-    public boolean safeFromTowers(MapLocation ml){
+    public boolean safeFromTowers(MapLocation ml) {
         MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
         boolean tileInFrontSafe = true;
         for (MapLocation m : enemyTowers) {
@@ -408,21 +394,20 @@ public abstract class Unit extends BaseBot {
     }
 
     // if the location is not in range of their HQ
-    public boolean safeFromHQ(MapLocation location){
+    public boolean safeFromHQ(MapLocation location) {
         return location.distanceSquaredTo(theirHQ) > RobotType.HQ.attackRadiusSquared;
     }
 
     // move to location
     public void moveToLocation(MapLocation location) throws GameActionException {
-        if(rc.isCoreReady()){
+        if (rc.isCoreReady()) {
             Direction dirs[] = getDirectionsToward(location);
 
-            for(Direction newDir : dirs){
+            for (Direction newDir : dirs) {
                 if (rc.canMove(newDir)) {
-                    if(!safeToMove2(rc.getLocation().add(newDir))){
+                    if (!safeToMove2(rc.getLocation().add(newDir))) {
                         continue;
-                    }
-                    else if(rc.canMove(newDir)){
+                    } else if (rc.canMove(newDir)) {
                         rc.move(newDir);
                         return;
                     }
@@ -430,12 +415,13 @@ public abstract class Unit extends BaseBot {
             }
         }
     }
-    
-    public void moveToLocationNotSafe(MapLocation location) throws GameActionException {
-        if(rc.isCoreReady()){
+
+    public void moveToLocationNotSafe(MapLocation location)
+            throws GameActionException {
+        if (rc.isCoreReady()) {
             Direction dirs[] = getDirectionsToward(location);
 
-            for(Direction newDir : dirs){
+            for (Direction newDir : dirs) {
                 if (rc.canMove(newDir)) {
                     rc.move(newDir);
                     return;
@@ -445,21 +431,22 @@ public abstract class Unit extends BaseBot {
     }
 
     // run to the opposite direction of the robot
-    public void avoid(RobotInfo robot) throws GameActionException{
-        if(rc.isCoreReady()){
-            Direction oppositeDir = getMoveDir(rc.getLocation().add(rc.getLocation().directionTo(robot.location).opposite()));
+    public void avoid(RobotInfo robot) throws GameActionException {
+        if (rc.isCoreReady()) {
+            Direction oppositeDir = getMoveDir(rc.getLocation().add(
+                    rc.getLocation().directionTo(robot.location).opposite()));
 
-            if(oppositeDir != null){
-                Direction dirs[] = getDirectionsToward(rc.getLocation().add(oppositeDir));
+            if (oppositeDir != null) {
+                Direction dirs[] = getDirectionsToward(rc.getLocation().add(
+                        oppositeDir));
 
-                for(Direction newDir : dirs){
+                for (Direction newDir : dirs) {
                     if (newDir != null) {
-                        if(!safeToMove2(rc.getLocation().add(newDir))){
+                        if (!safeToMove2(rc.getLocation().add(newDir))) {
                             continue;
-                        }
-                        else if(rc.canMove(newDir)){
+                        } else if (rc.canMove(newDir)) {
                             rc.move(newDir);
-                            break ;
+                            break;
                         }
                     }
                 }
@@ -468,79 +455,72 @@ public abstract class Unit extends BaseBot {
     }
 
     // attack enemy
-    public void attack() throws GameActionException{
-        if(rc.isWeaponReady()){
-            RobotInfo[] enemies = getEnemiesInAttackingRange();
-
-            if(enemies.length > 0) {
-                attackLeastHealthEnemy(enemies);
-            }
-        }
+    public void attack() throws GameActionException {
+        attackLeastHealthEnemy();
     }
 
     // harass and move to the location
-    public void harassToLocation(MapLocation ml) throws GameActionException{
+    public void harassToLocation(MapLocation ml) throws GameActionException {
         RobotInfo nearestEnemy = senseNearestEnemy(rc.getType());
 
-        if(nearestEnemy != null){
-            int distanceToEnemy = rc.getLocation().distanceSquaredTo(nearestEnemy.location);
-            if(distanceToEnemy <= rc.getType().attackRadiusSquared){
+        if (nearestEnemy != null) {
+            int distanceToEnemy = rc.getLocation().distanceSquaredTo(
+                    nearestEnemy.location);
+            if (distanceToEnemy <= rc.getType().attackRadiusSquared) {
                 attack();
-                //attackRobot(nearestEnemy.location);
+                // attackRobot(nearestEnemy.location);
                 avoid(nearestEnemy);
-            }
-            else{
-                if(nearestEnemy.type != RobotType.TANK && nearestEnemy.type != RobotType.DRONE){
+            } else {
+                if (nearestEnemy.type != RobotType.TANK
+                        && nearestEnemy.type != RobotType.DRONE) {
                     moveToLocation(nearestEnemy.location);
                     attack();
-                    //attackRobot(nearestEnemy.location);
-                }
-                else{
+                    // attackRobot(nearestEnemy.location);
+                } else {
                     avoid(nearestEnemy);
                     attack();
-                    //attackRobot(nearestEnemy.location);
+                    // attackRobot(nearestEnemy.location);
                 }
             }
-        }
-        else{
+        } else {
             moveToLocation(ml);
             attack();
-            //attackRobot(nearestEnemy.location);
+            // attackRobot(nearestEnemy.location);
         }
 
     }
 
     // return the nearest enemy robot
-    public RobotInfo senseNearestEnemy(RobotType type){
+    public RobotInfo senseNearestEnemy(RobotType type) {
         RobotInfo[] enemies = senseNearbyEnemies(type);
 
-        if(enemies.length > 0){
+        if (enemies.length > 0) {
             RobotInfo nearestRobot = null;
             int nearestDistance = Integer.MAX_VALUE;
-            for(RobotInfo robot : enemies){
-                int distance =  rc.getLocation().distanceSquaredTo(robot.location);
-                if(distance < nearestDistance){
+            for (RobotInfo robot : enemies) {
+                int distance = rc.getLocation().distanceSquaredTo(
+                        robot.location);
+                if (distance < nearestDistance) {
                     nearestDistance = distance;
                     nearestRobot = robot;
                 }
             }
             return nearestRobot;
-        }    	
+        }
         return null;
     }
 
     // return all the sensible enemies
-    public RobotInfo[] senseNearbyEnemies(RobotType type){
+    public RobotInfo[] senseNearbyEnemies(RobotType type) {
         return rc.senseNearbyRobots(type.sensorRadiusSquared, theirTeam);
     }
 
-
-    public  RobotInfo[] getEnemiesInAttackingRange() {
-        RobotInfo[] enemies = rc.senseNearbyRobots(RobotType.DRONE.attackRadiusSquared, theirTeam);
+    public RobotInfo[] getEnemiesInAttackingRange() {
+        RobotInfo[] enemies = rc.senseNearbyRobots(
+                RobotType.DRONE.attackRadiusSquared, theirTeam);
         return enemies;
     }
-    
-    
+
     /**
      * Attack towers if it sees towers, otherwise attack enemy with lowest
      * health
@@ -581,7 +561,7 @@ public abstract class Unit extends BaseBot {
      */
     static class RobotHealthComparator implements Comparator<RobotInfo> {
 
-        //@Override
+        // @Override
         public int compare(RobotInfo o1, RobotInfo o2) {
             if (o1.health > o2.health) {
                 return 1;
@@ -593,4 +573,3 @@ public abstract class Unit extends BaseBot {
         }
     }
 }
-

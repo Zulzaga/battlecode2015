@@ -17,12 +17,12 @@ public class Soldier extends Unit {
 
     public Soldier(RobotController rc) throws GameActionException {
         super(rc);
-        
-        //Initialize channelID and increment total number of this RobotType
+
+        // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Soldier;
-        initChannelNum(); 
+        initChannelNum();
         tryArmyUnit();
-        
+
     }
 
     public void execute() throws GameActionException {
@@ -35,14 +35,9 @@ public class Soldier extends Unit {
     }
 
     public void swarmPot() throws GameActionException {
-        RobotInfo[] enemies = getEnemiesInAttackingRange();
+        attackLeastHealthEnemy();
 
-        if (enemies.length > 0) {
-            // attack!
-            if (rc.isWeaponReady()) {
-                attackLeastHealthEnemy(enemies);
-            }
-        } else if (rc.isCoreReady()) {
+        if (rc.isCoreReady()) {
             int rallyX = rc.readBroadcast(0);
             int rallyY = rc.readBroadcast(1);
             MapLocation rallyPoint = new MapLocation(rallyX, rallyY);
@@ -95,7 +90,7 @@ public class Soldier extends Unit {
      */
     static class RobotHealthComparator implements Comparator<RobotInfo> {
 
-        //@Override
+        // @Override
         public int compare(RobotInfo o1, RobotInfo o2) {
             if (o1.health > o2.health) {
                 return 1;
