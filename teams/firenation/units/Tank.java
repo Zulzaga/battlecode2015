@@ -38,30 +38,36 @@ public class Tank extends Unit {
     public void execute() throws GameActionException {
         int numOfTowers = rc.senseTowerLocations().length;
 
-        if (rc.readBroadcast(this.channelID) != 1) {
-            for (int i = 1; i <= numOfTowers; i++) {
-                int towerChannel = Channel_Tower + i * 10;
-                int numOfTanks = rc.readBroadcast(towerChannel + 2);
-                if (numOfTanks < 5) {
-                    int posX = rc.readBroadcast(towerChannel);
-                    int posY = rc.readBroadcast(towerChannel + 1);
-                    movingLocation = new MapLocation(posX + 1, posY);
-                    Direction movingDirection = getMoveDir(movingLocation);
-                    if (rc.isCoreReady() && rc.canMove(movingDirection)) {
-                        rc.move(movingDirection);
-                        rc.broadcast(towerChannel + 2, numOfTanks + 1);
-                        rc.broadcast(this.channelID, 1);
+        if (Clock.getRoundNum() < 1600) {
+            if (rc.readBroadcast(this.channelID) != 1) {
+                for (int i = 1; i <= numOfTowers; i++) {
+                    int towerChannel = Channel_Tower + i * 10;
+                    int numOfTanks = rc.readBroadcast(towerChannel + 2);
+                    if (numOfTanks < 5) {
+                        int posX = rc.readBroadcast(towerChannel);
+                        int posY = rc.readBroadcast(towerChannel + 1);
+                        movingLocation = new MapLocation(posX + 1, posY);
+                        Direction movingDirection = getMoveDir(movingLocation);
+                        if (rc.isCoreReady() && rc.canMove(movingDirection)) {
+                            rc.move(movingDirection);
+                            rc.broadcast(towerChannel + 2, numOfTanks + 1);
+                            rc.broadcast(this.channelID, 1);
+                        }
+                    } else {
+                        swarmPotTank();
                     }
-                } else {
-                    swarmPotTank();
+                }
+            } else {
+                attackLeastHealthEnemy();
+                Direction movingDirection = getMoveDir(movingLocation);
+                if (rc.isCoreReady() && rc.canMove(movingDirection)) {
+                    rc.move(movingDirection);
                 }
             }
+        } else if (Clock.getRoundNum() > 1600 && Clock.getRoundNum() < 1700) {
+            harassToLocation(theirHQ);
         } else {
-            attackLeastHealthEnemy();
-            Direction movingDirection = getMoveDir(movingLocation);
-            if (rc.isCoreReady() && rc.canMove(movingDirection)) {
-                rc.move(movingDirection);
-            }
+            startAttackingTowersAndHQ();
         }
     }
 
@@ -139,11 +145,8 @@ public class Tank extends Unit {
      */
     public void swarmPotTank() throws GameActionException {
 
-        if (Clock.getRoundNum() > 1500) {
-            harassToLocation(theirHQ);
-            return;
-        } else {
-            attackLeastHealthEnemy();
+        attackLeastHealthEnemy();
+        if (Clock.getRoundNum() < 1650) {
             if (rc.isWeaponReady() && rc.isCoreReady()) {
 
                 int rallyX = rc.readBroadcast(0);
@@ -157,6 +160,7 @@ public class Tank extends Unit {
                 }
             }
         }
+
     }
 
     /**

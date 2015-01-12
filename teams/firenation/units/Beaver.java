@@ -106,15 +106,16 @@ public class Beaver extends Unit {
             if (turn >= 200 && turn < 700
                     && rc.readBroadcast(Channel_Barracks) < 1) {
                 buildUnit(RobotType.BARRACKS);
-            } else if (turn >= 700 && turn <= 1200
-                    && rc.readBroadcast(Channel_Tank) < 4) {
+            } else if (turn >= 600 && rc.readBroadcast(Channel_Tank) < 3) {
                 buildUnit(RobotType.TANKFACTORY);
             }
 
         } else if (turn % 3 == 0) {
-            if (turn >= 1000 && turn <= 1300
-                    && rc.readBroadcast(Channel_HandwashStation) < 3) {
+            if (turn >= 1800 && rc.readBroadcast(Channel_HandwashStation) < 3) {
                 buildUnit(RobotType.HANDWASHSTATION);
+            } else if (turn > 500 && turn < 1500
+                    && rc.readBroadcast(Channel_Helipad) < 3) {
+                buildUnit(RobotType.HELIPAD);
             }
         }
 
