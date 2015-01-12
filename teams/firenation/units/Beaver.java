@@ -200,5 +200,4 @@ public class Beaver extends Unit {
         transferSupplies();
 
     }
-
 }

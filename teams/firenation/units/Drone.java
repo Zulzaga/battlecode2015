@@ -18,19 +18,21 @@ import firenation.Unit;
 
 public class Drone extends Unit {
 
-    // Few drones would be used for exploring the map. Essential variables for
-    // those.
-    private boolean explorer = false;
-    // last dest in this list is next dest
-    private List<MapLocation> explorerDestinations = new ArrayList<MapLocation>();
-    private MapLocation currentTargetDest = null;
 
+    //Few drones would be used for exploring the map. Essential variables for those. 
+    private MapLocation exploreToDest = null; // null if it is not an explorer drone!
+    public int xMin, yMin, xMax, yMax;
+    public MapLocation endCorner1, endCorner2;
+    
     public Drone(RobotController rc) throws GameActionException {
         super(rc);
 
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Drone;
-        initChannelNum();
+        endCorner2 = new MapLocation(myHQ.x, theirHQ.y);
+        endCorner1 = new MapLocation(theirHQ.x, myHQ.y);
+        
+        initChannelNum(); 
     }
 
     /**
@@ -40,42 +42,64 @@ public class Drone extends Unit {
      * 
      * @throws GameActionException
      */
-    public void initChannelNum() throws GameActionException {
-        int maxDistBetweenDrones = 5;
+    public void initChannelNum() throws GameActionException{
         int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
+        rc.broadcast(channelStartWith, spawnedOrder);
+        channelID = channelStartWith + spawnedOrder*10;
+        //first three drones are going to explore map.
+        
+        int type = spawnedOrder %3;
+        System.out.println("spawned order: " + spawnedOrder + " type: " + type);
 
-        // first three drones are going to explore map.
-        if (spawnedOrder > 3) {
-            rc.broadcast(channelStartWith, spawnedOrder);
-            channelID = channelStartWith + spawnedOrder * 10;
 
-        } else if (spawnedOrder == 1) {
-            // ourHQ - > theirHQ
-            explorer = true;
-            Direction toEnemy = myHQ.directionTo(theirHQ);
-            MapLocation currentTargetDest = myHQ.add(toEnemy, 5);
-            MapLocation endPoint0 = theirHQ.add(toEnemy.opposite(), 5);
+        if( type ==1  ){
+            //ourHQ - > theirHQ
+            exploreToDest = theirHQ;
+        }else if( type ==2 ){
+            //ourHQ -> theirHQ (inclined to left side)
+            exploreToDest = endCorner2;
+        }else{
+            //ourHQ -> thierHQ (inclined to left side)
+            exploreToDest = endCorner1;
 
-            explorerDestinations.add(endPoint0);
+        }        
+    }
+    
+    public boolean freeToMoveTo(MapLocation dest){
+        rc.getLocation();
+        if(rc.isCoreReady()){
+            Direction dirs[] = getDirectionsToward(dest);
+            if (dirs != null){
+            for(Direction newDir : dirs){
+                if (rc.canMove(newDir)) {
+                    if(!safeToMove2(rc.getLocation().add(newDir))){
+                        continue;
+                    }
+                    else if(rc.canMove(newDir)){
+                        return true;
+                    }
+                }
+                }
+            }
+        }
+        return false;
+    }
+    
+    public void moveToLocation(MapLocation location) throws GameActionException {
+        if(rc.isCoreReady()){
+            Direction dirs[] = getDirectionsToward(location);
 
-        } else if (spawnedOrder == 2) {
-            explorer = true;
-            Direction toEnemy = myHQ.directionTo(theirHQ);
-            Direction toLeft = toEnemy.rotateLeft();
-            MapLocation currentTargetDest = myHQ.add(toLeft, 5);
-            MapLocation endPoint1 = theirHQ.add(toLeft.opposite(), 5);
-
-            explorerDestinations.add(endPoint1);
-
-        } else if (spawnedOrder == 3) {
-            explorer = true;
-            Direction toEnemy = myHQ.directionTo(theirHQ);
-            Direction toRight = toEnemy.rotateRight();
-            MapLocation currentTargetDest = myHQ.add(toRight, 5);
-            MapLocation endPoint2 = theirHQ.add(toRight.opposite(), 5);
-
-            explorerDestinations.add(endPoint2);
-
+            for(Direction newDir : dirs){
+                if (rc.canMove(newDir)) {
+                    if(!safeToMove2(rc.getLocation().add(newDir))){
+                        continue;
+                    }
+                    else if(rc.canMove(newDir)){
+                        rc.move(newDir);
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -85,37 +109,22 @@ public class Drone extends Unit {
      * 
      * @throws GameActionException
      */
-    public void explore() throws GameActionException {
-        // check of it has reached its destination
-        if (rc.getLocation().equals(currentTargetDest)) {
-            // no more destinations;
-            int numDest = explorerDestinations.size();
-            if (numDest == 0) {
-                explorer = false;
-
-            } else {
-                currentTargetDest = explorerDestinations.remove(numDest - 1);
+    public void explore() throws GameActionException{
+        System.out.println("destination -- " + exploreToDest);
+        if (exploreToDest != null){
+            //check if it has reached its destination
+            MapLocation currentDest = rc.getLocation();
+            int diff = currentDest.distanceSquaredTo(myHQ) - currentDest.distanceSquaredTo(theirHQ);
+            if  ( Math.abs(diff) < 3){
+                exploreToDest = theirHQ;
             }
+            harassToLocation(exploreToDest);
         }
-        // move this drone
-        System.out.println("toTarget");
-        harassToLocation(currentTargetDest);
-        System.out.println("toTarget");
     }
 
     public void execute() throws GameActionException {
-        if (Clock.getRoundNum() < 1000) {
-            harassStrategy(theirHQ);
-        } else {
-            MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
-            if (enemyTowers.length > 0) {
-                moveToLocationNotSafe(enemyTowers[0]);
-                attackTower();
-            } else {
-                moveToLocationNotSafe(theirHQ);
-                attackTower();
-            }
-        }
+        explore();
+
     }
 
     public void harassStrategy(MapLocation ml) throws GameActionException {
@@ -131,7 +140,7 @@ public class Drone extends Unit {
     }
 
     public void swarmPot() throws GameActionException {
-        attackLeastHealthEnemy();
+//        attackLeastHealthEnemy();
 
         if (rc.isCoreReady()) {
             int rallyX = rc.readBroadcast(0);

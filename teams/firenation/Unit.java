@@ -407,6 +407,13 @@ public abstract class Unit extends BaseBot {
     public boolean safeFromHQ(MapLocation location) {
         return location.distanceSquaredTo(theirHQ) > RobotType.HQ.attackRadiusSquared;
     }
+    
+    // if the location is safe from other structures
+    public boolean safeFromShortShooters(MapLocation ml) {
+        
+    	RobotInfo[] enemiesFromLocation = rc.senseNearbyRobots(ml, RobotType.SOLDIER.attackRadiusSquared, theirTeam);
+        return enemiesFromLocation.length == 0;
+    }
 
     // move to location
     public void moveToLocation(MapLocation location) throws GameActionException {
@@ -415,7 +422,7 @@ public abstract class Unit extends BaseBot {
 
             for (Direction newDir : dirs) {
                 if (rc.canMove(newDir)) {
-                    if (!safeToMove2(rc.getLocation().add(newDir))) {
+                    if (!safeToMove2(rc.getLocation().add(newDir)) || !safeFromShortShooters(rc.getLocation().add(newDir))) {
                         continue;
                     } else if (rc.canMove(newDir)) {
                         rc.move(newDir);
@@ -581,5 +588,9 @@ public abstract class Unit extends BaseBot {
                 return 0;
             }
         }
+    }
+    
+    public void destroyNearestTower(){
+    	
     }
 }
