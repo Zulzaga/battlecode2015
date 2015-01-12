@@ -81,8 +81,8 @@ import battlecode.common.Team;
  *  
  */
 public abstract class BaseBot {
-    
-    //Channels for keeping track of total number of each robots //
+
+    // Channels for keeping track of total number of each robots //
     public static int Channel_Helipad = 10000;
     public static int Channel_Tower = 11000;
     public static int Channel_SupplyDepot = 12000;
@@ -93,33 +93,32 @@ public abstract class BaseBot {
     public static int Channel_TankFactory = 17000;
     public static int Channel_AerospaceLab = 18000;
     public static int Channel_MinerFactory = 19000;
-    
-    
+
     public static int Channel_Beaver = 20000;
     public static int Channel_Soldier = 30000;
     public static int Channel_Miner = 40000;
     public static int Channel_Tank = 50000;
     public static int Channel_Basher = 60000; // no more than 550 bashiers
-    
+
     public static int Channel_Drone = 6000;
     public static int Channel_Launcher = 7000;
     public static int Channel_Computer = 8000;
     public static int Channel_Commander = 9000;
     public static int Channel_Army = 2000;
 
-
-    //////////Specific channels///////////////
+    // ////////Specific channels///////////////
     public static int Channel_ArmyMode = 1001;
-    
-    //for channeling
-    protected int channelID;  //this channel would be used for this robot's info; unique for each robot.
+
+    // for channeling
+    protected int channelID; // this channel would be used for this robot's
+                             // info; unique for each robot.
     protected int channelStartWith; // should be Channel_Beaver or ...
 
     protected RobotController rc;
     protected MapLocation myHQ, theirHQ;
     protected Team myTeam, theirTeam;
     protected Random rand;
-    
+
     public BaseBot(RobotController rc) {
         this.rc = rc;
         this.myHQ = rc.senseHQLocation();
@@ -128,29 +127,30 @@ public abstract class BaseBot {
         this.theirTeam = this.myTeam.opponent();
         this.rand = new Random(rc.getID());
     }
-    
+
     /**
-     * Initialize channelNum AA BBB 
+     * Initialize channelNum AA BBB
      * 
      * Increment total number of this robot type.
+     * 
      * @throws GameActionException
      */
-    public void initChannelNum() throws GameActionException{
+    public void initChannelNum() throws GameActionException {
         int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
         rc.broadcast(channelStartWith, spawnedOrder);
-        channelID = channelStartWith + spawnedOrder*10;
+        channelID = channelStartWith + spawnedOrder * 10;
     }
-    
-    
+
     /**
      * Create a new channel for an army. Number of army must be limited to 99.
+     * 
      * @return
      * @throws GameActionException
      */
-    public int newArmyGetChannelID() throws GameActionException{
+    public int newArmyGetChannelID() throws GameActionException {
         int spawnedOrder = rc.readBroadcast(Channel_Army) + 1;
         rc.broadcast(Channel_Army, spawnedOrder);
-        return Channel_Army + spawnedOrder*10;
+        return Channel_Army + spawnedOrder * 10;
     }
 
     /**
@@ -194,7 +194,9 @@ public abstract class BaseBot {
             }
         }
 
-        rc.attackLocation(toAttack);
+        if (rc.isWeaponReady() && rc.canAttackLocation(toAttack)) {
+            rc.attackLocation(toAttack);
+        }
     }
 
     protected void attackEnemyZero() throws GameActionException {
@@ -253,8 +255,5 @@ public abstract class BaseBot {
         // Direction.values()[(int)(rand.nextDouble()*8)]);
         return Direction.values()[(int) (rand.nextDouble() * 8)];
     }
-    
-    
- 
 
 }
