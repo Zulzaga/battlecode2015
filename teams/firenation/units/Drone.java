@@ -5,6 +5,8 @@ import firenation.units.Drone.RobotHealthComparator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 import battlecode.common.Clock;
@@ -23,6 +25,9 @@ public class Drone extends Unit {
     private MapLocation exploreToDest = null; // null if it is not an explorer drone!
     public int xMin, yMin, xMax, yMax;
     public MapLocation endCorner1, endCorner2, middle1, middle2;
+
+    //Path exploring variables
+    public HashMap<Integer, HashSet<Integer>> inSense = new HashMap<Integer, HashSet<Integer>>();
 
     public Drone(RobotController rc) throws GameActionException {
         super(rc);
@@ -125,6 +130,47 @@ public class Drone extends Unit {
         }
     }
 
+    public void routineIsFree(){  //let y be decreasing
+        Integer minY = Integer.MAX_VALUE;
+        Integer maxY = Integer.MIN_VALUE;
+        for (int y: inSense.keySet()){
+            if ( y>maxY){
+                maxY = y;
+            }else if( y < minY){
+                minY = y;
+            }
+        }
+        
+        //increasing y
+        for (int y = minY; y < maxY; y++){
+            for(int x: inSense.get(y)){
+                //check if free
+//                if (Terrian)
+            }
+        }
+
+
+
+    }
+
+    public void recordSenseExpansion(){
+        MapLocation pos = rc.getLocation();
+        int minY = pos.y -3;
+        int minX = pos.x -3;
+        for (int y = minY; y <= minY +3; y++ ){
+            for (int x = minX; y <= minX +3; x++ ){
+                HashSet coordX;
+                if (inSense.containsKey(y)){
+                    coordX = inSense.get(y);
+                }else{
+                    coordX = new HashSet<Integer>();
+                }
+                coordX.add(x);
+                inSense.put(y, coordX);
+            }
+        }  
+    }
+
     /**
      * Attack towers if it sees towers, otherwise attack enemy with lowest
      * health
@@ -176,5 +222,7 @@ public class Drone extends Unit {
             }
         }
     }
+
+
 
 }
