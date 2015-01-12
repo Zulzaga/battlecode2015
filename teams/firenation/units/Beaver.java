@@ -29,34 +29,40 @@ public class Beaver extends Unit {
 
     public void execute() throws GameActionException {
         // basicDistributedConstruction();
-        // hugoDroneStrategy();
-        kairatCombinedStrategyPart1();
-        kairatCombinedStrategyPart2();
+        hugoDroneStrategySmallMap();
+        //kairatCombinedStrategyPart1();
+        //kairatCombinedStrategyPart2();
         transferSupplies();
 
         rc.yield();
     }
 
-    public void hugoDroneStrategy() throws GameActionException {
-
-        attackLeastHealthEnemy();
-        if (rc.isCoreReady()) {
-            int roundNum = Clock.getRoundNum();
-            if (roundNum < 10 && rc.getTeamOre() >= 300) {
-                Direction newDir = getBuildDirection(RobotType.HELIPAD);
-                if (newDir != null) {
-                    rc.build(newDir, RobotType.HELIPAD);
-                }
-            }
-
-            else if (roundNum > 150 && roundNum < 300 && rc.getTeamOre() >= 500) {
-                Direction newDir = getBuildDirection(RobotType.MINERFACTORY);
-                if (newDir != null) {
-                    rc.build(newDir, RobotType.MINERFACTORY);
-                }
-
-            }
-        }
+    public void hugoDroneStrategySmallMap() throws GameActionException {
+    	
+    	try{
+	        attackLeastHealthEnemy();
+	        if (rc.isCoreReady()) {
+	            int roundNum = Clock.getRoundNum();
+	            if ((roundNum < 10 || (roundNum > 400 && roundNum < 1300)) && rc.getTeamOre() >= 300) {
+	                Direction newDir = getBuildDirection(RobotType.HELIPAD);
+	                if (newDir != null) {
+	                    rc.build(newDir, RobotType.HELIPAD);
+	                }
+	            }
+	
+	            else if (roundNum > 150 && roundNum < 1000 && rc.getTeamOre() >= 500) {
+	                Direction newDir = getBuildDirection(RobotType.MINERFACTORY);
+	                if (newDir != null) {
+	                    rc.build(newDir, RobotType.MINERFACTORY);
+	                }
+	            }
+	            else{
+	            	mineAndMove();
+	            }
+	        }
+	    } catch (GameActionException e) {
+	        e.printStackTrace();
+	    }
 
     }
 
