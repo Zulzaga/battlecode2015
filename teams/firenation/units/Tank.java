@@ -1,7 +1,5 @@
 package firenation.units;
 
-import firenation.units.Tank.RobotHealthComparator;
-
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -14,24 +12,136 @@ import battlecode.common.RobotType;
 import firenation.Unit;
 
 public class Tank extends Unit {
+    /*
+     * 
+     *    T4   T2 
+     *      TOW
+     *      ER!
+     *    T3   T1
+     *    
+     *  towerX, towerY
+     *  
+     *  T1 --> towerX + 1, towerY + 1;
+     *  T2 --> towerX + 1, towerY - 1;
+     *  T3 --> towerX - 1, towerY + 1;
+     *  T4 --> towerY - 1, towerY - 1;
+     *  
+     *  Channel 50
+     */
+
+    private MapLocation movingLocation;
 
     public Tank(RobotController rc) throws GameActionException {
         super(rc);
-        
-        //Initialize channelID and increment total number of this RobotType
+
+        // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Tank;
-        initChannelNum(); 
+        initChannelNum();
     }
 
     public void execute() throws GameActionException {
-        swarmPot();
+        int numOfTowers = rc.senseTowerLocations().length;
+
+        if (rc.readBroadcast(this.channelID) != 1) {
+            for (int i = 1; i <= numOfTowers; i++) {
+                int towerChannel = Channel_Tower + i * 10;
+                int numOfTanks = rc.readBroadcast(towerChannel + 2);
+                if (numOfTanks < 5) {
+                    int posX = rc.readBroadcast(towerChannel);
+                    int posY = rc.readBroadcast(towerChannel + 1);
+                    movingLocation = new MapLocation(posX + 1, posY);
+                    Direction movingDirection = getMoveDir(movingLocation);
+                    if (rc.isCoreReady() && rc.canMove(movingDirection)) {
+                        rc.move(movingDirection);
+                        rc.broadcast(towerChannel + 2, numOfTanks + 1);
+                        rc.broadcast(this.channelID, 1);
+                    }
+                } else {
+                    swarmPot();
+                }
+            }
+        } else {
+            RobotInfo[] enemies = getEnemiesInAttackingRange();
+            attackLeastHealthEnemy(enemies);
+            Direction movingDirection = getMoveDir(movingLocation);
+            if (rc.isCoreReady() && rc.canMove(movingDirection)) {
+                rc.move(movingDirection);
+            }
+        }
     }
 
-    public void player6() throws GameActionException {
-        attackTower();
-        moveAround();
+    /**
+     * Nevermind this code, but do not delete it. It might be useful for final
+     * submission
+     * 
+     * @throws GameActionException
+     */
+    public void execute1() throws GameActionException {
+        int numOfTowers = rc.senseTowerLocations().length;
+
+        for (int i = 1; i <= numOfTowers; i++) {
+            int towerChannel = Channel_Tower + i * 10;
+            MapLocation positionToGo = getTowerChannelInfo(towerChannel);
+            Direction moveDirectionForTank = getMoveDir(positionToGo);
+            if (rc.isCoreReady() && rc.canMove(moveDirectionForTank)) {
+                rc.move(moveDirectionForTank);
+            }
+        }
     }
 
+    /**
+     * Get information about the locations of the ally towers and how many tank
+     * protect it
+     * 
+     * @param channel
+     * @return
+     * @throws GameActionException
+     */
+    private MapLocation getTowerChannelInfo(int channel)
+            throws GameActionException {
+        MapLocation positionToPut = null;
+        int tankNum = 0;
+        for (int k = 3; k < 10 && (k % 2) == 1; k++) {
+            tankNum++;
+            if (rc.readBroadcast((channel + k)) != 1) {
+                int putX = rc.readBroadcast(channel);
+                int putY = rc.readBroadcast(channel + 1);
+                positionToPut = new MapLocation(putX, putY);
+                rc.broadcast(channel + k, 1);
+            }
+        }
+        if (positionToPut != null) {
+            return getPositionForTank(positionToPut, tankNum);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Get the position around the tower where we should put our tank
+     * 
+     * @param towerLocation
+     * @param tankNum
+     * @return
+     */
+    private MapLocation getPositionForTank(MapLocation towerLocation,
+            int tankNum) {
+        int towerX = towerLocation.x;
+        int towerY = towerLocation.y;
+        if (tankNum == 1) {
+            return new MapLocation(towerX + 1, towerY + 1);
+        } else if (tankNum == 2) {
+            return new MapLocation(towerX + 1, towerY - 1);
+        } else if (tankNum == 3) {
+            return new MapLocation(towerX - 1, towerY + 1);
+        } else {
+            return new MapLocation(towerX - 1, towerY - 1);
+        }
+    }
+
+    /**
+     * SwarmPot strategy for tanks
+     */
     public void swarmPot() throws GameActionException {
         RobotInfo[] enemies = getEnemiesInAttackingRange();
 
@@ -93,7 +203,7 @@ public class Tank extends Unit {
      */
     static class RobotHealthComparator implements Comparator<RobotInfo> {
 
-        //@Override
+        @Override
         public int compare(RobotInfo o1, RobotInfo o2) {
             if (o1.health > o2.health) {
                 return 1;
