@@ -18,7 +18,6 @@ public class Helipad extends Structure {
     }
 
     public void execute() throws GameActionException {
-<<<<<<< HEAD
     	try{
     		if(rc.isCoreReady()){
 	    		Direction spawnDir = getSpawnDirection(RobotType.DRONE);
@@ -32,9 +31,9 @@ public class Helipad extends Structure {
 	    }
     	
     	rc.yield();
-=======
+
         spawnUnit(RobotType.DRONE);
->>>>>>> 28fea41e9fc1c2a4267a9ff401601ee628a00781
+
     }
 
 }
