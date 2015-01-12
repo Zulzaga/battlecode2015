@@ -3,9 +3,7 @@ package iveel.structures;
 import java.util.HashMap;
 
 import battlecode.common.*;
-import iveel.Communication;
 import iveel.Structure;
-import iveel.Channels;
 
 
 
@@ -53,7 +51,7 @@ import iveel.Channels;
  *   
  * 
  */
-public class HQ extends Structure implements Channels {
+public class HQ extends Structure{
     
    //Keep track all info about armies and their last dest.
    //Each army unit listens its army channel which is unique.
@@ -63,7 +61,6 @@ public class HQ extends Structure implements Channels {
 
     
     public MapLocation centerOfMap;
-    public static Communication communication;
 //    public HashMap
 
     public HQ(RobotController rc) throws GameActionException {
@@ -253,10 +250,5 @@ public class HQ extends Structure implements Channels {
         
     }
 
-    @Override
-    public void createChannel() {
-        
-        
-    }
 
 }

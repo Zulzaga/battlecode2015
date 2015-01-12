@@ -21,15 +21,16 @@ public class Beaver extends Unit {
 
     public Beaver(RobotController rc) throws GameActionException {
         super(rc);
-        
-        
+
+
         //Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Beaver;
         initChannelNum(); 
     }
 
     public void execute() throws GameActionException {
-        basicDistributedConstruction();
+//        basicDistributedConstruction();
+        produceDrones() ;
         transferSupplies();
         playWithArmyUnit();
         rc.yield();
@@ -64,18 +65,41 @@ public class Beaver extends Unit {
             }else if ( turn >=700  && turn <= 1200 && rc.readBroadcast(Channel_Tank) < 4){
                 buildUnit(RobotType.TANK);
             }
-            
+
         }else if (turn % 33 == 0){
             if ( turn >=1000  && turn <= 1300 && rc.readBroadcast(Channel_HandwashStation) < 3){
                 buildUnit(RobotType.HANDWASHSTATION);
-                
-        }else if (turn % 49 == 0){
-            if (turn <= 500 && turn <1000 && rc.readBroadcast(Channel_Helipad) < 3 ){
-                buildUnit(RobotType.HELIPAD);
-            }else if( turn >= 1000 && turn <1700 && rc.readBroadcast(Channel_AerospaceLab) < 3 ){
-                buildUnit(RobotType.AEROSPACELAB);
+
+            }else if (turn % 49 == 0){
+                if (turn <= 500 && turn <1000 && rc.readBroadcast(Channel_Helipad) < 3 ){
+                    buildUnit(RobotType.HELIPAD);
+                }else if( turn >= 1000 && turn <1700 && rc.readBroadcast(Channel_AerospaceLab) < 3 ){
+                    buildUnit(RobotType.AEROSPACELAB);
+                }
             }
         }
+
+        //if building nothing.
+        if (Math.random() < 0.3){
+            mineAndMove();
+        }else{
+            moveAroundAlways();
+        }
+
+
+        //        swarmPot() ;
+
+
+
+
+    }
+
+    public void produceDrones() throws GameActionException {
+        int turn = Clock.getRoundNum();
+        if (turn <= 200  ){
+            buildUnit(RobotType.MINERFACTORY);
+        }else if (turn <= 600  ){
+            buildUnit(RobotType.HELIPAD);
         }
         
         //if building nothing.
@@ -84,14 +108,10 @@ public class Beaver extends Unit {
         }else{
             moveAroundAlways();
         }
-        
-        
-//        swarmPot() ;
-        
-        
-
 
     }
+
+
 
 
     /**

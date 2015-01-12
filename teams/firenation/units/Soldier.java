@@ -15,8 +15,14 @@ import firenation.Unit;
 
 public class Soldier extends Unit {
 
-    public Soldier(RobotController rc) {
+    public Soldier(RobotController rc) throws GameActionException {
         super(rc);
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Soldier;
+        initChannelNum(); 
+        tryArmyUnit();
+        
     }
 
     public void execute() throws GameActionException {

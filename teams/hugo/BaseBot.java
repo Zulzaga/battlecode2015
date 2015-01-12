@@ -118,5 +118,10 @@ public abstract class BaseBot {
     public  void execute() throws GameActionException {
         rc.yield();
     }
+    
+    
+    
+    
+    
 
 }

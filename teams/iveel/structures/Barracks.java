@@ -1,10 +1,9 @@
 package iveel.structures;
 
 import battlecode.common.*;
-import iveel.Channels;
 import iveel.Structure;
 
-public class Barracks extends Structure implements Channels {
+public class Barracks extends Structure {
 
     public Barracks(RobotController rc) throws GameActionException {
         super(rc);
@@ -38,9 +37,5 @@ public class Barracks extends Structure implements Channels {
         }
     }
 
-    @Override
-    public void createChannel() {
-        
-    }
 
 }
