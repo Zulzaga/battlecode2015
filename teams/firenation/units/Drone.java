@@ -49,7 +49,7 @@ public class Drone extends Unit {
         //first three drones are going to explore map.
         
         int type = spawnedOrder %3;
-        System.out.println("spawned order: " + spawnedOrder + " type: " + type);
+        // System.out.println("spawned order: " + spawnedOrder + " type: " + type);
 
 
         if( type ==1  ){
@@ -110,7 +110,7 @@ public class Drone extends Unit {
      * @throws GameActionException
      */
     public void explore() throws GameActionException{
-        System.out.println("destination -- " + exploreToDest);
+        //System.out.println("destination -- " + exploreToDest);
         if (exploreToDest != null){
             //check if it has reached its destination
             MapLocation currentDest = rc.getLocation();
