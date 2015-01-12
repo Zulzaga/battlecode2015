@@ -137,15 +137,54 @@ public class Drone extends Unit {
 
                 if (!exploredDeadLock && channelID < 6051){
                     freePath = true;
+                    broadcastExporation(1);
 //                    rc.broadcast(Channel_FreePathFound, pathTo); 
                     System.out.println("FOUND FREE PATH TO------ " + pathTo + " " + path + "\n channelID: " + channelID);
                 }
+                broadcastExporation(2);
+                
             }
             harassToLocation(destination);
             exploreExpansion();
 //            System.out.println("here we seee-------");
         }
         
+    }
+
+    
+    /*    A, B, D or E: 
+        *    0: have not explored yet.
+        *    1: there is a path to that point.
+        *    2: there may not path but there are not many voids.
+        *    3: there may not path and there are many voids. (useless) 
+        */
+    
+//    public static int Channel_PathCenter= 1002;
+//    public static int Channel_PathMiddle1= 1003;
+//    public static int Channel_PathMiddle2= 1004;
+//    public static int Channel_PathCorner1= 1005;
+//    public static int Channel_PathCorner2= 1006;
+    private void broadcastExporation(int status) throws GameActionException {
+        int type = (channelID /10) %5;
+        if( type ==1  ){
+            //ourHQ - > theirHQ
+//            destination = theirHQ;
+            rc.broadcast(Channel_PathCenter, status);
+        }else if( type ==2 ){
+//            destination = endCorner2;
+            rc.broadcast(Channel_PathCorner2, status);
+        }else if( type ==3 ){
+//            destination = endCorner1;
+            rc.broadcast(Channel_PathCorner1, status);
+        }else if( type ==4 ){
+//            destination = middle1;
+            rc.broadcast(Channel_PathMiddle1, status);
+        }else if( type == 0){
+//            destination = middle2;
+            rc.broadcast(Channel_PathMiddle2, status);
+
+            
+        }
     }
 
     public void execute() throws GameActionException {
