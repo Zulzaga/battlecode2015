@@ -1,4 +1,4 @@
-package iveel.specialized;
+package transferSupplyPlayer6;
 
 import iveel.units.Miner;
 
@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import battlecode.common.Clock;
+import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
@@ -17,9 +19,17 @@ public class PathExplorer extends Miner {
     private MapLocation enemyHQ;
     private int enemyHQx;
     private int enemyHQy;
+    private Boolean exploredDeathLockPath = false;
+    private ArrayList exploredPath = new ArrayList<MapLocation>();
+    private int recordedLastTimeStamp;
+    private Boolean rightHandRuled; // ruled directions could be only left or
+                                    // right
 
-    public PathExplorer(RobotController rc) throws GameActionException {
+    public PathExplorer(RobotController rc, boolean rightHandRuled)
+            throws GameActionException {
         super(rc);
+        this.rightHandRuled = rightHandRuled;
+        recordTimeAndPath();
         enemyHQ = rc.senseEnemyHQLocation();
         enemyHQx = enemyHQ.x;
         enemyHQy = enemyHQ.y;
@@ -28,6 +38,65 @@ public class PathExplorer extends Miner {
     public void execute() throws GameActionException {
         transferSupplies();
         rc.yield();
+    }
+
+    public void recordTimeAndPath() {
+        recordedLastTimeStamp = Clock.getRoundNum();
+        exploredPath.add(rc.getLocation());
+    }
+
+    public void moveAndExplore(MapLocation dest) throws GameActionException {
+        if (rightHandRuled) {
+            facing = getMoveDirWithRightPreferenceToward(dest);
+        } else {
+            facing = getMoveDirWithLeftPreferenceToward(dest);
+        }
+        // try to move in the facing direction
+        if (rc.isCoreReady()) { // rc.canMove(facing) is checked!
+            recordTimeAndPath();
+            rc.move(facing);
+
+        }
+    }
+
+    /**
+     * Move toward a destination with right direction preference.
+     * 
+     * @param dest
+     * @return
+     */
+    public Direction getMoveDirWithRightPreferenceToward(MapLocation dest) {
+        Direction toDest = rc.getLocation().directionTo(dest);
+        while (!rc.canMove(toDest)) {
+            toDest = toDest.rotateRight();
+
+            // check that we are not facing off the edge of the map
+            MapLocation tileInFront = rc.getLocation().add(toDest);
+            if (rc.senseTerrainTile(tileInFront) == TerrainTile.OFF_MAP) {
+                exploredDeathLockPath = true;
+            }
+
+        }
+        return toDest;
+    }
+
+    /**
+     * Move toward a destination with left direction preference.
+     * 
+     * @param dest
+     * @return
+     */
+    public Direction getMoveDirWithLeftPreferenceToward(MapLocation dest) {
+        Direction toDest = rc.getLocation().directionTo(dest);
+        while (!rc.canMove(toDest)) {
+            toDest = toDest.rotateLeft();
+            // check that we are not facing off the edge of the map
+            MapLocation tileInFront = rc.getLocation().add(toDest);
+            if (rc.senseTerrainTile(tileInFront) == TerrainTile.OFF_MAP) {
+                exploredDeathLockPath = true;
+            }
+        }
+        return toDest;
     }
 
     private boolean goalTest(MapLocation loc) {
@@ -40,7 +109,7 @@ public class PathExplorer extends Miner {
         return false;
     }
 
-    public List<MapLocation> aStar(MapLocation startLoc) {
+    private List<MapLocation> aStar(MapLocation startLoc) {
         if (goalTest(startLoc)) {
             return Arrays.asList(startLoc);
         } else {
