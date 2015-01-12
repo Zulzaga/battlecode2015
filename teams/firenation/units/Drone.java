@@ -135,8 +135,11 @@ public class Drone extends Unit {
         if (exploreToDest != null){
             //check if it has reached its destination
             MapLocation currentDest = rc.getLocation();
-            int diff = currentDest.distanceSquaredTo(myHQ) - currentDest.distanceSquaredTo(theirHQ);
-            if  ( Math.abs(diff) < 3){
+            
+            
+            int diff = currentDest.distanceSquaredTo(exploreToDest);
+            System.out.println("difference -----" + Math.abs(diff));
+            if  ( Math.abs(diff) < 6){
                 exploreToDest = theirHQ;
 //                System.out.println("here we seee-------" + exploredDeadLock);
 
