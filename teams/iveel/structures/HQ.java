@@ -159,7 +159,7 @@ public class HQ extends Structure{
 
     public void execute() throws GameActionException {
 
-        armyMode(); // Example of building 3 swarmPot armies!!
+//        armyMode(); // Example of building 3 swarmPot armies!!
         
 //      swarmPot();
 //        buildArmy(10, RobotType.BEAVER, centerOfMap, 1000);
