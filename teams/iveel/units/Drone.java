@@ -22,6 +22,34 @@ public class Drone extends Unit {
         channelStartWith = Channel_Drone;
         initChannelNum(); 
     }
+    
+    
+    /**
+     * Initialize channelNum AA BBB 
+     * 
+     * Increment total number of this robot type.
+     * @throws GameActionException
+     */
+    public void initChannelNum() throws GameActionException{
+        int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
+        
+        //first three drones are going to explore map.
+        if(spawnedOrder >3){
+            rc.broadcast(channelStartWith, spawnedOrder);
+            channelID = channelStartWith + spawnedOrder*10;
+            
+        }else if(spawnedOrder ==1 ){
+            //ourHQ - > theirHQ
+        }else if(spawnedOrder ==2 ){
+            //
+        }else if(spawnedOrder ==3 ){
+            
+        }
+        
+        
+        
+        
+    }
 
     public void execute() throws GameActionException {
         swarmPot();
