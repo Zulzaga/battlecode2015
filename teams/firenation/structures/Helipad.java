@@ -10,30 +10,25 @@ public class Helipad extends Structure {
 
     public Helipad(RobotController rc) throws GameActionException {
         super(rc);
-        
-        
-        //Initialize channelID and increment total number of this RobotType
+
+        // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Helipad;
-        initChannelNum();  
+        initChannelNum();
     }
 
     public void execute() throws GameActionException {
-    	try{
-    		if(rc.isCoreReady()){
-	    		Direction spawnDir = getSpawnDirection(RobotType.DRONE);
-	    		if(spawnDir != null){
-	    			rc.spawn(spawnDir, RobotType.DRONE);
-	    		}
-	    	}
-    	}
-    	catch (GameActionException e) {
-	        e.printStackTrace();
-	    }
-    	
-    	rc.yield();
+        try {
+            if (rc.isCoreReady() && rc.readBroadcast(Channel_Drone) < 10) {
+                Direction spawnDir = getSpawnDirection(RobotType.DRONE);
+                if (spawnDir != null) {
+                    rc.spawn(spawnDir, RobotType.DRONE);
+                }
+            }
+        } catch (GameActionException e) {
+            e.printStackTrace();
+        }
 
-        spawnUnit(RobotType.DRONE);
-
+        rc.yield();
     }
 
 }

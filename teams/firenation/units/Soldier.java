@@ -35,6 +35,7 @@ public class Soldier extends Unit {
     }
 
     public void swarmPot() throws GameActionException {
+
         attackLeastHealthEnemy();
 
         if (rc.isCoreReady()) {

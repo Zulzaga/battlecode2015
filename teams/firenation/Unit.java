@@ -285,6 +285,16 @@ public abstract class Unit extends BaseBot {
         }
     }
 
+    public Direction getBuildingDirectionRetreat(RobotType type) {
+        Direction[] dirs = getDirectionsToward(theirHQ);
+        for (Direction d : dirs) {
+            if (rc.canBuild(d, type)) {
+                return d;
+            }
+        }
+        return null;
+    }
+
     public Direction getBuildDirection(RobotType type) {
         Direction[] dirs = getDirectionsToward(theirHQ);
         for (Direction d : dirs) {
