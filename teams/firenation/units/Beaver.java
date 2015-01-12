@@ -1,6 +1,7 @@
 package firenation.units;
 
 import battlecode.common.Clock;
+import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
@@ -24,12 +25,46 @@ public class Beaver extends Unit {
     }
 
     public void execute() throws GameActionException {
-        basicDistributedConstruction();
+        //basicDistributedConstruction();
+    	hugoDroneStrategy();
         transferSupplies();
 
         rc.yield();
     }
-
+    
+    public void hugoDroneStrategy(){
+    	try{
+    		if(rc.isCoreReady()){
+    			
+    			int roundNum = Clock.getRoundNum();
+    			if(roundNum < 10 && rc.getTeamOre() >= 300){
+    				Direction newDir = getBuildDirection(RobotType.HELIPAD);
+    	    		if(newDir != null){	
+    		    			rc.build(newDir, RobotType.HELIPAD);
+    	    		}
+    			}
+    			
+    			else if(roundNum > 150 && roundNum < 300 && rc.getTeamOre() >= 500){
+    				Direction newDir = getBuildDirection(RobotType.MINERFACTORY);
+    	    		if(newDir != null){	
+    		    			rc.build(newDir, RobotType.MINERFACTORY);
+    	    		}
+    			}
+	    		
+	    		else{
+	    			if(rc.senseOre(rc.getLocation()) > 0.2 && Clock.getRoundNum() % 20 != 0)
+	    				mineAndMove();
+	    			else{
+	    				moveAround();
+	    			}
+	    				
+	    		}
+    		}
+    	}
+    	catch (GameActionException e) {
+	        e.printStackTrace();
+	    }
+    }
 
     /**
      * Build structures depending on time turn if there is enough ore.

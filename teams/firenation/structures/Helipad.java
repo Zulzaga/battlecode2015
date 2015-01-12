@@ -1,5 +1,6 @@
 package firenation.structures;
 
+import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
@@ -16,7 +17,19 @@ public class Helipad extends Structure {
     }
 
     public void execute() throws GameActionException {
-        spawnUnit(RobotType.MINER);
+    	try{
+    		if(rc.isCoreReady()){
+	    		Direction spawnDir = getSpawnDirection(RobotType.DRONE);
+	    		if(spawnDir != null){
+	    			rc.spawn(spawnDir, RobotType.DRONE);
+	    		}
+	    	}
+    	}
+    	catch (GameActionException e) {
+	        e.printStackTrace();
+	    }
+    	
+    	rc.yield();
     }
 
 }

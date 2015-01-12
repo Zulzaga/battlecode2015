@@ -28,6 +28,7 @@ public class HQ extends Structure {
 	private int neededMiner = 30; 
 	private int neededMinerFactory = 6; 
 	private int neededTankFactory = 5; 
+	private int neededDrone = 50;
 	
 	// Structures
 	private int numAerospaceLab = 0; // 201
@@ -46,7 +47,7 @@ public class HQ extends Structure {
 	private int numBeaver = 0; 
 	private int numCommander = 0;
 	private int numComputer = 0;
-	private int numDrone = 0;
+	private int numDrone = 0; // 217
 	private int numLauncher = 0;
 	private int numMiner = 0;   // 218
 	private int numSoldier = 0;
@@ -117,12 +118,13 @@ public class HQ extends Structure {
 	    		neededMiner = rc.readBroadcast(218);
 	    		neededMinerFactory = rc.readBroadcast(205);
 	    		neededTankFactory = rc.readBroadcast(209);
+	    		neededDrone = rc.readBroadcast(217);
 	    	}
 	    	
 	    	rc.broadcast(218, neededMiner);
 	    	rc.broadcast(205, neededMinerFactory);
 	    	rc.broadcast(209, neededTankFactory);
-	    	
+	    	rc.broadcast(217, neededDrone);
 	    	
 	    	if (!isFinished) {
                 analyzeMap();

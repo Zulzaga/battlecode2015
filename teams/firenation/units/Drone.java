@@ -20,7 +20,7 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-        harassToLocation(theirHQ);
+        harassStrategy(theirHQ);
     }
     
     public void harassStrategy(MapLocation ml) throws GameActionException{

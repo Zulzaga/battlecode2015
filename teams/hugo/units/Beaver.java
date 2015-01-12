@@ -15,7 +15,45 @@ public class Beaver extends Unit {
         super(rc);
     }
     
-    public void execute() throws GameActionException{
+    public void execute(){
+    	try{
+    		if(rc.isCoreReady()){
+    			
+    			int roundNum = Clock.getRoundNum();
+    			if(roundNum < 10 && rc.getTeamOre() >= 300){
+    				Direction newDir = getBuildDirection(RobotType.HELIPAD);
+    	    		if(newDir != null){	
+    		    			rc.build(newDir, RobotType.HELIPAD);
+    	    		}
+    			}
+    			
+    			else if(roundNum > 150 && roundNum < 300 && rc.getTeamOre() >= 500){
+    				Direction newDir = getBuildDirection(RobotType.MINERFACTORY);
+    	    		if(newDir != null){	
+    		    			rc.build(newDir, RobotType.MINERFACTORY);
+    	    		}
+    			}
+	    		
+	    		else{
+	    			if(rc.senseOre(rc.getLocation()) > 0.2 && Clock.getRoundNum() % 10 != 0)
+	    				mine();
+	    			else{
+	    				randomlyMove();
+	    			}
+	    				
+	    		}
+    		}
+    		transferSupplies();
+    	}
+    	catch (GameActionException e) {
+	        e.printStackTrace();
+	    }
+    	
+    	rc.yield();
+    	
+    }
+    
+    public void execute1() throws GameActionException{
     	try{
     		if(rc.isCoreReady()){
 	    		// attack();
