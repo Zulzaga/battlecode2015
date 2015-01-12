@@ -430,6 +430,19 @@ public abstract class Unit extends BaseBot {
             }
         }
     }
+    
+    public void moveToLocationNotSafe(MapLocation location) throws GameActionException {
+        if(rc.isCoreReady()){
+            Direction dirs[] = getDirectionsToward(location);
+
+            for(Direction newDir : dirs){
+                if (rc.canMove(newDir)) {
+                    rc.move(newDir);
+                    return;
+                }
+            }
+        }
+    }
 
     // run to the opposite direction of the robot
     public void avoid(RobotInfo robot) throws GameActionException{

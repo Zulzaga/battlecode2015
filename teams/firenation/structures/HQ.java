@@ -80,6 +80,7 @@ public class HQ extends Structure {
      }
 
     public void execute() throws GameActionException {
+    	attackLeastHealthEnemy();
         swarmPot();
     }
     

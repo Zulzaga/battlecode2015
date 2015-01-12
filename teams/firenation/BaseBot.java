@@ -82,178 +82,178 @@ import battlecode.common.Team;
  */
 public abstract class BaseBot {
 
-    // Channels for keeping track of total number of each robots //
-    public static int Channel_Helipad = 10000;
-    public static int Channel_Tower = 11000;
-    public static int Channel_SupplyDepot = 12000;
-    public static int Channel_TechnologyInstitute = 13000;
-    public static int Channel_Barracks = 14000;
-    public static int Channel_HandwashStation = 15000;
-    public static int Channel_TrainingField = 16000;
-    public static int Channel_TankFactory = 17000;
-    public static int Channel_AerospaceLab = 18000;
-    public static int Channel_MinerFactory = 19000;
+	// Channels for keeping track of total number of each robots //
+	public static int Channel_Helipad = 10000;
+	public static int Channel_Tower = 11000;
+	public static int Channel_SupplyDepot = 12000;
+	public static int Channel_TechnologyInstitute = 13000;
+	public static int Channel_Barracks = 14000;
+	public static int Channel_HandwashStation = 15000;
+	public static int Channel_TrainingField = 16000;
+	public static int Channel_TankFactory = 17000;
+	public static int Channel_AerospaceLab = 18000;
+	public static int Channel_MinerFactory = 19000;
 
-    public static int Channel_Beaver = 20000;
-    public static int Channel_Soldier = 30000;
-    public static int Channel_Miner = 40000;
-    public static int Channel_Tank = 50000;
-    public static int Channel_Basher = 60000; // no more than 550 bashiers
+	public static int Channel_Beaver = 20000;
+	public static int Channel_Soldier = 30000;
+	public static int Channel_Miner = 40000;
+	public static int Channel_Tank = 50000;
+	public static int Channel_Basher = 60000; // no more than 550 bashiers
 
-    public static int Channel_Drone = 6000;
-    public static int Channel_Launcher = 7000;
-    public static int Channel_Computer = 8000;
-    public static int Channel_Commander = 9000;
-    public static int Channel_Army = 2000;
+	public static int Channel_Drone = 6000;
+	public static int Channel_Launcher = 7000;
+	public static int Channel_Computer = 8000;
+	public static int Channel_Commander = 9000;
+	public static int Channel_Army = 2000;
 
-    // ////////Specific channels///////////////
-    public static int Channel_ArmyMode = 1001;
+	// ////////Specific channels///////////////
+	public static int Channel_ArmyMode = 1001;
 
-    // for channeling
-    protected int channelID; // this channel would be used for this robot's
-                             // info; unique for each robot.
-    protected int channelStartWith; // should be Channel_Beaver or ...
+	// for channeling
+	protected int channelID; // this channel would be used for this robot's
+								// info; unique for each robot.
+	protected int channelStartWith; // should be Channel_Beaver or ...
 
-    protected RobotController rc;
-    protected MapLocation myHQ, theirHQ;
-    protected Team myTeam, theirTeam;
-    protected Random rand;
+	protected RobotController rc;
+	protected MapLocation myHQ, theirHQ;
+	protected Team myTeam, theirTeam;
+	protected Random rand;
 
-    public BaseBot(RobotController rc) {
-        this.rc = rc;
-        this.myHQ = rc.senseHQLocation();
-        this.theirHQ = rc.senseEnemyHQLocation();
-        this.myTeam = rc.getTeam();
-        this.theirTeam = this.myTeam.opponent();
-        this.rand = new Random(rc.getID());
-    }
+	public BaseBot(RobotController rc) {
+		this.rc = rc;
+		this.myHQ = rc.senseHQLocation();
+		this.theirHQ = rc.senseEnemyHQLocation();
+		this.myTeam = rc.getTeam();
+		this.theirTeam = this.myTeam.opponent();
+		this.rand = new Random(rc.getID());
+	}
 
-    /**
-     * Initialize channelNum AA BBB
-     * 
-     * Increment total number of this robot type.
-     * 
-     * @throws GameActionException
-     */
-    public void initChannelNum() throws GameActionException {
-        int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
-        rc.broadcast(channelStartWith, spawnedOrder);
-        channelID = channelStartWith + spawnedOrder * 10;
-    }
+	/**
+	 * Initialize channelNum AA BBB
+	 * 
+	 * Increment total number of this robot type.
+	 * 
+	 * @throws GameActionException
+	 */
+	public void initChannelNum() throws GameActionException {
+		int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
+		rc.broadcast(channelStartWith, spawnedOrder);
+		channelID = channelStartWith + spawnedOrder * 10;
+	}
 
-    /**
-     * Create a new channel for an army. Number of army must be limited to 99.
-     * 
-     * @return
-     * @throws GameActionException
-     */
-    public int newArmyGetChannelID() throws GameActionException {
-        int spawnedOrder = rc.readBroadcast(Channel_Army) + 1;
-        rc.broadcast(Channel_Army, spawnedOrder);
-        return Channel_Army + spawnedOrder * 10;
-    }
+	/**
+	 * Create a new channel for an army. Number of army must be limited to 99.
+	 * 
+	 * @return
+	 * @throws GameActionException
+	 */
+	public int newArmyGetChannelID() throws GameActionException {
+		int spawnedOrder = rc.readBroadcast(Channel_Army) + 1;
+		rc.broadcast(Channel_Army, spawnedOrder);
+		return Channel_Army + spawnedOrder * 10;
+	}
 
-    /**
-     * Find a list of directions toward destination.
-     * 
-     * @param dest
-     * @return
-     */
-    public Direction[] getDirectionsToward(MapLocation dest) {
-        Direction toDest = rc.getLocation().directionTo(dest);
-        Direction[] dirs = { toDest, toDest.rotateLeft(), toDest.rotateRight(),
-                toDest.rotateLeft().rotateLeft(),
-                toDest.rotateRight().rotateRight() };
+	/**
+	 * Find a list of directions toward destination.
+	 * 
+	 * @param dest
+	 * @return
+	 */
+	public Direction[] getDirectionsToward(MapLocation dest) {
+		Direction toDest = rc.getLocation().directionTo(dest);
+		Direction[] dirs = { toDest, toDest.rotateLeft(), toDest.rotateRight(),
+				toDest.rotateLeft().rotateLeft(),
+				toDest.rotateRight().rotateRight() };
 
-        return dirs;
-    }
+		return dirs;
+	}
 
-    public RobotInfo[] getAllies() {
-        RobotInfo[] allies = rc.senseNearbyRobots(Integer.MAX_VALUE, myTeam);
-        return allies;
-    }
+	public RobotInfo[] getAllies() {
+		RobotInfo[] allies = rc.senseNearbyRobots(Integer.MAX_VALUE, myTeam);
+		return allies;
+	}
 
-    public RobotInfo[] getEnemiesInAttackingRange() {
-        RobotInfo[] enemies = rc.senseNearbyRobots(
-                RobotType.SOLDIER.attackRadiusSquared, theirTeam);
-        return enemies;
-    }
+	public RobotInfo[] getEnemiesInAttackingRange() {
+		RobotInfo[] enemies = rc.senseNearbyRobots(
+				RobotType.SOLDIER.attackRadiusSquared, theirTeam);
+		return enemies;
+	}
 
-    public void attackLeastHealthEnemy(RobotInfo[] enemies)
-            throws GameActionException {
-        if (enemies.length == 0) {
-            return;
-        }
+	public void attackLeastHealthEnemy() throws GameActionException {
+		RobotInfo[] enemies = getEnemiesInAttackingRange();
+		if (enemies.length == 0) {
+			return;
+		}
 
-        double minEnergon = Double.MAX_VALUE;
-        MapLocation toAttack = null;
-        for (RobotInfo info : enemies) {
-            if (info.health < minEnergon) {
-                toAttack = info.location;
-                minEnergon = info.health;
-            }
-        }
+		double minEnergon = Double.MAX_VALUE;
+		MapLocation toAttack = null;
+		for (RobotInfo info : enemies) {
+			if (info.health < minEnergon) {
+				toAttack = info.location;
+				minEnergon = info.health;
+			}
+		}
 
-        if (rc.isWeaponReady() && rc.canAttackLocation(toAttack)) {
-            rc.attackLocation(toAttack);
-        }
-    }
+		if (rc.isWeaponReady() && rc.canAttackLocation(toAttack)) {
+			rc.attackLocation(toAttack);
+		}
+	}
 
-    protected void attackEnemyZero() throws GameActionException {
-        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(rc.getLocation(),
-                rc.getType().attackRadiusSquared, rc.getTeam().opponent());
-        if (nearbyEnemies.length > 0) {// there are enemies nearby
-            // try to shoot at them
-            // specifically, try to shoot at enemy specified by nearbyEnemies[0]
-            if (rc.isWeaponReady()
-                    && rc.canAttackLocation(nearbyEnemies[0].location)) {
-                rc.attackLocation(nearbyEnemies[0].location);
-            }
-        }
-    }
+	protected void attackEnemyZero() throws GameActionException {
+		RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(rc.getLocation(),
+				rc.getType().attackRadiusSquared, rc.getTeam().opponent());
+		if (nearbyEnemies.length > 0) {// there are enemies nearby
+			// try to shoot at them
+			// specifically, try to shoot at enemy specified by nearbyEnemies[0]
+			if (rc.isWeaponReady()
+					&& rc.canAttackLocation(nearbyEnemies[0].location)) {
+				rc.attackLocation(nearbyEnemies[0].location);
+			}
+		}
+	}
 
-    public void beginningOfTurn() {
-        if (rc.senseEnemyHQLocation() != null) {
-            theirHQ = rc.senseEnemyHQLocation();
-        }
-    }
+	public void beginningOfTurn() {
+		if (rc.senseEnemyHQLocation() != null) {
+			theirHQ = rc.senseEnemyHQLocation();
+		}
+	}
 
-    public void endOfTurn() throws GameActionException {
-        transferSupplies();
-    }
+	public void endOfTurn() throws GameActionException {
+		transferSupplies();
+	}
 
-    public void go() throws GameActionException {
-        beginningOfTurn();
-        execute();
-        endOfTurn();
-    }
+	public void go() throws GameActionException {
+		beginningOfTurn();
+		execute();
+		endOfTurn();
+	}
 
-    public void execute() throws GameActionException {
+	public void execute() throws GameActionException {
 
-    }
+	}
 
-    public void transferSupplies() throws GameActionException {
-        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
-                GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
-        double lowestSupply = rc.getSupplyLevel();
-        double transferAmount = 0;
-        MapLocation suppliesToThisLocation = null;
-        for (RobotInfo ri : nearbyAllies) {
-            if (ri.supplyLevel < lowestSupply) {
-                lowestSupply = ri.supplyLevel;
-                transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
-                suppliesToThisLocation = ri.location;
-            }
-        }
-        if (suppliesToThisLocation != null) {
-            rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
-        }
-    }
+	public void transferSupplies() throws GameActionException {
+		RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+				GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+		double lowestSupply = rc.getSupplyLevel();
+		double transferAmount = 0;
+		MapLocation suppliesToThisLocation = null;
+		for (RobotInfo ri : nearbyAllies) {
+			if (ri.supplyLevel < lowestSupply) {
+				lowestSupply = ri.supplyLevel;
+				transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+				suppliesToThisLocation = ri.location;
+			}
+		}
+		if (suppliesToThisLocation != null) {
+			rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
+		}
+	}
 
-    protected Direction getRandomDirection() {
-        // System.out.println("heereeeee" +
-        // Direction.values()[(int)(rand.nextDouble()*8)]);
-        return Direction.values()[(int) (rand.nextDouble() * 8)];
-    }
+	protected Direction getRandomDirection() {
+		// System.out.println("heereeeee" +
+		// Direction.values()[(int)(rand.nextDouble()*8)]);
+		return Direction.values()[(int) (rand.nextDouble() * 8)];
+	}
 
 }
