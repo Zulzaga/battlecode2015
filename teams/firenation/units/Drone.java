@@ -16,6 +16,7 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
+import battlecode.common.TerrainTile;
 import firenation.Unit;
 
 public class Drone extends Unit {
@@ -27,7 +28,15 @@ public class Drone extends Unit {
     public MapLocation endCorner1, endCorner2, middle1, middle2;
 
     //Path exploring variables
+    public boolean searchAlongY = true;
+    public int searchCoord;
+    public int delta;
+    public boolean exploredDeadLock = false;
+    public boolean freePath = false;
+    public int pathTo;
+    
     public HashMap<Integer, HashSet<Integer>> inSense = new HashMap<Integer, HashSet<Integer>>();
+    public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
 
     public Drone(RobotController rc) throws GameActionException {
         super(rc);
@@ -44,6 +53,42 @@ public class Drone extends Unit {
         middle2 = new MapLocation((centerOfMap.x + endCorner2.x)/2, (centerOfMap.y + endCorner2.y)/2);
 
         initChannelNum(); 
+        
+        //differences coordX and coordY.
+        if (Math.abs(myHQ.x - theirHQ.x) > Math.abs(myHQ.y - theirHQ.y) ){
+            searchAlongY = false;
+            searchCoord = rc.getLocation().x;
+            if (myHQ.x - theirHQ.x > 0){
+                delta = -1;
+            }else{
+                delta = 1;
+            }
+            //add free spots along x axis
+            int y = rc.getLocation().y-3;
+            for (int i = 0; i < 7; i++ ){
+                TerrainTile t = rc.senseTerrainTile(new MapLocation(searchCoord, y));
+                if (t == TerrainTile.NORMAL){
+                    reachableSpots.add(new MapLocation(searchCoord, y));
+                }
+            }
+        }else{
+            searchCoord = rc.getLocation().y;
+            if (myHQ.y - theirHQ.y > 0){
+                delta = -1;
+            }else{
+                delta = 1;
+            }
+            
+            //add free spots along y axis
+            int x = rc.getLocation().x-3;
+            for (int i = 0; i < 7; i++ ){
+                TerrainTile t = rc.senseTerrainTile(new MapLocation(x, searchCoord));
+                if (t == TerrainTile.NORMAL){
+                    reachableSpots.add(new MapLocation(x, searchCoord));
+                }
+            }
+            
+        }
     }
 
     /**
@@ -59,21 +104,22 @@ public class Drone extends Unit {
         channelID = channelStartWith + spawnedOrder*10;
         //first three drones are going to explore map.
 
-        int type = spawnedOrder %5;
+        pathTo = spawnedOrder %5; //would be used for broadcasting! BE CAREFUL
         // System.out.println("spawned order: " + spawnedOrder + " type: " + type);
 
 
-        if( type ==1  ){
+        if( pathTo ==1  ){
             //ourHQ - > theirHQ
             exploreToDest = theirHQ;
-        }else if( type ==2 ){
+        }else if( pathTo ==2 ){
             exploreToDest = endCorner2;
-        }else if( type ==3 ){
+        }else if( pathTo ==3 ){
             exploreToDest = endCorner1;
-        }else if( type ==4 ){
+        }else if( pathTo ==4 ){
             exploreToDest = middle1;
-        }else if( type == 0){
+        }else if( pathTo == 0){
             exploreToDest = middle2;
+            pathTo = 5;
         }         
     }
 
@@ -92,9 +138,19 @@ public class Drone extends Unit {
             int diff = currentDest.distanceSquaredTo(myHQ) - currentDest.distanceSquaredTo(theirHQ);
             if  ( Math.abs(diff) < 3){
                 exploreToDest = theirHQ;
+//                System.out.println("here we seee-------" + exploredDeadLock);
+
+                if (!exploredDeadLock){
+                    freePath = true;
+                    rc.broadcast(Channel_FreePathFound, pathTo); 
+                    System.out.println("FOUND FREE PATH TO------ " + pathTo);
+                }
             }
             harassToLocation(exploreToDest);
+            exploreExpansion();
+//            System.out.println("here we seee-------");
         }
+        
     }
 
     public void execute() throws GameActionException {
@@ -130,45 +186,52 @@ public class Drone extends Unit {
         }
     }
 
-    public void routineIsFree(){  //let y be decreasing
-        Integer minY = Integer.MAX_VALUE;
-        Integer maxY = Integer.MIN_VALUE;
-        for (int y: inSense.keySet()){
-            if ( y>maxY){
-                maxY = y;
-            }else if( y < minY){
-                minY = y;
+    public void exploreExpansion(){
+        if (!exploredDeadLock){
+        //just along y axis
+        //searchCoord previous
+        
+        //have not moved along y coord
+        if (searchCoord == rc.getLocation().y){
+            int x = rc.getLocation().x-3;
+            for (int i = 0; i < 7; i++ ){
+                TerrainTile t = rc.senseTerrainTile(new MapLocation(x, searchCoord));
+                if (t == TerrainTile.NORMAL){
+                    reachableSpots.add(new MapLocation(x, searchCoord));
+                }
             }
+        //moved and has to level up reachableSpots  (Assuming drones not going back)  
+        }else{
+            HashSet<MapLocation> newReachableSpots = new HashSet<MapLocation>();
+            for (MapLocation loc: reachableSpots){
+                for(int i = -1; i<=1; i++){
+                    TerrainTile t = rc.senseTerrainTile(new MapLocation(loc.x + i, searchCoord));
+                    if (t == TerrainTile.NORMAL){
+                        newReachableSpots.add(new MapLocation(loc.x + i, searchCoord));
+                    }
+                }
+            }
+            if (newReachableSpots.size() == 0){
+                exploredDeadLock = true;
+            }
+            reachableSpots = newReachableSpots;
+        }
+        searchCoord = rc.getLocation().y;
+        if (myHQ.y - theirHQ.y > 0){
+            delta = -1;
+        }else{
+            delta = 1;
         }
         
-        //increasing y
-        for (int y = minY; y < maxY; y++){
-            for(int x: inSense.get(y)){
-                //check if free
-//                if (Terrian)
+        //add free spots along y axis
+        int x = rc.getLocation().x-3;
+        for (int i = 0; i < 7; i++ ){
+            TerrainTile t = rc.senseTerrainTile(new MapLocation(x, searchCoord));
+            if (t == TerrainTile.NORMAL){
+                reachableSpots.add(new MapLocation(x, searchCoord));
             }
         }
-
-
-
-    }
-
-    public void recordSenseExpansion(){
-        MapLocation pos = rc.getLocation();
-        int minY = pos.y -3;
-        int minX = pos.x -3;
-        for (int y = minY; y <= minY +3; y++ ){
-            for (int x = minX; y <= minX +3; x++ ){
-                HashSet coordX;
-                if (inSense.containsKey(y)){
-                    coordX = inSense.get(y);
-                }else{
-                    coordX = new HashSet<Integer>();
-                }
-                coordX.add(x);
-                inSense.put(y, coordX);
-            }
-        }  
+        }
     }
 
     /**

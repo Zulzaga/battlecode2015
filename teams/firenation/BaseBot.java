@@ -109,6 +109,7 @@ public abstract class BaseBot {
 	// ////////Specific channels for stragies and mode of the game///////////////
 	public static int Channel_Strategy = 1000;
 	public static int Channel_ArmyMode = 1001;
+	public static int Channel_FreePathFound = 1002;
 	
 
 	// for channeling
