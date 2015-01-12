@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
@@ -17,6 +18,7 @@ import firenation.Unit;
 
 public class Drone extends Unit {
 
+
     //Few drones would be used for exploring the map. Essential variables for those. 
     private MapLocation exploreToDest = null; // null if it is not an explorer drone!
     public int xMin, yMin, xMax, yMax;
@@ -24,24 +26,20 @@ public class Drone extends Unit {
     
     public Drone(RobotController rc) throws GameActionException {
         super(rc);
-        
-        
-        //Initialize channelID and increment total number of this RobotType
+
+        // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Drone;
-        
-        
         endCorner2 = new MapLocation(myHQ.x, theirHQ.y);
         endCorner1 = new MapLocation(theirHQ.x, myHQ.y);
         
         initChannelNum(); 
-        
     }
-    
-    
+
     /**
-     * Initialize channelNum AA BBB 
+     * Initialize channelNum AA BBB
      * 
      * Increment total number of this robot type.
+     * 
      * @throws GameActionException
      */
     public void initChannelNum() throws GameActionException{
@@ -52,6 +50,7 @@ public class Drone extends Unit {
         
         int type = spawnedOrder %3;
         System.out.println("spawned order: " + spawnedOrder + " type: " + type);
+
 
         if( type ==1  ){
             //ourHQ - > theirHQ
@@ -103,11 +102,12 @@ public class Drone extends Unit {
             }
         }
     }
-    
+
     /**
-     * Should be called only on explorer drones!
-     * If this drone has reached its final destination, it should become 
-     * @throws GameActionException 
+     * Should be called only on explorer drones! If this drone has reached its
+     * final destination, it should become
+     * 
+     * @throws GameActionException
      */
     public void explore() throws GameActionException{
         System.out.println("destination -- " + exploreToDest);
@@ -124,11 +124,12 @@ public class Drone extends Unit {
 
     public void execute() throws GameActionException {
         explore();
+
     }
-    
-    public void harassStrategy(MapLocation ml) throws GameActionException{
-    	harassToLocation(ml);  	
-    	
+
+    public void harassStrategy(MapLocation ml) throws GameActionException {
+        harassToLocation(ml);
+
         transferSupplies();
         rc.yield();
     }
@@ -139,14 +140,9 @@ public class Drone extends Unit {
     }
 
     public void swarmPot() throws GameActionException {
-        RobotInfo[] enemies = getEnemiesInAttackingRange();
+//        attackLeastHealthEnemy();
 
-        if (enemies.length > 0) {
-            // attack!
-            if (rc.isWeaponReady()) {
-                attackLeastHealthEnemy(enemies);
-            }
-        } else if (rc.isCoreReady()) {
+        if (rc.isCoreReady()) {
             int rallyX = rc.readBroadcast(0);
             int rallyY = rc.readBroadcast(1);
             MapLocation rallyPoint = new MapLocation(rallyX, rallyY);
@@ -199,7 +195,7 @@ public class Drone extends Unit {
      */
     static class RobotHealthComparator implements Comparator<RobotInfo> {
 
-        //@Override
+        // @Override
         public int compare(RobotInfo o1, RobotInfo o2) {
             if (o1.health > o2.health) {
                 return 1;
@@ -210,15 +206,5 @@ public class Drone extends Unit {
             }
         }
     }
-    
-    
 
-    
-	
-	
-	
-	
-
-	
-	
 }
