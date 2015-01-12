@@ -65,7 +65,6 @@ public class Drone extends Unit {
             exploreToDest = endCorner2;
         }else if( type ==3 ){
             exploreToDest = endCorner1;
-
         }else if( type ==4 ){
             exploreToDest = middle1;
         }else if( type == 0){
@@ -73,43 +72,6 @@ public class Drone extends Unit {
         }         
     }
 
-    public boolean freeToMoveTo(MapLocation dest){
-        rc.getLocation();
-        if(rc.isCoreReady()){
-            Direction dirs[] = getDirectionsToward(dest);
-            if (dirs != null){
-                for(Direction newDir : dirs){
-                    if (rc.canMove(newDir)) {
-                        if(!safeToMove2(rc.getLocation().add(newDir))){
-                            continue;
-                        }
-                        else if(rc.canMove(newDir)){
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    public void moveToLocation(MapLocation location) throws GameActionException {
-        if(rc.isCoreReady()){
-            Direction dirs[] = getDirectionsToward(location);
-
-            for(Direction newDir : dirs){
-                if (rc.canMove(newDir)) {
-                    if(!safeToMove2(rc.getLocation().add(newDir))){
-                        continue;
-                    }
-                    else if(rc.canMove(newDir)){
-                        rc.move(newDir);
-                        return;
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * Should be called only on explorer drones! If this drone has reached its

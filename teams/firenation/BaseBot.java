@@ -106,8 +106,10 @@ public abstract class BaseBot {
 	public static int Channel_Commander = 9000;
 	public static int Channel_Army = 2000;
 
-	// ////////Specific channels///////////////
+	// ////////Specific channels for stragies and mode of the game///////////////
+	public static int Channel_Strategy = 1000;
 	public static int Channel_ArmyMode = 1001;
+	
 
 	// for channeling
 	protected int channelID; // this channel would be used for this robot's
