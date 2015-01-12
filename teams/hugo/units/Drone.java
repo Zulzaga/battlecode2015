@@ -1,12 +1,12 @@
 package hugo.units;
 
+import hugo.Unit;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
-import hugo.Unit;
 
 public class Drone extends Unit{
 
@@ -16,42 +16,68 @@ public class Drone extends Unit{
     }
     
     public void execute() throws GameActionException {
-        //swarmPot();
-    	RobotInfo[] enemies = getEnemiesInAttackingRange();
     	
-    	MapLocation[] myTowers = rc.senseTowerLocations();
-    	
-    	attack();
-    	if(!runAway())
-    		moveToTheirHQ();
-    	//rushAttackLocation(theirHQ);
-    	//defend(myTowers[0]);
-    	/*
-    	if(rc.isCoreReady()){
-    		// if enemies are around, retreat back
-    		if(enemies.length > 0){
-    			retreatToHQ();
-    		}
-    		
-    		// advance to their HQ
-    		else{
-    			if(rc.getLocation().distanceSquaredTo(theirHQ) > 2)
-    				moveToTheirHQ();
-    			//moveAwayFromHQ();
-    		}
-    	}
-    	
-    	// If possible, attack
-    	if (rc.isWeaponReady()) {
-            attackLeastHealthEnemy(enemies);
-        }
-    	*/
+    	harassStrategy(theirHQ);
+    }
+    
+    public void harassStrategy(MapLocation ml) throws GameActionException{
+    	harassToLocation(ml);  	
     	
         transferSupplies();
         rc.yield();
     }
     
-    private void retreatToHQ() throws GameActionException {
+    // harass and move to the location
+    public void harassToLocation(MapLocation ml) throws GameActionException{
+    	RobotInfo nearestEnemy = senseNearestEnemy(rc.getType());
+    	
+    	if(nearestEnemy != null){
+	    	int distanceToEnemy = rc.getLocation().distanceSquaredTo(nearestEnemy.location);
+	    	if(distanceToEnemy <= rc.getType().attackRadiusSquared){
+	    		attack();
+	    		avoid(nearestEnemy);
+	    	}
+	    	else{
+	    		if(nearestEnemy.type != RobotType.TANK){
+	    			moveToLocation(nearestEnemy.location);
+	    			attack();
+	    		}
+	    		else{
+	    			avoid(nearestEnemy);
+	    		}
+	    	}
+    	}
+    	else{
+    		moveToLocation(ml);
+    	}
+    	
+    }
+    
+    // return the nearest enemy robot
+    public RobotInfo senseNearestEnemy(RobotType type){
+    	RobotInfo[] enemies = senseNearbyEnemies(type);
+    	
+    	if(enemies.length > 0){
+	    	RobotInfo nearestRobot = null;
+	    	int nearestDistance = Integer.MAX_VALUE;
+	    	for(RobotInfo robot : enemies){
+	    		int distance =  rc.getLocation().distanceSquaredTo(robot.location);
+	    		if(distance < nearestDistance){
+	    			nearestDistance = distance;
+	    			nearestRobot = robot;
+	    		}
+	    	}
+	    	return nearestRobot;
+    	}    	
+		return null;
+    }
+    
+    // return all the sensible enemies
+    public RobotInfo[] senseNearbyEnemies(RobotType type){
+    	return rc.senseNearbyRobots(type.sensorRadiusSquared, theirTeam);
+    }
+    
+    public void retreatToHQ() throws GameActionException {
     	//Direction newDir = getMoveDir(rc.getLocation().add(rc.getLocation().directionTo(myHQ)));
     	
     	Direction dirs[] = getDirectionsToward(myHQ);
@@ -76,18 +102,6 @@ public class Drone extends Unit{
     	
 	}
     
-    
-    private boolean safeToMove(MapLocation ml) {
-        MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
-        boolean tileInFrontSafe = true;
-        for (MapLocation m : enemyTowers) {
-            if (m.distanceSquaredTo(ml) <= RobotType.TOWER.attackRadiusSquared) {
-                tileInFrontSafe = false;
-                break;
-            }
-        }
-        return tileInFrontSafe;
-    }
     
 	private void moveAwayFromHQ() throws GameActionException {
 		
@@ -138,7 +152,7 @@ public class Drone extends Unit{
 		}
 	}
 	
-	private void attack() throws GameActionException{
+	public void attack() throws GameActionException{
 		if(rc.isWeaponReady()){
 			RobotInfo[] enemies = getEnemiesInAttackingRange();
 			
@@ -167,18 +181,20 @@ public class Drone extends Unit{
 	}
 
 	private void moveToLocation(MapLocation location) throws GameActionException {
-		Direction dirs[] = getDirectionsToward(location);
-		
-		for(Direction newDir : dirs){
-	        if (rc.canMove(newDir)) {
-	        	if(!safeToMove(rc.getLocation().add(newDir))){
-	    			continue;
-	    		}
-	        	else if(rc.canMove(newDir)){
-	        		rc.move(newDir);
-	        		return;
-	        	}
-	        }
+		if(rc.isCoreReady()){
+			Direction dirs[] = getDirectionsToward(location);
+			
+			for(Direction newDir : dirs){
+		        if (rc.canMove(newDir)) {
+		        	if(!safeToMove(rc.getLocation().add(newDir))){
+		    			continue;
+		    		}
+		        	else if(rc.canMove(newDir)){
+		        		rc.move(newDir);
+		        		return;
+		        	}
+		        }
+			}
 		}
 	}
 	
@@ -218,5 +234,36 @@ public class Drone extends Unit{
 		}
 		return false; // did not do anything
 	}
+	
+	public void avoidNearestEnemy(RobotType type) throws GameActionException{
+		RobotInfo nearest = senseNearestEnemy(type);
+    	if(nearest != null){
+    		avoid(nearest);
+    	}
+	}
+	
+	// run to the opposite direction of the robot
+	public void avoid(RobotInfo robot) throws GameActionException{
+		if(rc.isCoreReady()){
+			Direction oppositeDir = getMoveDir(rc.getLocation().add(rc.getLocation().directionTo(robot.location).opposite()));
+			
+			if(oppositeDir != null){
+				Direction dirs[] = getDirectionsToward(rc.getLocation().add(oppositeDir));
+				
+				for(Direction newDir : dirs){
+			        if (newDir != null) {
+			        	if(!safeToMove(rc.getLocation().add(newDir))){
+			    			continue;
+			    		}
+			        	else if(rc.canMove(newDir)){
+			        		rc.move(newDir);
+			        		break ;
+			        	}
+			        }
+				}
+			}
+		}
+	}
+	
 	
 }
