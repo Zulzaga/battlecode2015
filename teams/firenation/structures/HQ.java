@@ -198,7 +198,7 @@ public class HQ extends Structure {
             }
         }
         MapLocation rallyPoint;
-        if (Clock.getRoundNum() < 600) {
+        if (Clock.getRoundNum() < 1200) {
             rallyPoint = centerOfMap;
         } else {
             rallyPoint = this.theirHQ;
