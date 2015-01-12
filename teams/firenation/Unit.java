@@ -116,6 +116,17 @@ public abstract class Unit extends BaseBot {
             moveAround();
         }
     }
+    
+    public void mineAndMoveToDest() throws GameActionException {
+        if (rc.senseOre(rc.getLocation()) > 1) {// there is ore, so try to mine
+            if (rc.isCoreReady() && rc.canMine()) {
+                rc.mine();
+
+            }
+        } else {// no ore, so look for ore
+            moveAround();
+        }
+    }
 
     public void moveAround() throws GameActionException {
         if (rand.nextDouble() < 0.05) {
