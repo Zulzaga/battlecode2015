@@ -22,16 +22,22 @@ public class Drone extends Unit {
     //Few drones would be used for exploring the map. Essential variables for those. 
     private MapLocation exploreToDest = null; // null if it is not an explorer drone!
     public int xMin, yMin, xMax, yMax;
-    public MapLocation endCorner1, endCorner2;
-    
+    public MapLocation endCorner1, endCorner2, middle1, middle2;
+
     public Drone(RobotController rc) throws GameActionException {
         super(rc);
 
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Drone;
+
+
         endCorner2 = new MapLocation(myHQ.x, theirHQ.y);
         endCorner1 = new MapLocation(theirHQ.x, myHQ.y);
-        
+
+        MapLocation centerOfMap = new MapLocation((myHQ.x + theirHQ.x)/2, (myHQ.y + theirHQ.y)/2);
+        middle1 = new MapLocation((centerOfMap.x + endCorner1.x)/2, (centerOfMap.y + endCorner1.y)/2);
+        middle2 = new MapLocation((centerOfMap.x + endCorner2.x)/2, (centerOfMap.y + endCorner2.y)/2);
+
         initChannelNum(); 
     }
 
@@ -47,8 +53,8 @@ public class Drone extends Unit {
         rc.broadcast(channelStartWith, spawnedOrder);
         channelID = channelStartWith + spawnedOrder*10;
         //first three drones are going to explore map.
-        
-        int type = spawnedOrder %3;
+
+        int type = spawnedOrder %5;
         // System.out.println("spawned order: " + spawnedOrder + " type: " + type);
 
 
@@ -56,35 +62,37 @@ public class Drone extends Unit {
             //ourHQ - > theirHQ
             exploreToDest = theirHQ;
         }else if( type ==2 ){
-            //ourHQ -> theirHQ (inclined to left side)
             exploreToDest = endCorner2;
-        }else{
-            //ourHQ -> thierHQ (inclined to left side)
+        }else if( type ==3 ){
             exploreToDest = endCorner1;
 
-        }        
+        }else if( type ==4 ){
+            exploreToDest = middle1;
+        }else if( type == 0){
+            exploreToDest = middle2;
+        }         
     }
-    
+
     public boolean freeToMoveTo(MapLocation dest){
         rc.getLocation();
         if(rc.isCoreReady()){
             Direction dirs[] = getDirectionsToward(dest);
             if (dirs != null){
-            for(Direction newDir : dirs){
-                if (rc.canMove(newDir)) {
-                    if(!safeToMove2(rc.getLocation().add(newDir))){
-                        continue;
+                for(Direction newDir : dirs){
+                    if (rc.canMove(newDir)) {
+                        if(!safeToMove2(rc.getLocation().add(newDir))){
+                            continue;
+                        }
+                        else if(rc.canMove(newDir)){
+                            return true;
+                        }
                     }
-                    else if(rc.canMove(newDir)){
-                        return true;
-                    }
-                }
                 }
             }
         }
         return false;
     }
-    
+
     public void moveToLocation(MapLocation location) throws GameActionException {
         if(rc.isCoreReady()){
             Direction dirs[] = getDirectionsToward(location);
@@ -140,7 +148,7 @@ public class Drone extends Unit {
     }
 
     public void swarmPot() throws GameActionException {
-//        attackLeastHealthEnemy();
+        //        attackLeastHealthEnemy();
 
         if (rc.isCoreReady()) {
             int rallyX = rc.readBroadcast(0);

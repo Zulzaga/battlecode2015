@@ -15,7 +15,14 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 public class Drone extends Unit {
-    
+    /*
+     * Drone's channel:
+     * We want to spread our drone through the map.
+     * Channel_Drone + 1:
+     * 
+     * 
+     * 
+     */
 
 
     //Few drones would be used for exploring the map. Essential variables for those. 
