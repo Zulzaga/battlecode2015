@@ -90,10 +90,10 @@ public class Drone extends Unit {
             //check if it has reached its destination
             MapLocation currentDest = rc.getLocation();
             int diff = currentDest.distanceSquaredTo(myHQ) - currentDest.distanceSquaredTo(theirHQ);
-            if  ( Math.abs(diff) < 3){
+            if  ( Math.abs(diff) < 6){
                 exploreToDest = theirHQ;
             }
-            harassToLocation(exploreToDest);
+            harassStrategy(exploreToDest);
         }
     }
 

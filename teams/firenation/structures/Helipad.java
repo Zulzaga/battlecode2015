@@ -18,7 +18,7 @@ public class Helipad extends Structure {
 
     public void execute() throws GameActionException {
         try {
-            if (rc.isCoreReady() && rc.readBroadcast(Channel_Drone) < 10) {
+            if (rc.isCoreReady() && rc.readBroadcast(Channel_Drone) < 200) {
                 Direction spawnDir = getSpawnDirection(RobotType.DRONE);
                 if (spawnDir != null) {
                     rc.spawn(spawnDir, RobotType.DRONE);
