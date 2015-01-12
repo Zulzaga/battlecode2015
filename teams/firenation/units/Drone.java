@@ -27,11 +27,14 @@ public class Drone extends Unit {
     //Path exploring variables
     public boolean searchAlongY = true;
     public int searchCoord;
-    public int delta;
     public boolean exploredDeadLock = false;
     public boolean freePath = false; //if it is true, it guarantees that there is a way to reach its destination.
     public int pathTo;
     public String path; //just for debugging!
+    public MapLocation oreAreaPoint = null;
+    public double maxOreArea = 0;
+    public int channel_maxOreX; //channelID +1
+    public int channel_maxOreY; //channelID +2
     
     public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
 
@@ -46,11 +49,7 @@ public class Drone extends Unit {
         if (Math.abs(myHQ.x - theirHQ.x) > Math.abs(myHQ.y - theirHQ.y) ){
             searchAlongY = false;
             searchCoord = rc.getLocation().x;
-            if (myHQ.x - theirHQ.x > 0){
-                delta = -1;
-            }else{
-                delta = 1;
-            }
+
             //add free spots along x axis
             int y = rc.getLocation().y-3;
             for (int i = 0; i < 7; i++ ){
@@ -61,12 +60,6 @@ public class Drone extends Unit {
             }
         }else{
             searchCoord = rc.getLocation().y;
-            if (myHQ.y - theirHQ.y > 0){
-                delta = -1;
-            }else{
-                delta = 1;
-            }
-            
             //add free spots along y axis
             int x = rc.getLocation().x-3;
             for (int i = 0; i < 7; i++ ){
@@ -90,6 +83,8 @@ public class Drone extends Unit {
         int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
         rc.broadcast(channelStartWith, spawnedOrder);
         channelID = channelStartWith + spawnedOrder*10;
+        channel_maxOreX = channelID + 1;
+        channel_maxOreY = channelID + 2;
         //first three drones are going to explore map.
 
         pathTo = spawnedOrder %5; //would be used for broadcasting! BE CAREFUL
@@ -113,7 +108,8 @@ public class Drone extends Unit {
             destination = middle2;
             pathTo = 5;
             path = "middle bwtn end and center";
-        }         
+        }
+
     }
 
 
@@ -137,7 +133,7 @@ public class Drone extends Unit {
                 destination = theirHQ;
 //                System.out.println("here we seee-------" + exploredDeadLock);
 
-                if (!exploredDeadLock && channelID < 6051){
+                if (!exploredDeadLock && channelID < 40051){
                     freePath = true;
                     broadcastExporation(1);
 //                    rc.broadcast(Channel_FreePathFound, pathTo); 
@@ -148,25 +144,13 @@ public class Drone extends Unit {
             }
 
             harassToLocation(destination);
-            exploreExpansion();
+            extendExploration();
 //            System.out.println("here we seee-------");
         }
         
     }
+    
 
-    
-    /*    A, B, D or E: 
-        *    0: have not explored yet.
-        *    1: there is a path to that point.
-        *    2: there may not path but there are not many voids.
-        *    3: there may not path and there are many voids. (useless) 
-        */
-    
-//    public static int Channel_PathCenter= 1002;
-//    public static int Channel_PathMiddle1= 1003;
-//    public static int Channel_PathMiddle2= 1004;
-//    public static int Channel_PathCorner1= 1005;
-//    public static int Channel_PathCorner2= 1006;
     private void broadcastExporation(int status) throws GameActionException {
         int type = (channelID /10) %5;
         if( type ==1  ){
@@ -290,13 +274,21 @@ public class Drone extends Unit {
             }
         }
     }
+    
+    public void checkReachableOreArea(){
+        for (MapLocation loc: reachableSpots){
+            double sensedOre = rc.senseOre(loc);
+            if (sensedOre > maxOreArea){
+                oreAreaPoint = loc;
+                maxOreArea = sensedOre;
+//                rc.broadcast(cha), arg1);
+            }
+        }
+    }
 
-    public void exploreExpansion(){
+    public void extendExploration(){
         //only first 5 drones should explore path!
-        if (!exploredDeadLock && channelID < 6051){
-        //just along y axis (will implement x axis later!!!!)
-        //searchCoord previous
-        
+        if (!exploredDeadLock && channelID < 40051){        
         //have not moved along y coord
         if (searchCoord == rc.getLocation().y){
             int x = rc.getLocation().x-3;
@@ -323,12 +315,6 @@ public class Drone extends Unit {
             reachableSpots = newReachableSpots;
         }
         searchCoord = rc.getLocation().y;
-        if (myHQ.y - theirHQ.y > 0){
-            delta = -1;
-        }else{
-            delta = 1;
-        }
-        
         //add free spots along y axis
         int x = rc.getLocation().x-3;
         for (int i = 0; i < 7; i++ ){

@@ -43,6 +43,8 @@ public abstract class Structure extends BaseBot {
             rc.spawn(randomDir, type);
         }
     }
+    
+
 
     /**
      * Method that will spawn a robot in the direction that has most amount of
