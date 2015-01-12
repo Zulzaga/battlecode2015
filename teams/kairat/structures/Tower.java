@@ -1,9 +1,8 @@
-package firenation.structures;
+package kairat.structures;
 
-
+import kairat.Structure;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import firenation.Structure;
 
 public class Tower extends Structure {
 

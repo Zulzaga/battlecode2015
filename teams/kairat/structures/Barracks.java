@@ -1,29 +1,30 @@
-package firenation.structures;
+package kairat.structures;
 
+import kairat.Channels;
+import kairat.Structure;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import firenation.Structure;
 
-public class Barracks extends Structure {
+public class Barracks extends Structure implements Channels {
 
     public Barracks(RobotController rc) throws GameActionException {
         super(rc);
-        
-        
-        //Initialize channelID and increment total number of this RobotType
+
+        // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Barracks;
-        initChannelNum(); 
+        initChannelNum();
     }
 
     public void execute() throws GameActionException {
         swarmPot();
     }
-    
 
     public void player6() throws GameActionException {
-        spawnUnit(RobotType.SOLDIER);
+        // if (rc.readBroadcast(Channel_Soldier) < 10) {
+        // spawnUnit(RobotType.SOLDIER);
+        // }
     }
 
     /**
@@ -34,10 +35,15 @@ public class Barracks extends Structure {
     public void swarmPot() throws GameActionException {
         if (rc.isCoreReady() && rc.getTeamOre() > 200) {
             Direction newDir = getSpawnDirection(RobotType.SOLDIER, theirHQ);
-            if (newDir != null) {
+            if (newDir != null && rc.readBroadcast(Channel_Soldier) < 10) {
                 rc.spawn(newDir, RobotType.SOLDIER);
             }
         }
+    }
+
+    @Override
+    public void createChannel() {
+
     }
 
 }

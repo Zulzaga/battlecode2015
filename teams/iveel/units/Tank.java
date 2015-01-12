@@ -15,20 +15,15 @@ public class Tank extends Unit {
 
     public Tank(RobotController rc) throws GameActionException {
         super(rc);
-        
-        
-        //Initialize channelID and increment total number of this RobotType
+
+        // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Tank;
-        initChannelNum(); 
+        initChannelNum();
     }
 
     public void execute() throws GameActionException {
-        swarmPot();
-    }
-
-    public void player6() throws GameActionException {
-        attackTower();
-        moveAround();
+        MapLocation[] towerLocations = rc.senseTowerLocations();
+        
     }
 
     public void swarmPot() throws GameActionException {

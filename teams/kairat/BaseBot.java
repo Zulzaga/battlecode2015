@@ -1,4 +1,4 @@
-package firenation;
+package kairat;
 
 import java.util.Random;
 
@@ -109,15 +109,17 @@ public abstract class BaseBot {
     // ////////Specific channels///////////////
     public static int Channel_ArmyMode = 1001;
 
-    // for channeling
-    protected int channelID; // this channel would be used for this robot's
-                             // info; unique for each robot.
-    protected int channelStartWith; // should be Channel_Beaver or ...
+    // ////////////////////////////////////
 
     protected RobotController rc;
     protected MapLocation myHQ, theirHQ;
     protected Team myTeam, theirTeam;
     protected Random rand;
+
+    // for channeling
+    protected int channelID; // this channel would be used for this robot's
+                             // info; unique for each robot.
+    protected int channelStartWith; // should be Channel_Beaver or ...
 
     public BaseBot(RobotController rc) {
         this.rc = rc;
@@ -194,9 +196,7 @@ public abstract class BaseBot {
             }
         }
 
-        if (rc.isWeaponReady() && rc.canAttackLocation(toAttack)) {
-            rc.attackLocation(toAttack);
-        }
+        rc.attackLocation(toAttack);
     }
 
     protected void attackEnemyZero() throws GameActionException {

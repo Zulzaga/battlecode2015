@@ -1,9 +1,16 @@
-package iveel.structures;
+package kairat.structures;
 
 import java.util.HashMap;
 
-import battlecode.common.*;
-import iveel.Structure;
+import kairat.Channels;
+import kairat.Communication;
+import kairat.Structure;
+import battlecode.common.Clock;
+import battlecode.common.Direction;
+import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
+import battlecode.common.RobotController;
+import battlecode.common.RobotType;
 
 
 
@@ -51,7 +58,7 @@ import iveel.Structure;
  *   
  * 
  */
-public class HQ extends Structure{
+public class HQ extends Structure implements Channels {
     
    //Keep track all info about armies and their last dest.
    //Each army unit listens its army channel which is unique.
@@ -61,6 +68,7 @@ public class HQ extends Structure{
 
     
     public MapLocation centerOfMap;
+    public static Communication communication;
 //    public HashMap
 
     public HQ(RobotController rc) throws GameActionException {
@@ -250,5 +258,10 @@ public class HQ extends Structure{
         
     }
 
+    @Override
+    public void createChannel() {
+        
+        
+    }
 
 }

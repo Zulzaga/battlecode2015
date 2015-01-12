@@ -1,15 +1,15 @@
-package firenation.units;
+package kairat.units;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
+import kairat.Unit;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
-import firenation.Unit;
 
 public class Tank extends Unit {
     /*

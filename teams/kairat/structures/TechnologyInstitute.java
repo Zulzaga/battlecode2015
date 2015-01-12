@@ -1,18 +1,17 @@
-package firenation.structures;
+package kairat.structures;
 
+import kairat.Structure;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import firenation.Structure;
 
-public class TechnologyInstitute extends Structure{
+public class TechnologyInstitute extends Structure {
 
     public TechnologyInstitute(RobotController rc) throws GameActionException {
         super(rc);
-        
-        //Initialize channelID and increment total number of this RobotType
+
+        // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_TechnologyInstitute;
-        initChannelNum(); 
+        initChannelNum();
     }
 
 }
-

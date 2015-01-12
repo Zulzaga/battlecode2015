@@ -1,6 +1,4 @@
-package firenation;
-
-import firenation.BaseBot;
+package kairat;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,6 +10,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
 public abstract class Structure extends BaseBot {
+    
 
     private static List<Direction> listOfDirections = Arrays.asList(
             Direction.EAST, Direction.NORTH, Direction.NORTH_EAST,
@@ -27,8 +26,8 @@ public abstract class Structure extends BaseBot {
      * @param type
      * @return
      */
-    public Direction getSpawnDirection(RobotType type) {
-        Direction[] dirs = getDirectionsToward(theirHQ);
+    public Direction getSpawnDirection(RobotType type, MapLocation dest) {
+        Direction[] dirs = getDirectionsToward(dest);
         for (Direction d : dirs) {
             if (rc.canSpawn(d, type)) {
                 return d;
@@ -37,11 +36,14 @@ public abstract class Structure extends BaseBot {
         return null;
     }
 
-    public void spawnUnit(RobotType type) throws GameActionException {
+    public boolean spawnUnit(RobotType type) throws GameActionException {
         Direction randomDir = getRandomDirection();
         if (rc.isCoreReady() && rc.canSpawn(randomDir, type)) {
             rc.spawn(randomDir, type);
+            return true;
         }
+        
+        return false;
     }
 
     /**
@@ -52,7 +54,7 @@ public abstract class Structure extends BaseBot {
      *            type of the robot to be generated
      * @throws GameActionException
      */
-    private void spawnUnitOreCollector(RobotType type)
+    public void spawnUnitOreCollector(RobotType type)
             throws GameActionException {
 
         MapLocation currentLocation = rc.getLocation();
@@ -68,21 +70,5 @@ public abstract class Structure extends BaseBot {
         if (rc.isCoreReady()) {
             rc.spawn(richDirection, type);
         }
-    }
-    
-
-    /**
-     * 
-     * @param type
-     * @return
-     */
-    public Direction getSpawnDirection(RobotType type, MapLocation dest) {
-        Direction[] dirs = getDirectionsToward(dest);
-        for (Direction d : dirs) {
-            if (rc.canSpawn(d, type)) {
-                return d;
-            }
-        }
-        return null;
     }
 }

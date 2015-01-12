@@ -1,9 +1,10 @@
-package firenation.structures;
+package kairat.structures;
 
+import kairat.Structure;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import firenation.Structure;
+
 
 public class MinerFactory extends Structure {
 

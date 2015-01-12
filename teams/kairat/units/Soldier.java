@@ -1,32 +1,30 @@
-package firenation.units;
-
-import firenation.units.Soldier.RobotHealthComparator;
+package kairat.units;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
+import kairat.Unit;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
-import firenation.Unit;
 
 public class Soldier extends Unit {
 
     public Soldier(RobotController rc) throws GameActionException {
         super(rc);
-        
-        //Initialize channelID and increment total number of this RobotType
+
+        // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Soldier;
-        initChannelNum(); 
+        initChannelNum();
         tryArmyUnit();
-        
+
     }
 
     public void execute() throws GameActionException {
-        swarmPot();
+        playWithArmyUnit();
     }
 
     public void player6() throws GameActionException {
@@ -95,7 +93,7 @@ public class Soldier extends Unit {
      */
     static class RobotHealthComparator implements Comparator<RobotInfo> {
 
-        //@Override
+        @Override
         public int compare(RobotInfo o1, RobotInfo o2) {
             if (o1.health > o2.health) {
                 return 1;

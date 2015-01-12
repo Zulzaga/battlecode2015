@@ -10,13 +10,15 @@ public class Helipad extends Structure {
 
     public Helipad(RobotController rc) throws GameActionException {
         super(rc);
-        // TODO Auto-generated constructor stub
         
-        int num = rc.readBroadcast(10);
-        rc.broadcast(10, num +1);
+        
+        //Initialize channelID and increment total number of this RobotType
+        channelStartWith = Channel_Helipad;
+        initChannelNum();  
     }
 
     public void execute() throws GameActionException {
+<<<<<<< HEAD
     	try{
     		if(rc.isCoreReady()){
 	    		Direction spawnDir = getSpawnDirection(RobotType.DRONE);
@@ -30,6 +32,9 @@ public class Helipad extends Structure {
 	    }
     	
     	rc.yield();
+=======
+        spawnUnit(RobotType.DRONE);
+>>>>>>> 28fea41e9fc1c2a4267a9ff401601ee628a00781
     }
 
 }

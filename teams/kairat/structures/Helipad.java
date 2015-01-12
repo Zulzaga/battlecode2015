@@ -1,24 +1,22 @@
-package firenation.structures;
+package kairat.structures;
 
-
+import kairat.Structure;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import firenation.Structure;
 
-public class TankFactory extends Structure {
+public class Helipad extends Structure {
 
-    public TankFactory(RobotController rc) throws GameActionException {
+    public Helipad(RobotController rc) throws GameActionException {
         super(rc);
 
         // Initialize channelID and increment total number of this RobotType
-        channelStartWith = Channel_TankFactory;
+        channelStartWith = Channel_Helipad;
         initChannelNum();
-
     }
 
     public void execute() throws GameActionException {
-        spawnUnit(RobotType.TANK);
+        spawnUnit(RobotType.MINER);
     }
 
 }
