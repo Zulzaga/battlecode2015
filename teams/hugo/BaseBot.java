@@ -122,28 +122,6 @@ public abstract class BaseBot {
     
     
     
-    // if the location is not in range of Towers and HQ
-    public boolean safeToMove(MapLocation ml) {
-        return safeFromTowers(ml) && safeFromHQ(ml);
-        	
-    }
     
-    // if the location is not in range of Towers
-    public boolean safeFromTowers(MapLocation ml){
-    	MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
-        boolean tileInFrontSafe = true;
-        for (MapLocation m : enemyTowers) {
-            if (m.distanceSquaredTo(ml) <= RobotType.TOWER.attackRadiusSquared) {
-                tileInFrontSafe = false;
-                break;
-            }
-        }
-        return tileInFrontSafe;
-    }
-    
-    // if the location is not in range of their HQ
-    public boolean safeFromHQ(MapLocation location){
-    	return location.distanceSquaredTo(theirHQ) > RobotType.HQ.attackRadiusSquared;
-    }
 
 }
