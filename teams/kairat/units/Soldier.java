@@ -1,29 +1,35 @@
-package iveel.units;
+package kairat.units;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
+import kairat.Unit;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
-import iveel.Unit;
 
-public class Tank extends Unit {
+public class Soldier extends Unit {
 
-    public Tank(RobotController rc) throws GameActionException {
+    public Soldier(RobotController rc) throws GameActionException {
         super(rc);
 
         // Initialize channelID and increment total number of this RobotType
-        channelStartWith = Channel_Tank;
+        channelStartWith = Channel_Soldier;
         initChannelNum();
+        tryArmyUnit();
+
     }
 
     public void execute() throws GameActionException {
-        MapLocation[] towerLocations = rc.senseTowerLocations();
-        
+        playWithArmyUnit();
+    }
+
+    public void player6() throws GameActionException {
+        attackTower();
+        moveAround();
     }
 
     public void swarmPot() throws GameActionException {
