@@ -176,18 +176,23 @@ public abstract class BaseBot {
     //Reachable ore areas (first 5 explorer drones' channels)
     public static int Channel_OreAreaX1 = 40011; 
     public static int Channel_OreAreaY1 = 40012;
+    public static int Channel_OreAmount1 = 40013;
 
     public static int Channel_OreAreaX2 = 40021;
     public static int Channel_OreAreaY2 = 40022;
+    public static int Channel_OreAmount2 = 40023;
 
     public static int Channel_OreAreaX3 = 40031;
     public static int Channel_OreAreaY3 = 40032;
+    public static int Channel_OreAmount3 = 40033;
 
     public static int Channel_OreAreaX4 = 40041;
     public static int Channel_OreAreaY4 = 40042;
+    public static int Channel_OreAmount4 = 40043;
 
     public static int Channel_OreAreaX5 = 40051;
     public static int Channel_OreAreaY5 = 40052;
+    public static int Channel_OreAmount5 = 40053;
 
 
 

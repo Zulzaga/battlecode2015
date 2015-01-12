@@ -35,7 +35,8 @@ public class Drone extends Unit {
     public double maxOreArea = 0;
     public int channel_maxOreX; //channelID +1
     public int channel_maxOreY; //channelID +2
-    
+    public int channel_maxOreAmount; //channelID +3
+
     public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
 
     public Drone(RobotController rc) throws GameActionException {
@@ -44,7 +45,7 @@ public class Drone extends Unit {
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Drone;
         initChannelNum(); 
-        
+
         //differences coordX and coordY.
         if (Math.abs(myHQ.x - theirHQ.x) > Math.abs(myHQ.y - theirHQ.y) ){
             searchAlongY = false;
@@ -68,7 +69,7 @@ public class Drone extends Unit {
                     reachableSpots.add(new MapLocation(x, searchCoord));
                 }
             }
-            
+
         }
     }
 
@@ -85,6 +86,7 @@ public class Drone extends Unit {
         channelID = channelStartWith + spawnedOrder*10;
         channel_maxOreX = channelID + 1;
         channel_maxOreY = channelID + 2;
+        channel_maxOreAmount = channelID + 3;
         //first three drones are going to explore map.
 
         pathTo = spawnedOrder %5; //would be used for broadcasting! BE CAREFUL
@@ -119,55 +121,55 @@ public class Drone extends Unit {
      * 
      * @throws GameActionException
      */
-    
+
     public void explore() throws GameActionException{
         //System.out.println("destination -- " + exploreToDest);
         if (destination != null){
             //check if it has reached its destination
             MapLocation currentDest = rc.getLocation();
             int diff = currentDest.distanceSquaredTo(destination);
-//            System.out.println("difference -----" + Math.abs(diff));
+            //            System.out.println("difference -----" + Math.abs(diff));
             if  ( Math.abs(diff) < 6){
                 destination = theirHQ;
-//                System.out.println("here we seee-------" + exploredDeadLock);
+                //                System.out.println("here we seee-------" + exploredDeadLock);
 
                 if (!exploredDeadLock && channelID < 40051){
                     freePath = true;
                     broadcastExporation(1);
-//                    rc.broadcast(Channel_FreePathFound, pathTo); 
+                    //                    rc.broadcast(Channel_FreePathFound, pathTo); 
                     System.out.println("FOUND FREE PATH TO------ " + pathTo + " " + path + "\n channelID: " + channelID);
                 }
                 broadcastExporation(2);
-                
+
             }
             harassToLocation(destination);
             extendExploration();
-//            System.out.println("here we seee-------");
+            //            System.out.println("here we seee-------");
         }
-        
+
     }
-    
+
 
     private void broadcastExporation(int status) throws GameActionException {
         int type = (channelID /10) %5;
         if( type ==1  ){
             //ourHQ - > theirHQ
-//            destination = theirHQ;
+            //            destination = theirHQ;
             rc.broadcast(Channel_PathCenter, status);
         }else if( type ==2 ){
-//            destination = endCorner2;
+            //            destination = endCorner2;
             rc.broadcast(Channel_PathCorner2, status);
         }else if( type ==3 ){
-//            destination = endCorner1;
+            //            destination = endCorner1;
             rc.broadcast(Channel_PathCorner1, status);
         }else if( type ==4 ){
-//            destination = middle1;
+            //            destination = middle1;
             rc.broadcast(Channel_PathMiddle1, status);
         }else if( type == 0){
-//            destination = middle2;
+            //            destination = middle2;
             rc.broadcast(Channel_PathMiddle2, status);
 
-            
+
         }
     }
 
@@ -203,23 +205,66 @@ public class Drone extends Unit {
             }
         }
     }
+
     
-    public void checkReachableOreArea(){
+    /**
+     * Check if it has found greater ore area than it had found before.
+     * If so , broadcast it. (since that spot is reachable).
+     * @throws GameActionException
+     */
+    public void checkOreArea() throws GameActionException{ 
+        double tempMax = 0;
+        Integer coordX = null;
+        Integer coordY = null;
         for (MapLocation loc: reachableSpots){
             double sensedOre = rc.senseOre(loc);
-            if (sensedOre > maxOreArea){
-                oreAreaPoint = loc;
-                maxOreArea = sensedOre;
-//                rc.broadcast(cha), arg1);
+            if (sensedOre > tempMax){
+                tempMax = sensedOre;
+                coordX = loc.x;
+                coordY = loc.y;
             }
         }
+        
+        if (maxOreArea < tempMax){
+        maxOreArea = tempMax;
+        rc.broadcast(channel_maxOreAmount, (int) Math.ceil(maxOreArea));
+        rc.broadcast(channel_maxOreX, coordX);
+        rc.broadcast(channel_maxOreX, coordY);
+        }
     }
+    //    }
 
-    public void extendExploration(){
+    public void extendExploration() throws GameActionException{
         //only first 5 drones should explore path!
-        if (!exploredDeadLock && channelID < 40051){        
-        //have not moved along y coord
-        if (searchCoord == rc.getLocation().y){
+        if (!exploredDeadLock && channelID < 40051){ 
+            checkOreArea();
+            //have not moved along y coord
+            if (searchCoord == rc.getLocation().y){
+                int x = rc.getLocation().x-3;
+                for (int i = 0; i < 7; i++ ){
+                    TerrainTile t = rc.senseTerrainTile(new MapLocation(x, searchCoord));
+                    if (t == TerrainTile.NORMAL){
+                        reachableSpots.add(new MapLocation(x, searchCoord));
+                    }
+                }
+                //moved and has to level up reachableSpots  (Assuming drones not going back)  
+            }else{
+                HashSet<MapLocation> newReachableSpots = new HashSet<MapLocation>();
+                for (MapLocation loc: reachableSpots){
+                    for(int i = -1; i<=1; i++){
+                        TerrainTile t = rc.senseTerrainTile(new MapLocation(loc.x + i, searchCoord));
+                        if (t == TerrainTile.NORMAL){
+                            newReachableSpots.add(new MapLocation(loc.x + i, searchCoord));
+                        }
+                    }
+                }
+                if (newReachableSpots.size() == 0){
+                    exploredDeadLock = true;
+                }
+                reachableSpots = newReachableSpots;
+            }
+            searchCoord = rc.getLocation().y;
+            //add free spots along y axis
             int x = rc.getLocation().x-3;
             for (int i = 0; i < 7; i++ ){
                 TerrainTile t = rc.senseTerrainTile(new MapLocation(x, searchCoord));
@@ -227,31 +272,6 @@ public class Drone extends Unit {
                     reachableSpots.add(new MapLocation(x, searchCoord));
                 }
             }
-        //moved and has to level up reachableSpots  (Assuming drones not going back)  
-        }else{
-            HashSet<MapLocation> newReachableSpots = new HashSet<MapLocation>();
-            for (MapLocation loc: reachableSpots){
-                for(int i = -1; i<=1; i++){
-                    TerrainTile t = rc.senseTerrainTile(new MapLocation(loc.x + i, searchCoord));
-                    if (t == TerrainTile.NORMAL){
-                        newReachableSpots.add(new MapLocation(loc.x + i, searchCoord));
-                    }
-                }
-            }
-            if (newReachableSpots.size() == 0){
-                exploredDeadLock = true;
-            }
-            reachableSpots = newReachableSpots;
-        }
-        searchCoord = rc.getLocation().y;
-        //add free spots along y axis
-        int x = rc.getLocation().x-3;
-        for (int i = 0; i < 7; i++ ){
-            TerrainTile t = rc.senseTerrainTile(new MapLocation(x, searchCoord));
-            if (t == TerrainTile.NORMAL){
-                reachableSpots.add(new MapLocation(x, searchCoord));
-            }
-        }
         }
     }
 
