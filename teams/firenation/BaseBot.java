@@ -77,6 +77,61 @@ import battlecode.common.Team;
  *  A: always 2
  *  BB: spawned order number (1st army, 2nd army)
  *  C: up to this army's management.
+ *  
+ *  
+ * ======= Channel_PathDirect:  C
+ *          Channel_PathMiddle1: D;
+ *          Channel_PathMiddle2: B
+ *          Channel_PathCorner1: E;
+ *          Channel_PathCorner2: E;
+ *  
+ *  In our map, we have 5 essential target destinations which lay on diagonal. (Map could be flipped or rotated) 
+ *  
+ *          A ********** theirHQ
+ *          *   B            *
+ *          *        C       *
+ *          *            D   *
+ *          myHQ *********** E
+ *          
+ *  
+ *  C: centerOfMap;
+ *  A: endCorner2;
+ *  E: endCorner1;
+ *  D: middle1;
+ *  B: middle2;
+ *   
+ *   After sending our drones and exploring the map, we would broadcast if these kind of paths are available.
+ *    A, B, D or E: 
+ *    0: have not explored yet.
+ *    1: there is a path to that point.
+ *    2: there may not path but there are not many voids.
+ *    3: there may not path and there are many voids. (useless) 
+ *     
+ *     Since the map is symmetric if   myHQ --B  = theirHQ -- D and myHQ --A = their -- E.
+ *  In the beginning, we check if there are paths from myHQ to A, B, C, D and E.
+ *  if to B and to D exist, then there is a path from myHQ -> B (or D) -> theirHQ. (XX)
+ *  if to A and to E exist, then there is a path from myHQ -> A (or E) -> theirHQ. (YY)
+ *  if to C exist, then there is a path from myHQ -> theirHQ. (ZZ)
+ *  
+ *     So if AE = 11; then there is a path from myHQ -> B (or D). A good path to reach enemyHQ.
+ *     31 -> E is better than A for miners since enemy has block to go there.
+ *     13 -> A is better than E for miners.
+ *     
+ *     A good path to reach enemyHQ. ranking:
+ *     11
+ *     12
+ *     21
+ *     
+ *     Good path for miners 
+ *     1,3
+ *     1,2
+ *     2,3
+ *     2,2
+ *     
+ *     
+ *      
+ *   
+ *   
  *   
  *  
  */
@@ -109,7 +164,13 @@ public abstract class BaseBot {
 	// ////////Specific channels for stragies and mode of the game///////////////
 	public static int Channel_Strategy = 1000;
 	public static int Channel_ArmyMode = 1001;
-	public static int Channel_FreePathFound = 1002;
+	//explained above
+	public static int Channel_PathCenter= 1002;
+	public static int Channel_PathMiddle1= 1003;
+	public static int Channel_PathMiddle2= 1004;
+    public static int Channel_PathCorner1= 1005;
+	public static int Channel_PathCorner2= 1006;
+
 	
 
 	// for channeling

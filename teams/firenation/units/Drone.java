@@ -21,21 +21,18 @@ import firenation.Unit;
 
 public class Drone extends Unit {
 
-
     //Few drones would be used for exploring the map. Essential variables for those. 
-    private MapLocation exploreToDest = null; // null if it is not an explorer drone!
-    public int xMin, yMin, xMax, yMax;
-    public MapLocation endCorner1, endCorner2, middle1, middle2;
+    //destination  null if it is not an explorer drone!
 
     //Path exploring variables
     public boolean searchAlongY = true;
     public int searchCoord;
     public int delta;
     public boolean exploredDeadLock = false;
-    public boolean freePath = false;
+    public boolean freePath = false; //if it is true, it guarantees that there is a way to reach its destination.
     public int pathTo;
+    public String path; //just for debugging!
     
-    public HashMap<Integer, HashSet<Integer>> inSense = new HashMap<Integer, HashSet<Integer>>();
     public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
 
     public Drone(RobotController rc) throws GameActionException {
@@ -43,15 +40,6 @@ public class Drone extends Unit {
 
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Drone;
-
-
-        endCorner2 = new MapLocation(myHQ.x, theirHQ.y);
-        endCorner1 = new MapLocation(theirHQ.x, myHQ.y);
-
-        MapLocation centerOfMap = new MapLocation((myHQ.x + theirHQ.x)/2, (myHQ.y + theirHQ.y)/2);
-        middle1 = new MapLocation((centerOfMap.x + endCorner1.x)/2, (centerOfMap.y + endCorner1.y)/2);
-        middle2 = new MapLocation((centerOfMap.x + endCorner2.x)/2, (centerOfMap.y + endCorner2.y)/2);
-
         initChannelNum(); 
         
         //differences coordX and coordY.
@@ -110,50 +98,96 @@ public class Drone extends Unit {
 
         if( pathTo ==1  ){
             //ourHQ - > theirHQ
-            exploreToDest = theirHQ;
+            destination = theirHQ;
+            path = "centerOfMap";
         }else if( pathTo ==2 ){
-            exploreToDest = endCorner2;
+            destination = endCorner2;
+            path = "endCorner";
         }else if( pathTo ==3 ){
-            exploreToDest = endCorner1;
+            destination = endCorner1;
+            path = "endCorner";
         }else if( pathTo ==4 ){
-            exploreToDest = middle1;
+            destination = middle1;
+            path = "middle bwtn end and center";
         }else if( pathTo == 0){
-            exploreToDest = middle2;
+            destination = middle2;
             pathTo = 5;
+            path = "middle bwtn end and center";
         }         
     }
 
 
     /**
      * Should be called only on explorer drones! If this drone has reached its
-     * final destination, it should become
+     * final destination, it should become non explorer ??
      * 
      * @throws GameActionException
      */
+    
     public void explore() throws GameActionException{
         //System.out.println("destination -- " + exploreToDest);
-        if (exploreToDest != null){
+        if (destination != null){
             //check if it has reached its destination
             MapLocation currentDest = rc.getLocation();
 
-            int diff = currentDest.distanceSquaredTo(exploreToDest);
+            int diff = currentDest.distanceSquaredTo(destination);
+//            System.out.println("difference -----" + Math.abs(diff));
 
             if  ( Math.abs(diff) < 6){
-                exploreToDest = theirHQ;
+                destination = theirHQ;
 //                System.out.println("here we seee-------" + exploredDeadLock);
 
-                if (!exploredDeadLock){
+                if (!exploredDeadLock && channelID < 6051){
                     freePath = true;
-                    rc.broadcast(Channel_FreePathFound, pathTo); 
-                    System.out.println("FOUND FREE PATH TO------ " + pathTo);
+                    broadcastExporation(1);
+//                    rc.broadcast(Channel_FreePathFound, pathTo); 
+                    System.out.println("FOUND FREE PATH TO------ " + pathTo + " " + path + "\n channelID: " + channelID);
                 }
+                broadcastExporation(2);
+                
             }
 
-            harassToLocation(exploreToDest);
+            harassToLocation(destination);
             exploreExpansion();
 //            System.out.println("here we seee-------");
         }
         
+    }
+
+    
+    /*    A, B, D or E: 
+        *    0: have not explored yet.
+        *    1: there is a path to that point.
+        *    2: there may not path but there are not many voids.
+        *    3: there may not path and there are many voids. (useless) 
+        */
+    
+//    public static int Channel_PathCenter= 1002;
+//    public static int Channel_PathMiddle1= 1003;
+//    public static int Channel_PathMiddle2= 1004;
+//    public static int Channel_PathCorner1= 1005;
+//    public static int Channel_PathCorner2= 1006;
+    private void broadcastExporation(int status) throws GameActionException {
+        int type = (channelID /10) %5;
+        if( type ==1  ){
+            //ourHQ - > theirHQ
+//            destination = theirHQ;
+            rc.broadcast(Channel_PathCenter, status);
+        }else if( type ==2 ){
+//            destination = endCorner2;
+            rc.broadcast(Channel_PathCorner2, status);
+        }else if( type ==3 ){
+//            destination = endCorner1;
+            rc.broadcast(Channel_PathCorner1, status);
+        }else if( type ==4 ){
+//            destination = middle1;
+            rc.broadcast(Channel_PathMiddle1, status);
+        }else if( type == 0){
+//            destination = middle2;
+            rc.broadcast(Channel_PathMiddle2, status);
+
+            
+        }
     }
 
     public void execute() throws GameActionException {
@@ -231,8 +265,9 @@ public class Drone extends Unit {
     }
 
     public void exploreExpansion(){
-        if (!exploredDeadLock){
-        //just along y axis
+        //only first 5 drones should explore path!
+        if (!exploredDeadLock && channelID < 6051){
+        //just along y axis (will implement x axis later!!!!)
         //searchCoord previous
         
         //have not moved along y coord

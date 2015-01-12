@@ -21,12 +21,23 @@ public abstract class Unit extends BaseBot {
     protected Direction facing;
     protected boolean armyUnit = false;
     protected int armyChannel;
-    protected MapLocation destination;
+    protected MapLocation destination = null;
+    
+    protected MapLocation exploreToDest = null; // null if it is not an explorer drone!
+    protected MapLocation endCorner1, endCorner2, middle1, middle2;
 
     public Unit(RobotController rc) {
         super(rc);
         facing = getRandomDirection();
         rand = new Random(rc.getID());
+        
+        //These directions are general and HQ is likely to order this unit to go forward one of them.
+        endCorner2 = new MapLocation(myHQ.x, theirHQ.y);
+        endCorner1 = new MapLocation(theirHQ.x, myHQ.y);
+        MapLocation centerOfMap = new MapLocation((myHQ.x + theirHQ.x)/2, (myHQ.y + theirHQ.y)/2);
+        middle1 = new MapLocation((centerOfMap.x + endCorner1.x)/2, (centerOfMap.y + endCorner1.y)/2);
+        middle2 = new MapLocation((centerOfMap.x + endCorner2.x)/2, (centerOfMap.y + endCorner2.y)/2);
+        
     }
 
     /**
