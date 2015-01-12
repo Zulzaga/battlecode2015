@@ -2,8 +2,10 @@ package iveel.units;
 
 import iveel.Unit;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.List;
 
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -13,7 +15,16 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 public class Drone extends Unit {
+    
 
+
+    //Few drones would be used for exploring the map. Essential variables for those. 
+    private boolean explorer = false;
+    // last dest in this list is next dest
+    private List<MapLocation> explorerDestinations = new ArrayList<MapLocation>(); 
+    private MapLocation currentTargetDest = null;
+    
+    
     public Drone(RobotController rc) throws GameActionException {
         super(rc);
         
@@ -41,33 +52,62 @@ public class Drone extends Unit {
             
         }else if(spawnedOrder ==1 ){
             //ourHQ - > theirHQ
+            explorer = true;
+            Direction toEnemy = myHQ.directionTo(theirHQ);
+            MapLocation currentTargetDest = myHQ.add(toEnemy, 5);
+            MapLocation endPoint0 = theirHQ.add(toEnemy.opposite(), 5);
+            
+            explorerDestinations.add(endPoint0 );
+
         }else if(spawnedOrder ==2 ){
-            //
+            explorer = true;
+            Direction toEnemy = myHQ.directionTo(theirHQ);
+            Direction toLeft = toEnemy.rotateLeft();
+            MapLocation currentTargetDest = myHQ.add(toLeft, 5);
+            MapLocation endPoint1 = theirHQ.add(toLeft.opposite(), 5);
+            
+            explorerDestinations.add(endPoint1);
+            
         }else if(spawnedOrder ==3 ){
+            explorer = true;
+            Direction toEnemy = myHQ.directionTo(theirHQ);
+            Direction toRight = toEnemy.rotateRight();
+            MapLocation currentTargetDest = myHQ.add(toRight, 5);
+            MapLocation endPoint2 = theirHQ.add(toRight.opposite(), 5);
+            
+            explorerDestinations.add(endPoint2);
+
+        }
+    }
+    
+    /**
+     * Should be called only on explorer drones!
+     * If this drone has reached its final destination, it should become 
+     */
+    public void explore(){
+            //check of it has reached its destination
+            if  (rc.getLocation().equals( currentTargetDest)){
+                // no more destinations;
+                int numDest = explorerDestinations.size();
+                if (numDest == 0){
+                    explorer = false;
+                    
+                }else{
+                    currentTargetDest = explorerDestinations.remove(numDest-1);
+                }
+            }
+            //move this drone
+//            currentTargetDest
             
         }
         
-        Direction toEnemy = myHQ.directionTo(theirHQ);
-        Direction toLeft = toEnemy.rotateLeft();
-        Direction toRight = toEnemy.rotateRight();
-        
-        MapLocation startPoint0 = myHQ.add(toEnemy, 5);
-        MapLocation startPoint1 = myHQ.add(toLeft, 5);
-        MapLocation startPoint2 = myHQ.add(toRight, 5);
-        
-        MapLocation endPoint0 = theirHQ.add(toEnemy.opposite(), 5);
-        MapLocation endPoint1 = theirHQ.add(toLeft.opposite(), 5);
-        MapLocation endPoint2 = theirHQ.add(toRight.opposite(), 5);
-
-        
-        
-        
-        
-        
-    }
 
     public void execute() throws GameActionException {
-        swarmPot();
+        if (explorer){
+            explore();
+        }else{
+            swarmPot();
+        }
     }
 
     public void player6() throws GameActionException {
