@@ -119,11 +119,38 @@ public class Miner extends Unit {
         }
         return sumOre;
     }
+    
+    public boolean notMoving(){
+        if (lastSteps.size() < 6 ){
+            return false;
+        }else{
+            double maxDist = 0;
+            for (int i = 0; i<  lastSteps.size() ; i++){
+                for (int j = 0; j<  lastSteps.size() ; j++){
+                    if (i != j){
+                        double dist = lastSteps.get(i).distanceSquaredTo(lastSteps.get(j));
+                        if ( dist > maxDist){
+                            maxDist = dist;
+                        }
+                    }
+                }
+            }
+            
+            if (maxDist < 3){
+                return true;
+            }
+            return false;
+
+        }
+    }
 
     public void improveOreDest() throws GameActionException{
-        if( getLastMinedAmount() < 5 && miningRecord.size() ==10 )
+        if( getLastMinedAmount() < 5 && miningRecord.size() ==10 ){
 //            findOreArea();
             destination = null;
+        }else if (notMoving()){
+            destination = null;
+        }
     }
     
     public void execute() throws GameActionException {

@@ -20,6 +20,7 @@ public abstract class Unit extends BaseBot {
 
     protected boolean shouldStand = true;
     public ArrayList<Double> miningRecord = new ArrayList<Double>();
+    public ArrayList<MapLocation> lastSteps = new ArrayList<MapLocation>();
 
     protected Direction facing;
     protected boolean armyUnit = false;
@@ -114,7 +115,7 @@ public abstract class Unit extends BaseBot {
         if ( sensedOre > 1) {// there is ore, so try to mine
             if (rc.isCoreReady() && rc.canMine()) {
                 rc.mine();
-                recordMineAmount(sensedOre);
+                recordMineAmount(sensedOre, rc.getLocation());
             }
         } else {// no ore, so look for ore
             moveAround();
@@ -126,7 +127,7 @@ public abstract class Unit extends BaseBot {
         if ( sensedOre > 1) {// there is ore, so try to mine
             if (rc.isCoreReady() && rc.canMine()) {
                 rc.mine();
-                recordMineAmount(sensedOre);
+                recordMineAmount(sensedOre, rc.getLocation());
 
             }
         } else {// no ore, so look for ore
@@ -134,10 +135,15 @@ public abstract class Unit extends BaseBot {
         }
     }
     
-    public void recordMineAmount(double ore){
+    public void recordMineAmount(double ore, MapLocation lastLoc){
         miningRecord.add(ore);
+        lastSteps.add(lastLoc);
         if (miningRecord.size() > 10){
             miningRecord.remove(0);
+        }
+        
+        if (lastSteps.size() > 6){
+            lastSteps.remove(0);
         }
 
     }
