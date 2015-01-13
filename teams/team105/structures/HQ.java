@@ -1,7 +1,8 @@
-package firenation.structures;
+package team105.structures;
 
 import java.util.HashMap;
 
+import team105.Structure;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -9,7 +10,6 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import battlecode.common.TerrainTile;
-import firenation.Structure;
 
 
 /*BaseBot represents Unit and Structure.

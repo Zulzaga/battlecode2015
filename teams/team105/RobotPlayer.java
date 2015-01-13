@@ -1,30 +1,30 @@
-package firenation;
+package team105;
 
 import battlecode.common.*;
-import firenation.BaseBot;
 
 import java.util.*;
 
-import firenation.structures.AerospaceLab;
-import firenation.structures.Barracks;
-import firenation.structures.HQ;
-import firenation.structures.HandwashStation;
-import firenation.structures.Helipad;
-import firenation.structures.MinerFactory;
-import firenation.structures.SupplyDepot;
-import firenation.structures.TankFactory;
-import firenation.structures.TechnologyInstitute;
-import firenation.structures.Tower;
-import firenation.structures.TrainingField;
-import firenation.units.Basher;
-import firenation.units.Beaver;
-import firenation.units.Commander;
-import firenation.units.Computer;
-import firenation.units.Drone;
-import firenation.units.Launcher;
-import firenation.units.Miner;
-import firenation.units.Soldier;
-import firenation.units.Tank;
+import team105.BaseBot;
+import team105.structures.AerospaceLab;
+import team105.structures.Barracks;
+import team105.structures.HQ;
+import team105.structures.HandwashStation;
+import team105.structures.Helipad;
+import team105.structures.MinerFactory;
+import team105.structures.SupplyDepot;
+import team105.structures.TankFactory;
+import team105.structures.TechnologyInstitute;
+import team105.structures.Tower;
+import team105.structures.TrainingField;
+import team105.units.Basher;
+import team105.units.Beaver;
+import team105.units.Commander;
+import team105.units.Computer;
+import team105.units.Drone;
+import team105.units.Launcher;
+import team105.units.Miner;
+import team105.units.Soldier;
+import team105.units.Tank;
 
 public class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {

@@ -1,10 +1,9 @@
-package firenation;
-
-import firenation.BaseBot;
+package team105;
 
 import java.util.Arrays;
 import java.util.List;
 
+import team105.BaseBot;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;

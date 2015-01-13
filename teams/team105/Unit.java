@@ -1,6 +1,4 @@
-package firenation;
-
-import firenation.BaseBot;
+package team105;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,6 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import team105.BaseBot;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;

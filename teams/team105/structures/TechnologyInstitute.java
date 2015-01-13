@@ -1,8 +1,8 @@
-package firenation.structures;
+package team105.structures;
 
+import team105.Structure;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import firenation.Structure;
 
 public class TechnologyInstitute extends Structure{
 

@@ -1,11 +1,11 @@
-package firenation.units;
+package team105.units;
 
+import team105.Unit;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
-import firenation.Unit;
 
 /*
  * Spawned at HQ

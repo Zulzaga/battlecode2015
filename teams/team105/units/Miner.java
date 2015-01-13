@@ -1,14 +1,14 @@
-package firenation.units;
+package team105.units;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import team105.Unit;
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
-import firenation.Unit;
 
 /*
  * Spawned at Miner Factory

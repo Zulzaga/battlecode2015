@@ -1,17 +1,16 @@
-package firenation.units;
-
-import firenation.units.Soldier.RobotHealthComparator;
+package team105.units;
 
 import java.util.Arrays;
 import java.util.Comparator;
 
+import team105.Unit;
+import team105.units.Soldier.RobotHealthComparator;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
-import firenation.Unit;
 
 public class Soldier extends Unit {
 

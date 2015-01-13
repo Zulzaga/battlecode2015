@@ -1,8 +1,8 @@
-package firenation.units;
+package team105.units;
 
+import team105.Unit;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
-import firenation.Unit;
 
 /*
  * Spawned at Aerospace Lab

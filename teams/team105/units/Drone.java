@@ -1,6 +1,4 @@
-package firenation.units;
-
-import firenation.units.Drone.RobotHealthComparator;
+package team105.units;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,6 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import team105.Unit;
+import team105.units.Drone.RobotHealthComparator;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -17,7 +17,6 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.TerrainTile;
-import firenation.Unit;
 
 public class Drone extends Unit {
 
