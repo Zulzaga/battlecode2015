@@ -204,8 +204,6 @@ public class Drone extends Unit {
             else{ // after round 1800
                 startAttackingTowersAndHQ();
             }
-            if(Clock.getBytecodesLeft() > 500)
-                transferSupplies();
         }
         catch(GameActionException e){
             e.printStackTrace();
@@ -300,7 +298,7 @@ public class Drone extends Unit {
         maxOreArea = tempMax;
         rc.broadcast(channel_maxOreAmount, (int) Math.ceil(maxOreArea));
         rc.broadcast(channel_maxOreX, coordX);
-        rc.broadcast(channel_maxOreX, coordY);
+        rc.broadcast(channel_maxOreY, coordY);
         }
     }
     //    }

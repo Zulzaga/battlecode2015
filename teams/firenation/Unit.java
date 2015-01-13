@@ -19,6 +19,7 @@ import battlecode.common.TerrainTile;
 public abstract class Unit extends BaseBot {
 
     protected boolean shouldStand = true;
+    public ArrayList<Double> miningRecord = new ArrayList<Double>();
 
     protected Direction facing;
     protected boolean armyUnit = false;
@@ -114,10 +115,11 @@ public abstract class Unit extends BaseBot {
     }
 
     public void mineAndMove() throws GameActionException {
-        if (rc.senseOre(rc.getLocation()) > 1) {// there is ore, so try to mine
+        double sensedOre = rc.senseOre(rc.getLocation());
+        if (sensedOre > 1) {// there is ore, so try to mine
             if (rc.isCoreReady() && rc.canMine()) {
                 rc.mine();
-
+                recordMineAmount(sensedOre);
             }
         } else {// no ore, so look for ore
             moveAround();
@@ -125,14 +127,24 @@ public abstract class Unit extends BaseBot {
     }
 
     public void mineAndMoveToDest() throws GameActionException {
-        if (rc.senseOre(rc.getLocation()) > 1) {// there is ore, so try to mine
+        double sensedOre = rc.senseOre(rc.getLocation());
+        if (sensedOre > 1) {// there is ore, so try to mine
             if (rc.isCoreReady() && rc.canMine()) {
                 rc.mine();
+                recordMineAmount(sensedOre);
 
             }
         } else {// no ore, so look for ore
             moveAround();
         }
+    }
+
+    public void recordMineAmount(double ore) {
+        miningRecord.add(ore);
+        if (miningRecord.size() > 10) {
+            miningRecord.remove(0);
+        }
+
     }
 
     public void moveAround() throws GameActionException {
@@ -480,6 +492,7 @@ public abstract class Unit extends BaseBot {
 
     public void moveToLocationSafeFromHQ(MapLocation location)
             throws GameActionException {
+
         if (rc.isCoreReady()) {
             Direction dirs[] = getDirectionsToward(location);
 
@@ -537,6 +550,7 @@ public abstract class Unit extends BaseBot {
                 // attackRobot(nearestEnemy.location);
                 avoid(nearestEnemy);
             } else {
+
                 if (nearestEnemy.type == RobotType.DRONE) {
                     if (shouldStand) {
                         shouldStand = false; // waited once
@@ -545,6 +559,7 @@ public abstract class Unit extends BaseBot {
                         shouldStand = true;
                     }
                 } else if (nearestEnemy.type != RobotType.TANK) {
+
                     moveToLocation(nearestEnemy.location);
                     // attack();
                     // attackRobot(nearestEnemy.location);
@@ -685,5 +700,6 @@ public abstract class Unit extends BaseBot {
 
     public boolean safelyAttackableFromHQ(MapLocation location) {
         return location.distanceSquaredTo(theirHQ) > 1;
+
     }
 }
