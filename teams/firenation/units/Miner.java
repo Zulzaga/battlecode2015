@@ -135,8 +135,8 @@ public class Miner extends Unit {
                     }
                 }
             }
-            
-            if (maxDist < 3){
+            System.out.println("maxDist  ----- " + maxDist);
+            if (maxDist < 2){
                 return true;
             }
             return false;
@@ -148,21 +148,25 @@ public class Miner extends Unit {
         if (Clock.getRoundNum() > 1100){
             destination = null; 
             return;
-        }
-        if( getLastMinedAmount() < 5 && miningRecord.size() ==10 ){
+        }else if ( getLastMinedAmount() < 5 && miningRecord.size() ==10 ){
 //            findOreArea();
             destination = null;
-            return;
         }
+        
+//        else if (notMoving()){
+//            if ( getLastMinedAmount() < 10){
+//                destination = null;
+//            }
+//        }
         
         
     }
     
     public void considerMovement(){
-//        lastSteps.add(rc.getLocation());
-//        if (lastSteps.size() > 6){
-//            lastSteps.remove(0);
-//        }
+        lastSteps.add(rc.getLocation());
+        if (lastSteps.size() > 6){
+            lastSteps.remove(0);
+        }
 //        
 //        lastNumMine.add(rc.getLocation());
 //        if (lastNumMine.size() > 6){
