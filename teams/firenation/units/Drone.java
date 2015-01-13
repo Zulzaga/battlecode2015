@@ -139,7 +139,7 @@ public class Drone extends Unit {
                     freePath = true;
                     broadcastExporation(1);
                     //                    rc.broadcast(Channel_FreePathFound, pathTo); 
-                    System.out.println("FOUND FREE PATH TO------ " + pathTo + " " + path + "\n channelID: " + channelID);
+                    // System.out.println("FOUND FREE PATH TO------ " + pathTo + " " + path + "\n channelID: " + channelID);
                 }
                 broadcastExporation(2);
 

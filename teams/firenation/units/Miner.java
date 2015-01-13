@@ -69,7 +69,7 @@ public class Miner extends Unit {
             int coordY = rc.readBroadcast(Channel_OreAreaY5);
             destination = new MapLocation(coordX , coordY);
         }
-        System.out.println( "DESTINATION for ore ----" + destination);
+        //System.out.println( "DESTINATION for ore ----" + destination);
     }else if(Clock.getRoundNum() > 600){
         double maxOre = 0;
       double ore1 = rc.readBroadcast(Channel_OreAmount1 ) ;
@@ -107,7 +107,7 @@ public class Miner extends Unit {
           int coordY = rc.readBroadcast(Channel_OreAreaY5);
           destination = new MapLocation(coordX , coordY);
       }
-      System.out.println( "DESTINATION for ore ----" + destination);
+            // System.out.println( "DESTINATION for ore ----" + destination);
     }
         
     }
