@@ -93,8 +93,9 @@ public class RobotPlayer {
                     attackTower();
                     moveAroundRandomly();
                 }
-
-                transferSupplies();
+                
+                if(Clock.getBytecodesLeft() > 1000)
+                    transferSupplies();
 
             } catch (GameActionException e) {
                 e.printStackTrace();

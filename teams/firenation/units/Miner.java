@@ -69,7 +69,7 @@ public class Miner extends Unit {
             int coordY = rc.readBroadcast(Channel_OreAreaY5);
             destination = new MapLocation(coordX , coordY);
         }
-        System.out.println( "DESTINATION for ore ----" + destination);
+        //System.out.println( "DESTINATION for ore ----" + destination);
     }else if(Clock.getRoundNum() > 600){
         double maxOre = 0;
       double ore1 = rc.readBroadcast(Channel_OreAmount1 ) ;
@@ -107,7 +107,7 @@ public class Miner extends Unit {
           int coordY = rc.readBroadcast(Channel_OreAreaY5);
           destination = new MapLocation(coordX , coordY);
       }
-      System.out.println( "DESTINATION for ore ----" + destination);
+            // System.out.println( "DESTINATION for ore ----" + destination);
     }
         
     }
@@ -145,15 +145,35 @@ public class Miner extends Unit {
     }
 
     public void improveOreDest() throws GameActionException{
+        if (Clock.getRoundNum() > 1100){
+            destination = null; 
+            return;
+        }
         if( getLastMinedAmount() < 5 && miningRecord.size() ==10 ){
 //            findOreArea();
             destination = null;
-        }else if (notMoving()){
-            destination = null;
+            return;
         }
+        
+        
+    }
+    
+    public void considerMovement(){
+//        lastSteps.add(rc.getLocation());
+//        if (lastSteps.size() > 6){
+//            lastSteps.remove(0);
+//        }
+//        
+//        lastNumMine.add(rc.getLocation());
+//        if (lastNumMine.size() > 6){
+//            lastNumMine.remove(0);
+//        }
+//        
+//        lastNumMine 
     }
     
     public void execute() throws GameActionException {
+//        considerMovement();
         improveOreDest();
         if (destination == null){
         attackEnemyZero();

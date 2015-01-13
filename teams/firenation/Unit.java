@@ -21,13 +21,15 @@ public abstract class Unit extends BaseBot {
     protected boolean shouldStand = true;
     public ArrayList<Double> miningRecord = new ArrayList<Double>();
     public ArrayList<MapLocation> lastSteps = new ArrayList<MapLocation>();
+    public ArrayList<Integer> lastNumMine = new ArrayList<Integer>();
 
     protected Direction facing;
     protected boolean armyUnit = false;
     protected int armyChannel;
     protected MapLocation destination = null;
 
-    protected MapLocation exploreToDest = null; // null if it is not an explorer drone!
+    protected MapLocation exploreToDest = null; // null if it is not an explorer
+                                                // drone!
     protected MapLocation endCorner1, endCorner2, middle1, middle2;
 
     public Unit(RobotController rc) {
@@ -35,12 +37,16 @@ public abstract class Unit extends BaseBot {
         facing = getRandomDirection();
         rand = new Random(rc.getID());
 
-        //These directions are general and HQ is likely to order this unit to go forward one of them.
+        // These directions are general and HQ is likely to order this unit to
+        // go forward one of them.
         endCorner2 = new MapLocation(myHQ.x, theirHQ.y);
         endCorner1 = new MapLocation(theirHQ.x, myHQ.y);
-        MapLocation centerOfMap = new MapLocation((myHQ.x + theirHQ.x)/2, (myHQ.y + theirHQ.y)/2);
-        middle1 = new MapLocation((centerOfMap.x + endCorner1.x)/2, (centerOfMap.y + endCorner1.y)/2);
-        middle2 = new MapLocation((centerOfMap.x + endCorner2.x)/2, (centerOfMap.y + endCorner2.y)/2);
+        MapLocation centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
+                (myHQ.y + theirHQ.y) / 2);
+        middle1 = new MapLocation((centerOfMap.x + endCorner1.x) / 2,
+                (centerOfMap.y + endCorner1.y) / 2);
+        middle2 = new MapLocation((centerOfMap.x + endCorner2.x) / 2,
+                (centerOfMap.y + endCorner2.y) / 2);
 
     }
 
@@ -112,10 +118,10 @@ public abstract class Unit extends BaseBot {
 
     public void mineAndMove() throws GameActionException {
         double sensedOre = rc.senseOre(rc.getLocation());
-        if ( sensedOre > 1) {// there is ore, so try to mine
+        if (sensedOre > 1) {// there is ore, so try to mine
             if (rc.isCoreReady() && rc.canMine()) {
                 rc.mine();
-                recordMineAmount(sensedOre, rc.getLocation());
+                recordMineAmount(sensedOre);
             }
         } else {// no ore, so look for ore
             moveAround();
@@ -124,29 +130,24 @@ public abstract class Unit extends BaseBot {
 
     public void mineAndMoveToDest() throws GameActionException {
         double sensedOre = rc.senseOre(rc.getLocation());
-        if ( sensedOre > 1) {// there is ore, so try to mine
+        if (sensedOre > 1) {// there is ore, so try to mine
             if (rc.isCoreReady() && rc.canMine()) {
                 rc.mine();
-                recordMineAmount(sensedOre, rc.getLocation());
+                recordMineAmount(sensedOre);
 
             }
         } else {// no ore, so look for ore
             moveAround();
         }
     }
-    
-    public void recordMineAmount(double ore, MapLocation lastLoc){
+
+    public void recordMineAmount(double ore){
         miningRecord.add(ore);
-        lastSteps.add(lastLoc);
         if (miningRecord.size() > 10){
             miningRecord.remove(0);
         }
-        
-        if (lastSteps.size() > 6){
-            lastSteps.remove(0);
-        }
-
     }
+    
 
     public void moveAround() throws GameActionException {
         if (rand.nextDouble() < 0.05) {
@@ -452,7 +453,8 @@ public abstract class Unit extends BaseBot {
     // if the location is safe from other structures
     public boolean safeFromShortShooters(MapLocation ml) {
 
-        RobotInfo[] enemiesFromLocation = rc.senseNearbyRobots(ml, RobotType.SOLDIER.attackRadiusSquared, theirTeam);
+        RobotInfo[] enemiesFromLocation = rc.senseNearbyRobots(ml,
+                RobotType.SOLDIER.attackRadiusSquared, theirTeam);
         return enemiesFromLocation.length == 0;
     }
 
@@ -463,7 +465,9 @@ public abstract class Unit extends BaseBot {
 
             for (Direction newDir : dirs) {
                 if (rc.canMove(newDir)) {
-                    if (!safeToMove2(rc.getLocation().add(newDir)) || !safeFromShortShooters(rc.getLocation().add(newDir))) {
+                    if (!safeToMove2(rc.getLocation().add(newDir))
+                            || !safeFromShortShooters(rc.getLocation().add(
+                                    newDir))) {
                         continue;
                     } else if (rc.canMove(newDir)) {
                         rc.move(newDir);
@@ -488,7 +492,9 @@ public abstract class Unit extends BaseBot {
         }
     }
 
-    public void moveToLocationSafeFromHQ(MapLocation location) throws GameActionException {
+    public void moveToLocationSafeFromHQ(MapLocation location)
+            throws GameActionException {
+
         if (rc.isCoreReady()) {
             Direction dirs[] = getDirectionsToward(location);
 
@@ -546,22 +552,23 @@ public abstract class Unit extends BaseBot {
                 // attackRobot(nearestEnemy.location);
                 avoid(nearestEnemy);
             } else {
-                if (nearestEnemy.type == RobotType.DRONE){
-                    if(shouldStand){
+
+                if (nearestEnemy.type == RobotType.DRONE) {
+                    if (shouldStand) {
                         shouldStand = false; // waited once
-                    }
-                    else{
+                    } else {
                         moveToLocation(nearestEnemy.location);
                         shouldStand = true;
                     }
-                }else if (nearestEnemy.type != RobotType.TANK) {
+                } else if (nearestEnemy.type != RobotType.TANK) {
+
                     moveToLocation(nearestEnemy.location);
-                    //attack();
+                    // attack();
                     // attackRobot(nearestEnemy.location);
 
-                } else{
+                } else {
                     avoid(nearestEnemy);
-                    //attack();
+                    // attack();
                     // attackRobot(nearestEnemy.location);
                 }
             }
@@ -655,7 +662,46 @@ public abstract class Unit extends BaseBot {
         }
     }
 
-    public void destroyNearestTower(){
+    public void destroyNearestTower() {
+
+    }
+
+    public void startAttackingTowersAndHQ() throws GameActionException {
+        MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
+
+        MapLocation nearestAttackableTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(enemyTowers);
+
+        if (nearestAttackableTowerSafeFromHQ != null) {
+            attackTower();
+            moveToLocationSafeFromHQ(nearestAttackableTowerSafeFromHQ);
+        } else if (enemyTowers.length > 0) {
+            attackTower();
+            moveToLocationNotSafe(enemyTowers[0]);
+        } else {
+            attackTower();
+            moveToLocationNotSafe(theirHQ);
+        }
+    }
+
+    public MapLocation nearestAttackableTowerSafeFromHQ(
+            MapLocation[] enemyTowers) {
+        MapLocation towerLocation = null;
+        int distance = Integer.MAX_VALUE;
+        MapLocation droneLocation = rc.getLocation();
+
+        for (MapLocation location : enemyTowers) {
+            int tempDistance = droneLocation.distanceSquaredTo(location);
+            if (tempDistance < distance && safelyAttackableFromHQ(location)) {
+                distance = tempDistance;
+                towerLocation = location;
+            }
+        }
+
+        return towerLocation;
+    }
+
+    public boolean safelyAttackableFromHQ(MapLocation location) {
+        return location.distanceSquaredTo(theirHQ) > 1;
 
     }
 }

@@ -139,7 +139,7 @@ public class Drone extends Unit {
                     freePath = true;
                     broadcastExporation(1);
                     //                    rc.broadcast(Channel_FreePathFound, pathTo); 
-                    System.out.println("FOUND FREE PATH TO------ " + pathTo + " " + path + "\n channelID: " + channelID);
+                    // System.out.println("FOUND FREE PATH TO------ " + pathTo + " " + path + "\n channelID: " + channelID);
                 }
                 broadcastExporation(2);
 
@@ -184,10 +184,10 @@ public class Drone extends Unit {
     public void hugoPlan(){
         try{
             int roundNum = Clock.getRoundNum();
-            if(roundNum < 1800){
+            if(roundNum < 1700){
                 if(roundNum < 400) // start exploring
                     explore();
-                else if(roundNum < 1500){
+                else if(roundNum < 1300){
                     if((roundNum / 40) % 5 == 0){
                         // retreat
                         MapLocation loc = rc.getLocation();
