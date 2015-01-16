@@ -446,7 +446,7 @@ public abstract class Unit extends BaseBot {
 
     // if the location is not in range of their HQ
     public boolean safeFromHQ(MapLocation location) {
-        return location.distanceSquaredTo(theirHQ) > RobotType.HQ.attackRadiusSquared;
+        return location.distanceSquaredTo(theirHQ) > RobotType.HQ.sensorRadiusSquared;
     }
 
     // if the location is safe from other structures
