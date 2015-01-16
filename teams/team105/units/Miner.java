@@ -6,6 +6,7 @@ import java.util.Collections;
 
 import team105.Unit;
 import battlecode.common.Clock;
+import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
@@ -176,6 +177,8 @@ public class Miner extends Unit {
 //        lastNumMine 
     }
     
+
+    
     public void execute() throws GameActionException {
 //        considerMovement();
         improveOreDest();
@@ -195,6 +198,14 @@ public class Miner extends Unit {
     public void explorePathWithRightPreferenceToward(MapLocation dest) {
 
     }
+    
+    public void toDestWithMiningOre(MapLocation dest){
+        MapLocation currentState = rc.getLocation();
+        Direction toDest = currentState.directionTo(dest);
+        //Directions toward toDest
+    }
+    
+ 
     
 
 }
