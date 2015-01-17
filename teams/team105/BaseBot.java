@@ -1,5 +1,8 @@
 package team105;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 
 import battlecode.common.Direction;
@@ -10,6 +13,7 @@ import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
+import battlecode.common.TerrainTile;
 
 /*BaseBot represents Unit and Structure.
  * General:
@@ -154,7 +158,7 @@ public abstract class BaseBot {
     public static int Channel_Miner = 60000;// no more than 550 miners
     public static int Channel_Tank = 50000;
     public static int Channel_Drone = 40000; 
-     
+
 
     public static int Channel_Basher = 6000;
     public static int Channel_Launcher = 7000;
@@ -172,7 +176,7 @@ public abstract class BaseBot {
     public static int Channel_PathCorner1= 1005;
     public static int Channel_PathCorner2= 1006;
 
-    
+
     //Reachable ore areas (first 5 explorer drones' channels)
     public static int Channel_OreAreaX1 = 40011; 
     public static int Channel_OreAreaY1 = 40012;
@@ -256,6 +260,90 @@ public abstract class BaseBot {
 
         return dirs;
     }
+
+
+    /**
+     * Find a list of all PathUnits which are Normal TerrainTile, giving priority to given destination.
+     * @param dest
+     * @return
+     */
+    public ArrayList<MapLocation> getAllDirectionalPathUnits( MapLocation current) {
+        Direction[] dirs = {Direction.EAST,  Direction.WEST, Direction.NORTH, Direction.SOUTH, 
+                Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST, Direction.NORTH_EAST
+        };
+
+        ArrayList<MapLocation> towardDest = new ArrayList<MapLocation>();
+        for (Direction dir: dirs){
+            TerrainTile t = rc.senseTerrainTile(current.add(dir));
+            if ( t == TerrainTile.NORMAL){
+                towardDest.add( current.add(dir));
+            }
+        }
+        return towardDest;
+    }
+    
+    
+    /**
+     * Find list of MapLocations, representing a path from starting tile to end tile.
+     * @param end
+     * @return
+     */
+    public ArrayList<MapLocation> getPath(PathUnit end){
+        ArrayList<MapLocation> path = new ArrayList<MapLocation>();
+        path.add(end.getCurrentLoc());
+        PathUnit preUnit = end.getPreviosLoc();
+        while (preUnit != null ){
+            path.add(preUnit.getCurrentLoc());
+            preUnit = preUnit.getPreviosLoc();
+        }
+        return path;
+    }
+
+    //Using BFS, not visiting nodes which we already visited in our search algorithm.
+    
+    /**
+     * Finds shortest Normal TerrainTile path to given dest, exploring tiles within in specific radius.
+     * @param dest
+     * @param searchWithinRadiusSquared
+     * @return empty list if current location is dest
+     *          null if there is no such path.
+     */
+    public ArrayList<MapLocation> findShortestPath(MapLocation dest, int searchWithinRadiusSquared){
+        ArrayList<PathUnit> agenda = new ArrayList<PathUnit>();
+        ArrayList<MapLocation> visited = new ArrayList<MapLocation>();   
+        
+        MapLocation currentLoc = rc.getLocation();
+        Direction toDest = currentLoc.directionTo(dest);
+        if (currentLoc.equals(dest)){
+            new ArrayList<MapLocation>();
+        }
+        
+        PathUnit startUnit = new PathUnit(null, currentLoc);
+        for (MapLocation next: getAllDirectionalPathUnits( currentLoc) ){
+            agenda.add(new PathUnit(startUnit, next));
+        }
+
+        while (agenda.size() >0 ){
+            PathUnit pathLoc = agenda.remove(0);
+            if (pathLoc.getCurrentLoc().equals(dest)){
+                return getPath(pathLoc);
+            }
+
+            if (currentLoc.distanceSquaredTo(pathLoc.getCurrentLoc()) < searchWithinRadiusSquared){
+                //Add locations never have been visited before.
+                for (MapLocation nextMapLoc: getAllDirectionalPathUnits(pathLoc.getCurrentLoc())){
+                    if (!visited.contains(nextMapLoc)){
+                        agenda.add(new PathUnit(pathLoc, nextMapLoc));
+                        visited.add(nextMapLoc);
+                    }
+                }
+            }
+        }
+        //there is no path;
+        return null;
+
+    }
+   
 
     public RobotInfo[] getAllies() {
         RobotInfo[] allies = rc.senseNearbyRobots(Integer.MAX_VALUE, myTeam);

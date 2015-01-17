@@ -122,10 +122,11 @@ public class Drone extends Unit {
      */
 
     public void explore() throws GameActionException{
-        //System.out.println("destination -- " + exploreToDest);
+//        System.out.println("destination -- " + exploreToDest);
         if (destination != null){
             //check if it has reached its destination
             MapLocation currentDest = rc.getLocation();
+//            System.out.println("current dest==" + currentDest );
 
             int diff = currentDest.distanceSquaredTo(destination);
             //            System.out.println("difference -----" + Math.abs(diff));
@@ -176,7 +177,7 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-        hugoPlan();
+//        hugoPlan();
         rc.yield();
     }
     
