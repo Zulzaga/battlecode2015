@@ -3,10 +3,10 @@ package team105;
 import battlecode.common.MapLocation;
 
 public class PathUnit {
-    private MapLocation previos;
+    private PathUnit previos;
     private MapLocation self;
     
-    public PathUnit(MapLocation previos, MapLocation itself){
+    public PathUnit(PathUnit previos, MapLocation itself){
         this.self = itself;
         this.previos = previos;
     }
@@ -15,7 +15,7 @@ public class PathUnit {
         return this.self == other.self;
     }
     
-    public MapLocation getPreviosLoc(){
+    public PathUnit getPreviosLoc(){
         return previos;
     }
     

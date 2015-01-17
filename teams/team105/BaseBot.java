@@ -267,23 +267,16 @@ public abstract class BaseBot {
      * @param dest
      * @return
      */
-    public ArrayList<PathUnit> getAllDirectionalPathUnits(MapLocation current, MapLocation dest) {
-        Direction toDest = rc.getLocation().directionTo(dest);
-        Direction[] dirs = {
-                toDest,
-                toDest.rotateLeft(), toDest.rotateRight(),
-                toDest.rotateLeft().rotateLeft(),
-                toDest.rotateRight().rotateRight(),
-                toDest.rotateRight().rotateRight().rotateRight().rotateRight(),
-                toDest.rotateLeft().rotateLeft().rotateLeft(),
-                toDest.rotateRight().rotateRight().rotateRight()
+    public ArrayList<MapLocation> getAllDirectionalPathUnits( MapLocation current) {
+        Direction[] dirs = {Direction.EAST,  Direction.WEST, Direction.NORTH, Direction.SOUTH, 
+                Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST, Direction.NORTH_EAST
         };
 
-        ArrayList<PathUnit> towardDest = new ArrayList<PathUnit>();
+        ArrayList<MapLocation> towardDest = new ArrayList<MapLocation>();
         for (Direction dir: dirs){
             TerrainTile t = rc.senseTerrainTile(current.add(dir));
             if ( t == TerrainTile.NORMAL){
-                towardDest.add(new PathUnit(current, current.add(dir)));
+                towardDest.add( current.add(dir));
             }
         }
         return towardDest;
@@ -298,13 +291,12 @@ public abstract class BaseBot {
     public ArrayList<MapLocation> getPath(PathUnit end){
         ArrayList<MapLocation> path = new ArrayList<MapLocation>();
         path.add(end.getCurrentLoc());
-        MapLocation preLocation = end.getPreviosLoc();
-        while (preLocation != null ){
-//            path.add(preLocation.getCurrentLoc());
-//            preLocation = preLocation.getPreviosLoc();
+        PathUnit preUnit = end.getPreviosLoc();
+        while (preUnit != null ){
+            path.add(preUnit.getCurrentLoc());
+            preUnit = preUnit.getPreviosLoc();
         }
-        return null;
-        
+        return path;
     }
 
     //Using BFS, not visiting nodes which we already visited in our search algorithm.
@@ -325,8 +317,12 @@ public abstract class BaseBot {
         if (currentLoc.equals(dest)){
             new ArrayList<MapLocation>();
         }
+        
+        PathUnit startUnit = new PathUnit(null, currentLoc);
+        for (MapLocation next: getAllDirectionalPathUnits( currentLoc) ){
+            agenda.add(new PathUnit(startUnit, next));
+        }
 
-        agenda.addAll( getAllDirectionalPathUnits(null, currentLoc));
         while (agenda.size() >0 ){
             PathUnit pathLoc = agenda.remove(0);
             if (pathLoc.getCurrentLoc().equals(dest)){
@@ -334,24 +330,17 @@ public abstract class BaseBot {
             }
 
             if (currentLoc.distanceSquaredTo(pathLoc.getCurrentLoc()) < searchWithinRadiusSquared){
-                //Add locations have been visited.
-                for (PathUnit nextLoc: getAllDirectionalPathUnits(pathLoc.getCurrentLoc(), dest)){
-                    if (!visited.contains(nextLoc.getCurrentLoc())){
-                        agenda.add(nextLoc);
-                        visited.add(nextLoc.getCurrentLoc());
+                //Add locations never have been visited before.
+                for (MapLocation nextMapLoc: getAllDirectionalPathUnits(pathLoc.getCurrentLoc())){
+                    if (!visited.contains(nextMapLoc)){
+                        agenda.add(new PathUnit(pathLoc, nextMapLoc));
+                        visited.add(nextMapLoc);
                     }
                 }
-               
             }
-
         }
-        
         //there is no path;
         return null;
-
-
-        //         Direction[] directions = getAllDirectionsToward(dest);
-
 
     }
    
