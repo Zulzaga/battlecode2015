@@ -318,14 +318,7 @@ public abstract class Unit extends BaseBot {
         return null;
     }
 
-    public void buildUnit(RobotType type) throws GameActionException {
-        if (rc.getTeamOre() > type.oreCost) {
-            Direction buildDir = getRandomDirection();
-            if (rc.isCoreReady() && rc.canBuild(buildDir, type)) {
-                rc.build(buildDir, type);
-            }
-        }
-    }
+    
 
     public Direction getBuildingDirectionRetreat(RobotType type) {
         Direction[] dirs = getDirectionsToward(theirHQ);
@@ -446,7 +439,13 @@ public abstract class Unit extends BaseBot {
 
     // if the location is not in range of their HQ
     public boolean safeFromHQ(MapLocation location) {
-        return location.distanceSquaredTo(theirHQ) > RobotType.HQ.sensorRadiusSquared;
+    	int numEnemyTowers = rc.senseEnemyTowerLocations().length;
+    	if(numEnemyTowers >= 5)
+    		return (location.add(location.directionTo(theirHQ))).distanceSquaredTo(theirHQ) > RobotType.HQ.sensorRadiusSquared;
+    	else if(numEnemyTowers >= 2)
+    		return location.distanceSquaredTo(theirHQ) > RobotType.HQ.sensorRadiusSquared;
+    	else 
+    		return location.distanceSquaredTo(theirHQ) > RobotType.HQ.attackRadiusSquared;   			
     }
 
     // if the location is safe from other structures

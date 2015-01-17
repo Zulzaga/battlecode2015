@@ -25,6 +25,7 @@ import team105.units.Launcher;
 import team105.units.Miner;
 import team105.units.Soldier;
 import team105.units.Tank;
+import team105.units.Missile;
 
 public class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
@@ -95,7 +96,10 @@ public class RobotPlayer {
         case LAUNCHER:
             myself = new Launcher(rc);
             break;
+        case MISSILE:
+        	myself = new Missile(rc);
         }
+        
 
         while (true) {
             try {

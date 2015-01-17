@@ -4,8 +4,10 @@ import team105.Unit;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import battlecode.common.TerrainTile;
 
 /*
  * Spawned at HQ
@@ -29,12 +31,44 @@ public class Beaver extends Unit {
 
     public void execute() throws GameActionException {
         // basicDistributedConstruction();
+    	improvedStrategy1();
+    	/*
         hugoDroneStrategySmallMap();
         // kairatCombinedStrategyPart1();
         kairatCombinedStrategyPart2();
         transferSupplies();
-
+		*/
+    	
         rc.yield();
+    }
+    
+    public void improvedStrategy1(){
+    	try{
+    		attackLeastHealthEnemy();
+    		if (rc.isCoreReady()) {
+	    		int turn = Clock.getRoundNum();
+	    		double teamOre = rc.getTeamOre();
+	    		
+	    		if(turn < 40){
+	    			buildUnit(RobotType.MINERFACTORY);
+	    		}
+	    		else if(rc.readBroadcast(Channel_Barracks) < 1){
+	    			buildUnit(RobotType.BARRACKS);
+	    		}
+	    		else if (rc.readBroadcast(Channel_Helipad) == 0){
+	    			buildUnit(RobotType.HELIPAD);
+	    		}
+	    		else if((rc.readBroadcast(Channel_TankFactory) == 1 || rc.readBroadcast(Channel_TankFactory) == 2) && rc.readBroadcast(Channel_SupplyDepot) < 8){
+	    			buildUnit(RobotType.SUPPLYDEPOT);
+	    		}
+	    		else if(rc.readBroadcast(Channel_TankFactory) < 3){
+	    			buildUnit(RobotType.TANKFACTORY);
+	    		}
+    		}
+    		
+	    } catch (GameActionException e) {
+	        e.printStackTrace();
+	    }
     }
 
     public void hugoDroneStrategySmallMap() throws GameActionException {
@@ -198,4 +232,51 @@ public class Beaver extends Unit {
         transferSupplies();
 
     }
+    
+    public void buildUnit(RobotType type) throws GameActionException {
+        if (rc.getTeamOre() > type.oreCost) {
+            MapLocation buildLoc = getBuildLocationChess();
+            
+            if(buildLoc == null){
+            	moveAround();
+            }
+            else{
+	        	Direction buildDir = rc.getLocation().directionTo(buildLoc);
+	        	
+	        	// can build at the location now
+	            if(rc.getLocation().distanceSquaredTo(buildLoc) <= 2){
+		            if (rc.isCoreReady() && rc.canBuild(buildDir, type)) {
+		                rc.build(buildDir, type);
+		            }
+	        	}
+		        else{ // cannot build, have to move there
+		        	moveToLocation(buildLoc);
+		        }
+            }
+            
+        }
+    }
+
+	private MapLocation getBuildLocationChess() throws GameActionException {
+		MapLocation curLocation = myHQ;
+				//rc.getLocation();
+		MapLocation[] locations = MapLocation.getAllMapLocationsWithinRadiusSq(curLocation, rc.getType().sensorRadiusSquared);
+		
+		MapLocation nearestChess = null;
+		int minDist = Integer.MAX_VALUE;
+		
+		for(MapLocation loc : locations){
+			if(loc.distanceSquaredTo(curLocation) < minDist && 
+					(loc.x + loc.y - myHQ.x - myHQ.y) % 2 == 0 &&
+					rc.senseTerrainTile(loc) == TerrainTile.NORMAL &&
+					!rc.isLocationOccupied(loc)) {
+				minDist = loc.distanceSquaredTo(curLocation);
+				nearestChess = loc;
+			}
+		}
+		
+		return nearestChess;
+	}
+    
+    
 }

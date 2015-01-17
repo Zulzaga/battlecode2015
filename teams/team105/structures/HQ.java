@@ -8,6 +8,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.TerrainTile;
 
@@ -52,6 +53,11 @@ import battlecode.common.TerrainTile;
  * 
  */
 public class HQ extends Structure {
+	
+	// hugo. enemies in sight range + 1
+	public RobotInfo[] attackableEnemiesFromHQ;
+	public int numOfTowers;
+	
     //Keep track all info about armies and their last dest.
     //Each army unit listens its army channel which is unique.
     public int MAX_NUM_ARMIES = 99;
@@ -90,11 +96,19 @@ public class HQ extends Structure {
         totalNormal = totalVoid = totalProcessed = 0;
         towerThreat = 0;
         isFinished = false;
+        
+        setNumOfTowers();        
+        setAttackableEnemies();
 
     }
 
     public void execute() throws GameActionException {
+    	/*
         attackLeastHealthEnemy();
+        */
+    	setNumOfTowers();        
+        setAttackableEnemies();
+    	attackLeastHealthEnemyHQ();
         swarmPot();
     }
 
@@ -190,7 +204,7 @@ public class HQ extends Structure {
     public void swarmPot() throws GameActionException {
         int numBeavers = rc.readBroadcast(2);
 
-        if (rc.isCoreReady() && rc.getTeamOre() > 100 && numBeavers < 10) {
+        if (rc.isCoreReady() && rc.getTeamOre() > 100 && numBeavers < 1) {
             Direction newDir = getSpawnDirection(RobotType.BEAVER);
             if (newDir != null) {
                 rc.spawn(newDir, RobotType.BEAVER);
@@ -313,6 +327,51 @@ public class HQ extends Structure {
             }
         }
         rc.broadcast(1000, strategy);
+    }
+    
+    /**
+     * Hugo's code starts here
+     */
+    
+    public int setNumOfTowers(){
+    	numOfTowers = rc.senseTowerLocations().length;
+    	return numOfTowers;
+    }
+    
+    public RobotInfo[] setAttackableEnemies(){
+    	int attackableRange = RobotType.HQ.attackRadiusSquared;
+    	
+    	if(this.numOfTowers >= 5)
+    		attackableRange = 48; // hardcoded?
+    	else if(this.numOfTowers >= 2)
+    		attackableRange = RobotType.HQ.sensorRadiusSquared;
+
+    	this.attackableEnemiesFromHQ = rc.senseNearbyRobots(attackableRange, theirTeam);
+    	return this.attackableEnemiesFromHQ;
+    }
+    
+    public void attackLeastHealthEnemyHQ() throws GameActionException{
+    	MapLocation toAttack = null;
+        if (this.attackableEnemiesFromHQ.length == 0) {
+            toAttack = rc.getLocation().add(Direction.NORTH_EAST).add(Direction.NORTH_EAST).add(Direction.NORTH_EAST).add(Direction.NORTH_EAST);
+        }
+        else{
+        	double minEnergon = Double.MAX_VALUE;
+
+            for (RobotInfo info : this.attackableEnemiesFromHQ) {
+                if (info.health < minEnergon) {
+                    toAttack = info.location;
+                    minEnergon = info.health;
+                }
+            }
+        }       
+
+        if (rc.isWeaponReady() && rc.canAttackLocation(toAttack)) {
+            rc.attackLocation(toAttack);
+        }
+        else if(rc.isWeaponReady() && rc.canAttackLocation(toAttack.add(toAttack.directionTo(myHQ)))){
+        	rc.attackLocation(toAttack.add(toAttack.directionTo(myHQ)));
+        }
     }
 
 }

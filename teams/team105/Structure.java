@@ -33,6 +33,13 @@ public abstract class Structure extends BaseBot {
                 return d;
             }
         }
+        
+        for (Direction d : dirs) {
+            if (rc.canSpawn(d.opposite(), type)) {
+                return d.opposite();
+            }
+        }
+        
         return null;
     }
 
