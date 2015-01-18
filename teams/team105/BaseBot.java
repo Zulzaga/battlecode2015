@@ -145,7 +145,6 @@ import battlecode.common.TerrainTile;
  *  
  */
 public abstract class BaseBot {
-
     // Channels for keeping track of total number of each robots //
     public static int Channel_Helipad = 10000;
     public static int Channel_Tower = 11000;

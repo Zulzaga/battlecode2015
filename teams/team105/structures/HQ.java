@@ -80,7 +80,6 @@ public class HQ extends Structure {
 
     public HQ(RobotController rc) throws GameActionException {
         super(rc);
-        channelStartWith = 10;
 
         centerOfMap = new MapLocation((this.myHQ.x + this.theirHQ.x) / 2,
                 (this.myHQ.y + this.theirHQ.y) / 2);
