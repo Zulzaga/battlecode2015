@@ -88,28 +88,29 @@ public class Drone extends Unit {
         channel_maxOreAmount = channelID + 3;
         //first three drones are going to explore map.
 
-        pathTo = spawnedOrder %5; //would be used for broadcasting! BE CAREFUL
+        pathTo = spawnedOrder %3; //would be used for broadcasting! BE CAREFUL
         // System.out.println("spawned order: " + spawnedOrder + " type: " + type);
 
 
-        if( pathTo ==1  ){
+        if( pathTo ==1 || spawnedOrder >5 ){
             //ourHQ - > theirHQ
             destination = theirHQ;
             path = "centerOfMap";
         }else if( pathTo ==2 ){
             destination = endCorner2;
             path = "endCorner";
-        }else if( pathTo ==3 ){
+        }else if( pathTo ==0 ){
             destination = endCorner1;
             path = "endCorner";
-        }else if( pathTo ==4 ){
-            destination = middle1;
-            path = "middle bwtn end and center";
-        }else if( pathTo == 0){
-            destination = middle2;
-            pathTo = 5;
-            path = "middle bwtn end and center";
         }
+//        }else if( pathTo ==4 ){
+//            destination = middle1;
+//            path = "middle bwtn end and center";
+//        }else if( pathTo == 0){
+//            destination = middle2;
+//            pathTo = 5;
+//            path = "middle bwtn end and center";
+//        }
 
     }
 
@@ -151,6 +152,37 @@ public class Drone extends Unit {
         }
 
     }
+    
+    public void expandRange() throws GameActionException{
+//      System.out.println("destination -- " + exploreToDest);
+      if (destination != null){
+          //check if it has reached its destination
+          MapLocation currentDest = rc.getLocation();
+//          System.out.println("current dest==" + currentDest );
+
+          int diff = currentDest.distanceSquaredTo(destination);
+          //            System.out.println("difference -----" + Math.abs(diff));
+
+          if  ( Math.abs(diff) < 6){
+              destination = theirHQ;
+              //                System.out.println("here we seee-------" + exploredDeadLock);
+
+              if (!exploredDeadLock && channelID < 40051){
+                  freePath = true;
+                  broadcastExporation(1);
+                  //                    rc.broadcast(Channel_FreePathFound, pathTo); 
+                  // System.out.println("FOUND FREE PATH TO------ " + pathTo + " " + path + "\n channelID: " + channelID);
+              }
+              broadcastExporation(2);
+
+          }
+
+          harassToLocation(destination);
+          extendExploration();
+          //            System.out.println("here we seee-------");
+      }
+        
+    }
 
 
     private void broadcastExporation(int status) throws GameActionException {
@@ -177,7 +209,7 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-//        hugoPlan();
+        hugoPlan();
         rc.yield();
     }
     
@@ -395,6 +427,7 @@ public class Drone extends Unit {
             }
         }
     }
+    
 
 
 

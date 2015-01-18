@@ -28,24 +28,47 @@ public abstract class Unit extends BaseBot {
     protected MapLocation destination = null;
 
     protected MapLocation exploreToDest = null; // null if it is not an explorer
-                                                // drone!
-    protected MapLocation endCorner1, endCorner2, middle1, middle2;
+    // drone!
+    
+    protected Direction toEnemy;
+    protected double distanceToCenter;
+    protected MapLocation endCorner1, endCorner2;
 
     public Unit(RobotController rc) {
         super(rc);
         facing = getRandomDirection();
         rand = new Random(rc.getID());
 
+//        emptyMatrix();
         // These directions are general and HQ is likely to order this unit to
         // go forward one of them.
-        endCorner2 = new MapLocation(myHQ.x, theirHQ.y);
-        endCorner1 = new MapLocation(theirHQ.x, myHQ.y);
+        toEnemy = myHQ.directionTo(theirHQ);
+        Direction toRight = toEnemy.rotateRight().rotateRight();
+        
+       
         MapLocation centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
                 (myHQ.y + theirHQ.y) / 2);
-        middle1 = new MapLocation((centerOfMap.x + endCorner1.x) / 2,
-                (centerOfMap.y + endCorner1.y) / 2);
-        middle2 = new MapLocation((centerOfMap.x + endCorner2.x) / 2,
-                (centerOfMap.y + endCorner2.y) / 2);
+        distanceToCenter = Math.pow(myHQ.distanceSquaredTo(centerOfMap), 0.5);
+        
+        endCorner2 = centerOfMap.add(toRight, (int) distanceToCenter);
+        endCorner1 = centerOfMap.add(toRight.opposite(), (int) distanceToCenter);
+//        System.out.println("enemy: " + theirHQ.x + " " + theirHQ.y);
+//        System.out.println("our: " + myHQ.x + " " + myHQ.y);
+//        
+//        System.out.println("corner: " + endCorner1.x + " " + endCorner1.y);
+//        System.out.println("corner: " + endCorner2.x + " " + endCorner2.y);
+
+
+//        markPathMatrix(centerOfMap);
+//        markStartMatrix(myHQ);
+//        markDestMartrix(theirHQ);
+//        markPathMatrix(endCorner1);
+//        markPathMatrix(endCorner2);
+//        MatrixtoString();
+//        middle1 = new MapLocation((centerOfMap.x + endCorner1.x) / 2,
+//                (centerOfMap.y + endCorner1.y) / 2);
+//        middle2 = new MapLocation((centerOfMap.x + endCorner2.x) / 2,
+//                (centerOfMap.y + endCorner2.y) / 2);
 
     }
 
@@ -146,7 +169,7 @@ public abstract class Unit extends BaseBot {
             miningRecord.remove(0);
         }
     }
-    
+
 
     public void moveAround() throws GameActionException {
         if (rand.nextDouble() < 0.05) {
@@ -477,6 +500,111 @@ public abstract class Unit extends BaseBot {
         }
     }
 
+
+    // move to location for drone
+    public void moveToLocationExtandingRange(MapLocation location) throws GameActionException {
+        if (rc.isCoreReady()) {
+//            emptyMatrix();
+            //Directions where normal exist
+            MapLocation currentLoc = rc.getLocation();
+
+//            markStartMatrix(currentLoc);
+
+            ArrayList<Direction> dirs = new ArrayList<Direction>();
+            Direction towardDest = currentLoc.directionTo(location);
+
+            Direction toRight = towardDest.rotateRight().rotateRight();
+            Direction toLeft = towardDest.rotateLeft().rotateLeft();
+            
+          
+            
+            TerrainTile forward = rc.senseTerrainTile(currentLoc.add(towardDest));
+            
+            if (forward.equals(TerrainTile.NORMAL)){
+                dirs.add(towardDest);
+            }else if (forward.equals(TerrainTile.VOID)){
+
+                int rightSideNormals =0 ;
+                int leftSideNormals =0 ;
+
+
+                //Right side locations
+                MapLocation right1 = currentLoc.add(towardDest.rotateRight());
+                MapLocation right2 = right1.add(towardDest);
+
+                MapLocation right3 = right1.add(toRight);
+                MapLocation right5 = right3.add(toRight);
+                MapLocation right7 = right5.add(toRight);
+
+                MapLocation right4 = right2.add(toRight);
+                MapLocation right6 = right4.add(toRight);
+                MapLocation right8 = right6.add(toRight);
+
+                MapLocation[] rightSideLocs = new MapLocation[]{right1, right2, right3, right4, right5, right6};//right7, right8
+
+
+                //Left side locations
+                MapLocation left1 = currentLoc.add(towardDest.rotateLeft());
+                MapLocation left2 = left1.add(towardDest);
+
+                MapLocation left3 = left1.add(toLeft);
+                MapLocation left5 = left3.add(toLeft);
+                MapLocation left7 = left5.add(toLeft);
+
+                MapLocation left4 = left2.add(toLeft);
+                MapLocation left6 = left4.add(toLeft);
+                MapLocation left8 = left6.add(toLeft);
+
+                MapLocation[] leftSideLocs = new MapLocation[]{left1, left2, left3, left4, left5, left6}; //left7, left8
+
+                for (MapLocation r: rightSideLocs){
+//                    markSpecMartrix(r);
+                    if(isNormalTerrain(r)){
+                        rightSideNormals += 1;
+                    }
+                }
+
+                for (MapLocation l: leftSideLocs){
+//                    markSpecMartrix(l);
+                    if(isNormalTerrain(l)){
+                        leftSideNormals += 1;
+                    }
+                }
+                
+                if( rightSideNormals > leftSideNormals){
+                    dirs.add(towardDest.rotateLeft());
+                    dirs.add(toLeft);
+                    
+                }else if(rightSideNormals > leftSideNormals){
+                    dirs.add(towardDest.rotateRight());
+                    dirs.add(toRight);
+                }
+                dirs.add(toRight);
+                dirs.add(toLeft);
+            }else if ( forward.equals(TerrainTile.OFF_MAP)){
+                destination = null;
+                dirs.add(getMoveDir(theirHQ));
+            }
+            
+            //MatrixtoString();
+            for (Direction newDir : dirs) {
+                if (rc.canMove(newDir)) {
+                    if (!safeToMove2(rc.getLocation().add(newDir))
+                            || !safeFromShortShooters(rc.getLocation().add(
+                                    newDir))) {
+                        continue;
+                    } else if (rc.canMove(newDir)) {
+                        rc.move(newDir);
+//                        System.out.println("MOVING!!!");
+                        return;
+                    }
+                }
+            }
+            
+//            System.out.println("no way to move");
+        }
+    }
+
     public void moveToLocationNotSafe(MapLocation location)
             throws GameActionException {
         if (rc.isCoreReady()) {
@@ -572,7 +700,7 @@ public abstract class Unit extends BaseBot {
                 }
             }
         } else {
-            moveToLocation(ml);
+            moveToLocationExtandingRange(ml);
             // attackRobot(nearestEnemy.location);
         }
 

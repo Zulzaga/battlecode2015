@@ -1,5 +1,6 @@
 package team105.structures;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import team105.Structure;
@@ -96,7 +97,28 @@ public class HQ extends Structure {
     public void execute() throws GameActionException {
         attackLeastHealthEnemy();
         swarmPot();
+        test();
     }
+    
+    public void test() throws GameActionException{
+        int startTurn = Clock.getRoundNum();
+        
+        if (Clock.getRoundNum() == 500){
+            goDestByShortestPath();
+            int spend = Clock.getRoundNum()- startTurn;
+            System.out.println("for shortest path " + spend );
+        }
+        
+    }
+    
+    public void goDestByShortestPath(){
+//      MapLocation dest = new MapLocation( rc.getLocation().x +5 , rc.getLocation().y +5 );
+      MapLocation dest =  centerOfMap;
+//      MapLocation dest = new MapLocation(-12894, 13152 );
+      ArrayList<MapLocation> path = findShortestPathAstar(dest, 50 );
+      System.out.println("turns begin-- " +  Clock.getRoundNum());       
+  }
+    
 
     /**
      * Order building armies and broadcast it.

@@ -1,9 +1,12 @@
 package team105.units;
 
+import java.util.ArrayList;
+
 import team105.Unit;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
@@ -19,7 +22,7 @@ import battlecode.common.RobotType;
  * 
  */
 public class Beaver extends Unit {
-
+    
     public Beaver(RobotController rc) throws GameActionException {
         super(rc);
         // Initialize channelID and increment total number of this RobotType
@@ -32,10 +35,11 @@ public class Beaver extends Unit {
         hugoDroneStrategySmallMap();
         // kairatCombinedStrategyPart1();
         kairatCombinedStrategyPart2();
-        transferSupplies();
+       //        transferSupplies();
 
         rc.yield();
     }
+    
 
     public void hugoDroneStrategySmallMap() throws GameActionException {
 
