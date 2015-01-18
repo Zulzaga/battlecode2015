@@ -49,20 +49,29 @@ public class Beaver extends Unit {
 	    		int turn = Clock.getRoundNum();
 	    		double teamOre = rc.getTeamOre();
 	    		
-	    		if(turn < 40){
+	    		if(rc.readBroadcast(Channel_MinerFactory) < 1){
 	    			buildUnit(RobotType.MINERFACTORY);
 	    		}
-	    		else if(rc.readBroadcast(Channel_Barracks) < 1){
-	    			buildUnit(RobotType.BARRACKS);
-	    		}
+	    		/*
 	    		else if (rc.readBroadcast(Channel_Helipad) == 0){
 	    			buildUnit(RobotType.HELIPAD);
 	    		}
-	    		else if((rc.readBroadcast(Channel_TankFactory) == 1 || rc.readBroadcast(Channel_TankFactory) == 2) && rc.readBroadcast(Channel_SupplyDepot) < 8){
+	    		*/
+	    		//else if(rc.readBroadcast(Channel_Barracks) < 1 && rc.readBroadcast(Channel_Helipad) != 0){
+	    		else if(rc.readBroadcast(Channel_Barracks) < 1){
+	    			buildUnit(RobotType.BARRACKS);
+	    		}
+	    		else if(rc.readBroadcast(Channel_TankFactory) < 2){
+	    			buildUnit(RobotType.TANKFACTORY);
+	    		}
+	    		else if(rc.readBroadcast(Channel_SupplyDepot) < 8){
 	    			buildUnit(RobotType.SUPPLYDEPOT);
 	    		}
-	    		else if(rc.readBroadcast(Channel_TankFactory) < 3){
+	    		else if(rc.readBroadcast(Channel_TankFactory) < 3 || rc.getTeamOre() > 1500){
 	    			buildUnit(RobotType.TANKFACTORY);
+	    		}
+	    		else if(rc.getTeamOre() > 500){
+	    			buildUnit(RobotType.SUPPLYDEPOT);
 	    		}
     		}
     		
@@ -258,8 +267,7 @@ public class Beaver extends Unit {
     }
 
 	private MapLocation getBuildLocationChess() throws GameActionException {
-		MapLocation curLocation = myHQ;
-				//rc.getLocation();
+		MapLocation curLocation = rc.getLocation();
 		MapLocation[] locations = MapLocation.getAllMapLocationsWithinRadiusSq(curLocation, rc.getType().sensorRadiusSquared);
 		
 		MapLocation nearestChess = null;

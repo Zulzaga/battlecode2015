@@ -204,7 +204,7 @@ public class HQ extends Structure {
     public void swarmPot() throws GameActionException {
         int numBeavers = rc.readBroadcast(2);
 
-        if (rc.isCoreReady() && rc.getTeamOre() > 100 && numBeavers < 1) {
+        if (rc.isCoreReady() && rc.getTeamOre() > 100 && numBeavers < 2) {
             Direction newDir = getSpawnDirection(RobotType.BEAVER);
             if (newDir != null) {
                 rc.spawn(newDir, RobotType.BEAVER);

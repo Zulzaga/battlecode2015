@@ -177,7 +177,7 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-//        hugoPlan();
+        hugoPlan();
         rc.yield();
     }
     

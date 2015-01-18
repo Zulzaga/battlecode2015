@@ -39,6 +39,8 @@ public class Tank extends Unit {
         int numOfTowers = rc.senseTowerLocations().length;
 
         if (Clock.getRoundNum() < 1600) {
+        	harassToLocationTank(theirHQ);
+        	/*
             if (rc.readBroadcast(this.channelID) != 1) {
                 for (int i = 1; i <= numOfTowers; i++) {
                     int towerChannel = Channel_Tower + i * 10;
@@ -64,8 +66,11 @@ public class Tank extends Unit {
                     rc.move(movingDirection);
                 }
             }
+            */
         } else if (Clock.getRoundNum() > 1600 && Clock.getRoundNum() < 1700) {
-            harassToLocation(theirHQ);
+        	MapLocation nearestTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(
+                    rc.senseEnemyTowerLocations());
+            harassToLocationTank(nearestTowerSafeFromHQ);
         } else {
             startAttackingTowersAndHQ();
         }
@@ -212,6 +217,51 @@ public class Tank extends Unit {
                 return 0;
             }
         }
+    }
+    
+    public void harassToLocationTank(MapLocation ml) throws GameActionException {
+        RobotInfo nearestEnemy = senseNearestEnemyTank(rc.getType());
+
+        if (nearestEnemy != null) {
+            int distanceToEnemy = rc.getLocation().distanceSquaredTo(
+                    nearestEnemy.location);
+            if (distanceToEnemy <= rc.getType().attackRadiusSquared) {
+            	if(rc.isWeaponReady() && rc.canAttackLocation(nearestEnemy.location))
+            		rc.attackLocation(nearestEnemy.location);
+            	//attackLeastHealthEnemy();
+            } else if (nearestEnemy.type != RobotType.TANK || 
+            		nearestEnemy.type != RobotType.LAUNCHER) {
+            	moveToLocation(nearestEnemy.location);
+            }
+        } else {
+            moveToLocation(ml);
+        }
+    }
+    
+    public RobotInfo senseNearestEnemyTank(RobotType type) {
+        RobotInfo[] enemies = senseNearbyEnemiesTank(type);
+
+        if (enemies.length > 0) {
+            RobotInfo nearestRobot = null;
+            int nearestDistance = Integer.MAX_VALUE;
+            for (RobotInfo robot : enemies) {
+                int distance = rc.getLocation().distanceSquaredTo(
+                        robot.location);
+                if (distance < nearestDistance && 
+                		robot.type != RobotType.TOWER &&
+                		robot.type != RobotType.HQ) {
+                    nearestDistance = distance;
+                    nearestRobot = robot;
+                }
+            }
+            return nearestRobot;
+        }
+        return null;
+    }
+
+    // return all the sensible enemies
+    public RobotInfo[] senseNearbyEnemiesTank(RobotType type) {
+        return rc.senseNearbyRobots(500, theirTeam);
     }
 
 }
