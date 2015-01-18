@@ -547,7 +547,7 @@ public abstract class BaseBot {
 
     public RobotInfo[] getEnemiesInAttackingRange() {
         RobotInfo[] enemies = rc.senseNearbyRobots(
-                RobotType.SOLDIER.attackRadiusSquared, theirTeam);
+                rc.getType().attackRadiusSquared, theirTeam);
         return enemies;
     }
 

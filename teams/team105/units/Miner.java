@@ -182,6 +182,7 @@ public class Miner extends Unit {
     public void execute() throws GameActionException {
 //        considerMovement();
         improveOreDest();
+        destination = null; // temporary added by Hugo
         if (destination == null){
         attackEnemyZero();
         mineAndMove();
