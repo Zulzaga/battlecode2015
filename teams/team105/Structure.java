@@ -6,8 +6,10 @@ import java.util.List;
 import team105.BaseBot;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 public abstract class Structure extends BaseBot {
@@ -19,6 +21,53 @@ public abstract class Structure extends BaseBot {
 
     public Structure(RobotController rc) {
         super(rc);
+        supplyUpkeep = 0;
+    }
+
+    public void beginningOfTurn() {
+        if (rc.senseEnemyHQLocation() != null) {
+            theirHQ = rc.senseEnemyHQLocation();
+        }
+    }
+
+    public void endOfTurn() throws GameActionException {
+
+    }
+
+    public void go() throws GameActionException {
+        beginningOfTurn();
+        execute();
+        endOfTurn();
+    }
+
+    public void execute() throws GameActionException {
+
+    }
+
+    public void transferSupplies() throws GameActionException {
+        //structures always 0 then never calls drone.
+        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+                GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+        double lowestSupply = rc.getSupplyLevel();
+        double transferAmount = 0;
+        MapLocation suppliesToThisLocation = null;
+        for (RobotInfo ri : nearbyAllies) {
+            //prefer drones they gone spread it.
+            if ( ri.type == RobotType.DRONE && ri.supplyLevel < 20){
+                transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                rc.transferSupplies((int) transferAmount, ri.location);
+            }else{
+                //transfer to lowest supplied one
+                if (ri.supplyLevel < lowestSupply) {
+                    lowestSupply = ri.supplyLevel;
+                    transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                    suppliesToThisLocation = ri.location;
+                }
+            }
+            if (suppliesToThisLocation != null) {
+                rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
+            }
+        }
     }
 
     /**
@@ -33,13 +82,13 @@ public abstract class Structure extends BaseBot {
                 return d;
             }
         }
-        
+
         for (Direction d : dirs) {
             if (rc.canSpawn(d.opposite(), type)) {
                 return d.opposite();
             }
         }
-        
+
         return null;
     }
 
@@ -49,7 +98,7 @@ public abstract class Structure extends BaseBot {
             rc.spawn(randomDir, type);
         }
     }
-    
+
 
 
     /**
@@ -77,7 +126,7 @@ public abstract class Structure extends BaseBot {
             rc.spawn(richDirection, type);
         }
     }
-    
+
 
     /**
      * 

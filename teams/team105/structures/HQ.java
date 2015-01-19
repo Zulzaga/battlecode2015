@@ -110,6 +110,9 @@ public class HQ extends Structure {
         setAttackableEnemies();
     	attackLeastHealthEnemyHQ();
         swarmPot();
+        
+        transferSupplies();
+
 //        test();
     }
     

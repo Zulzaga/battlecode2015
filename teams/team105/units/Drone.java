@@ -12,6 +12,7 @@ import team105.units.Drone.RobotHealthComparator;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
@@ -25,9 +26,7 @@ public class Drone extends Unit {
 
     //Path exploring variables
     public int mode = 0; //0= exploring, 1= reached its initial destination going to HQ, 2= transfering supply
-    public boolean searchAlongY = true;
-    public int searchCoord;
-    public boolean exploredDeadLock = false;
+    public boolean onDutyForSupply = false;
     public boolean freePath = false; //if it is true, it guarantees that there is a way to reach its destination.
     public int pathTo;
     public String path; //just for debugging!
@@ -36,6 +35,11 @@ public class Drone extends Unit {
     public int channel_maxOreX; //channelID +1
     public int channel_maxOreY; //channelID +2
     public int channel_maxOreAmount; //channelID +3
+    public int channel_callOfSupply;
+    public int channel_callOfSupplyX;
+    public int channel_callOfSupplyY;
+
+    
     public Direction[] allDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH,
             Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
 
@@ -65,7 +69,11 @@ public class Drone extends Unit {
         channel_maxOreX = channelID + 1;
         channel_maxOreY = channelID + 2;
         channel_maxOreAmount = channelID + 3;
-
+        
+        channel_callOfSupply = channelID + 5;
+        channel_callOfSupplyX =  channelID + 6;
+        channel_callOfSupplyY = channelID + 7;
+        
         pathTo = spawnedOrder %3; //would be used for broadcasting! BE CAREFUL
 
         if( pathTo ==1 || spawnedOrder >3 ){
@@ -186,6 +194,7 @@ public class Drone extends Unit {
                 moveToLocation(destination);
             }else{
                 //transfering supply
+                provideSupply();
             }
             //avoiding enemies
         }
@@ -228,10 +237,44 @@ public class Drone extends Unit {
     }
 
     public void provideSupply() throws GameActionException{
-        if (rc.getSupplyLevel() < 200){
+        if (rc.getSupplyLevel() < 20){
             destination = myHQ;
             moveToLocation(destination);
         }else{
+            if (onDutyForSupply){
+                if (rc.getLocation().distanceSquaredTo(destination) < 10){
+                    //structures always 0 then never calls drone.
+                    RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+                            GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+                    double lowestSupply = rc.getSupplyLevel();
+                    double transferAmount = 0;
+                    MapLocation suppliesToThisLocation = null;
+                    for (RobotInfo ri : nearbyAllies) {
+                        if (ri.supplyLevel < lowestSupply) {
+                            lowestSupply = ri.supplyLevel;
+                            transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                            suppliesToThisLocation = ri.location;
+                        }
+                    }
+                    if (suppliesToThisLocation != null) {
+                        rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
+                    }
+                }
+                
+                //after transfer
+                if (aroundAverageSupply() >20 || rc.getSupplyLevel() < 20 ){
+                    destination = myHQ;
+                    moveToLocation(destination);
+                }
+            }else{
+                if (rc.readBroadcast(channel_callOfSupply) !=0 ){
+                    int x = rc.readBroadcast(channel_callOfSupplyX);
+                    int y = rc.readBroadcast(channel_callOfSupplyY);
+                    destination = new MapLocation(x,y);
+                    moveToLocation(destination);
+                    rc.broadcast(channel_callOfSupply, 0);
+                }
+            }
 
         }
 

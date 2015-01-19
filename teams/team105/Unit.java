@@ -33,7 +33,6 @@ public abstract class Unit extends BaseBot {
     protected Direction toEnemy;
     protected double distanceToCenter;
     protected MapLocation endCorner1, endCorner2, centerOfMap;
-    protected int supplyUpkeep;
 
     public Unit(RobotController rc) {
         super(rc);
@@ -70,6 +69,26 @@ public abstract class Unit extends BaseBot {
 //                (centerOfMap.y + endCorner1.y) / 2);
 //        middle2 = new MapLocation((centerOfMap.x + endCorner2.x) / 2,
 //                (centerOfMap.y + endCorner2.y) / 2);
+
+    }
+    
+    public void beginningOfTurn() {
+        if (rc.senseEnemyHQLocation() != null) {
+            theirHQ = rc.senseEnemyHQLocation();
+        }
+    }
+
+    public void endOfTurn() throws GameActionException {
+        transferSupplies();
+    }
+
+    public void go() throws GameActionException {
+        beginningOfTurn();
+        execute();
+        endOfTurn();
+    }
+
+    public void execute() throws GameActionException {
 
     }
 

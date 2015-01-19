@@ -201,6 +201,20 @@ public abstract class BaseBot {
     public static int Channel_OreAreaX5 = 40051;
     public static int Channel_OreAreaY5 = 40052;
     public static int Channel_OreAmount5 = 40053;
+    
+    //Call drones for supple support
+    public static int Channel_CalledOn1 = 40015; //amount, if its drone has not been called, then it must be 0;
+    public static int Channel_CallSupplyX1 = 40016;
+    public static int Channel_CallSupplyY1 = 40017;
+    
+    public static int Channel_CalledOn2 = 40025;
+    public static int Channel_CallSupplyX2 = 40026;
+    public static int Channel_CallSupplyY2 = 40027;
+    
+    public static int Channel_CalledOn3 = 40035;
+    public static int Channel_CallSupplyX3 = 40036;
+    public static int Channel_CallSupplyY3 = 40037;
+    
 
     // for channeling
     protected int channelID; // this channel would be used for this robot's
@@ -216,6 +230,7 @@ public abstract class BaseBot {
     protected Random rand;
     private int matrixSize = 100;
     private int halfMatrixSize = 50;
+    protected int supplyUpkeep;
     protected String[][] matrix = new String[matrixSize][matrixSize];
 
     public BaseBot(RobotController rc) {
@@ -237,7 +252,7 @@ public abstract class BaseBot {
         return false;
     }
 
-    
+
     /**
      * 
      * @param finalDest
@@ -253,16 +268,16 @@ public abstract class BaseBot {
                 criticalPath.put(temp, currentLoc);
                 return;
             }
-            
-                for (int i= 0; i < 3; i++){
-                    TerrainTile t = rc.senseTerrainTile(temp);
-                    if ( t == TerrainTile.NORMAL){
-                        criticalPath.put(temp, currentLoc);
-                        currentLoc = temp;
-                        criticalLoc = true;
-                        break;
-                    }
+
+            for (int i= 0; i < 3; i++){
+                TerrainTile t = rc.senseTerrainTile(temp);
+                if ( t == TerrainTile.NORMAL){
+                    criticalPath.put(temp, currentLoc);
+                    currentLoc = temp;
+                    criticalLoc = true;
+                    break;
                 }
+            }
 
             if(!criticalLoc){
 
@@ -270,8 +285,8 @@ public abstract class BaseBot {
 
         }
     }
-    
-    
+
+
 
     public void emptyMatrix(){
         for (int i = 0; i<matrixSize; i++){
@@ -442,8 +457,8 @@ public abstract class BaseBot {
         //there is no path;
         return null;
     }
-    
-    
+
+
     /*
      * 
      * Find shortest path using our sensed range area.
@@ -468,7 +483,7 @@ public abstract class BaseBot {
 
         while (!openSet.isEmpty()){
             MapLocation current = findLowestCostLocation(openSet, getHereCost, dest);
-                        markSpecMartrix(current);
+            markSpecMartrix(current);
             if ( current.equals(dest)){
                 return constructPath( cameFrom, dest);
             }
@@ -500,8 +515,8 @@ public abstract class BaseBot {
         markStartMatrix(start);
         markDestMartrix(dest);
         MatrixtoString();
-//        System.out.println("start: " + start.x + "  " +  start.y);
-//        System.out.println("dest: " + dest.x + "  " +  dest.y);
+        //        System.out.println("start: " + start.x + "  " +  start.y);
+        //        System.out.println("dest: " + dest.x + "  " +  dest.y);
 
         return null;
 
@@ -582,48 +597,57 @@ public abstract class BaseBot {
             }
         }
     }
-
-    public void beginningOfTurn() {
-        if (rc.senseEnemyHQLocation() != null) {
-            theirHQ = rc.senseEnemyHQLocation();
-        }
-    }
-
-    public void endOfTurn() throws GameActionException {
-        transferSupplies();
-    }
-
+    
+    //This method should be written in sturctures and units.
     public void go() throws GameActionException {
-        beginningOfTurn();
-        execute();
-        endOfTurn();
     }
 
-    public void execute() throws GameActionException {
 
-    }
-
+    //Drones should not use this!!!
     public void transferSupplies() throws GameActionException {
-        //have enough supply
-//        if ( rc.getSupplyLevel() < rc.)
-        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
-                GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
-        double lowestSupply = rc.getSupplyLevel();
-        double transferAmount = 0;
-        MapLocation suppliesToThisLocation = null;
-        for (RobotInfo ri : nearbyAllies) {
-            if (ri.supplyLevel < lowestSupply) {
-                lowestSupply = ri.supplyLevel;
-                transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
-                suppliesToThisLocation = ri.location;
+        //have enough supply to share
+        if ( rc.getSupplyLevel() > this.supplyUpkeep){
+            //structures always 0 then never calls drone.
+            RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+                    GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+            double lowestSupply = rc.getSupplyLevel();
+            double transferAmount = 0;
+            MapLocation suppliesToThisLocation = null;
+            for (RobotInfo ri : nearbyAllies) {
+                if (ri.supplyLevel < lowestSupply) {
+                    lowestSupply = ri.supplyLevel;
+                    transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                    suppliesToThisLocation = ri.location;
+                }
             }
-        }
-        if (suppliesToThisLocation != null) {
-            rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
+            if (suppliesToThisLocation != null) {
+                rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
+            }
+            
+            //need to call drones for supple
+        }else {
+            int aveSupply = (int) Math.ceil(aroundAverageSupply()) +1 ;  //should never broadcast 0
+            if (aveSupply < 6 || rc.senseNearbyRobots(20, myTeam).length > 3);
+            if (rc.readBroadcast(Channel_CalledOn1) == 0){
+                rc.broadcast(Channel_CalledOn1, aveSupply +1);
+                rc.broadcast(Channel_CallSupplyX1, rc.getLocation().x);
+                rc.broadcast(Channel_CallSupplyY1, rc.getLocation().y);
+            }else if(rc.readBroadcast(Channel_CalledOn2) == 0){
+                rc.broadcast(Channel_CalledOn2, aveSupply +1);
+                rc.broadcast(Channel_CallSupplyX2, rc.getLocation().x);
+                rc.broadcast(Channel_CallSupplyY2, rc.getLocation().y);
+            }else if( rc.readBroadcast(Channel_CalledOn3) == 0){
+                rc.broadcast(Channel_CalledOn3, aveSupply +1);
+                rc.broadcast(Channel_CallSupplyX3, rc.getLocation().x);
+                rc.broadcast(Channel_CallSupplyY3, rc.getLocation().y);
+            }
+            
         }
     }
     
-    public double ourAverageSupply(){
+    
+
+    public double aroundAverageSupply(){
         RobotInfo[] mySide = rc.senseNearbyRobots(20, myTeam);
         double totalSupply = rc.getSupplyLevel();
         for(RobotInfo fellow: mySide){
