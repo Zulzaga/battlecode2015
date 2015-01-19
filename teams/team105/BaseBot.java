@@ -604,6 +604,8 @@ public abstract class BaseBot {
     }
 
     public void transferSupplies() throws GameActionException {
+        //have enough supply
+//        if ( rc.getSupplyLevel() < rc.)
         RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
                 GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
         double lowestSupply = rc.getSupplyLevel();
@@ -619,6 +621,15 @@ public abstract class BaseBot {
         if (suppliesToThisLocation != null) {
             rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
         }
+    }
+    
+    public double ourAverageSupply(){
+        RobotInfo[] mySide = rc.senseNearbyRobots(20, myTeam);
+        double totalSupply = rc.getSupplyLevel();
+        for(RobotInfo fellow: mySide){
+            totalSupply = fellow.supplyLevel;
+        }
+        return totalSupply/mySide.length+1; 
     }
 
     protected Direction getRandomDirection() {

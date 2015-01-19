@@ -6,6 +6,7 @@ import battlecode.common.RobotController;
 
 public class Basher extends Unit {
 
+    public int supplyUpkeep = 6;
     public Basher(RobotController rc) throws GameActionException {
         super(rc);
         

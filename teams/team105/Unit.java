@@ -33,6 +33,7 @@ public abstract class Unit extends BaseBot {
     protected Direction toEnemy;
     protected double distanceToCenter;
     protected MapLocation endCorner1, endCorner2, centerOfMap;
+    protected int supplyUpkeep;
 
     public Unit(RobotController rc) {
         super(rc);
