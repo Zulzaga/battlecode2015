@@ -32,7 +32,7 @@ public abstract class Unit extends BaseBot {
     
     protected Direction toEnemy;
     protected double distanceToCenter;
-    protected MapLocation endCorner1, endCorner2;
+    protected MapLocation endCorner1, endCorner2, centerOfMap;
 
     public Unit(RobotController rc) {
         super(rc);
@@ -46,7 +46,7 @@ public abstract class Unit extends BaseBot {
         Direction toRight = toEnemy.rotateRight().rotateRight();
         
        
-        MapLocation centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
+        centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
                 (myHQ.y + theirHQ.y) / 2);
         distanceToCenter = Math.pow(myHQ.distanceSquaredTo(centerOfMap), 0.5);
         

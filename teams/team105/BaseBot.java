@@ -499,7 +499,7 @@ public abstract class BaseBot {
 
         markStartMatrix(start);
         markDestMartrix(dest);
-//        MatrixtoString();
+        MatrixtoString();
 //        System.out.println("start: " + start.x + "  " +  start.y);
 //        System.out.println("dest: " + dest.x + "  " +  dest.y);
 

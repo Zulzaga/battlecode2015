@@ -110,13 +110,13 @@ public class HQ extends Structure {
         setAttackableEnemies();
     	attackLeastHealthEnemyHQ();
         swarmPot();
-        test();
+//        test();
     }
     
     public void test() throws GameActionException{
         int startTurn = Clock.getRoundNum();
         
-        if (Clock.getRoundNum() == 500){
+        if (Clock.getRoundNum() == 800){
             goDestByShortestPath();
             int spend = Clock.getRoundNum()- startTurn;
             System.out.println("for shortest path " + spend );
@@ -126,7 +126,7 @@ public class HQ extends Structure {
     
     public void goDestByShortestPath(){
 //      MapLocation dest = new MapLocation( rc.getLocation().x +5 , rc.getLocation().y +5 );
-      MapLocation dest =  centerOfMap;
+      MapLocation dest =  theirHQ;
 //      MapLocation dest = new MapLocation(-12894, 13152 );
       ArrayList<MapLocation> path = findShortestPathAstar(dest, 50 );
       System.out.println("turns begin-- " +  Clock.getRoundNum());       

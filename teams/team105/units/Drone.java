@@ -24,6 +24,7 @@ public class Drone extends Unit {
     //destination  null if it is not an explorer drone!
 
     //Path exploring variables
+    public int mode = 0; //0= exploring, 1= reached its initial destination going to HQ, 2= transfering supply
     public boolean searchAlongY = true;
     public int searchCoord;
     public boolean exploredDeadLock = false;
@@ -39,6 +40,7 @@ public class Drone extends Unit {
             Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
 
     public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
+    public ArrayList<MapLocation> recentPathRecord = new ArrayList<MapLocation>();
 
     public Drone(RobotController rc) throws GameActionException {
         super(rc);
@@ -67,7 +69,7 @@ public class Drone extends Unit {
 
         if( pathTo ==1 || spawnedOrder >3 ){
             //ourHQ - > theirHQ
-            destination = theirHQ;
+            destination = centerOfMap;
             path = "centerOfMap";
         }else if( pathTo ==2 ){
             destination = endCorner2;
@@ -115,7 +117,7 @@ public class Drone extends Unit {
         
         int roundNum = Clock.getRoundNum();
 //        if (roundNum < 700 && destination != null){
-            discoverMap(destination);
+            goAroungWithSpecialMode(destination);
 //        }else{
 //            goAroundTransferingSupply();
 //        }
@@ -152,9 +154,8 @@ public class Drone extends Unit {
     //        rc.yield();
     //    }
 
-    public void discoverMap(MapLocation ml) throws GameActionException{
-        RobotInfo nearestEnemy = senseNearestEnemyWithin(20) ;
-
+    public void goAroungWithSpecialMode(MapLocation ml) throws GameActionException{
+        RobotInfo nearestEnemy = senseNearestEnemy(rc.getType()) ;
         if (nearestEnemy != null) {
             int distanceToEnemy = rc.getLocation().distanceSquaredTo(
                     nearestEnemy.location);
@@ -176,10 +177,35 @@ public class Drone extends Unit {
                 }
             }
         } else {
-            moveToLocationExtandingRange(ml);
+            if (mode == 0){
+                //expanding map range and exploring path.
+                moveToLocationExtandingRange(destination);
+            }else if(mode ==1){
+                //going to theirHQ, exploring map too.
+                moveToLocation(destination);
+            }else{
+                //transfering supply
+            }
             //avoiding enemies
         }
 
+    }
+    
+    
+    
+    public boolean locked(MapLocation ml){
+        recentPathRecord.add(ml);
+        int repetition = 0;
+        if ( recentPathRecord.size() > 8){
+            recentPathRecord.remove(0);
+        }
+        for (int i =0; i< recentPathRecord.size(); i++){
+            if (recentPathRecord.get(i).equals(ml)){
+                repetition +=1;
+            }
+        }
+        if (repetition > 2){return true;}
+        return false;
     }
     
     public int numNormalsdAround(MapLocation ml){
@@ -200,8 +226,33 @@ public class Drone extends Unit {
 
     }
     
+    // move to location (Safe!)
+    public void moveToLocation(MapLocation location) throws GameActionException {
+        if (rc.isCoreReady()) {
+            Direction dirs[] = getDirectionsToward(location);
 
-    // move to location /for drone/ avoiding enemy
+            for (Direction newDir : dirs) {
+                if (rc.canMove(newDir)) {
+                    if (!safeToMove2(rc.getLocation().add(newDir))
+                            || !safeFromShortShooters(rc.getLocation().add(
+                                    newDir))) {
+                        continue;
+                    } else if (rc.canMove(newDir)) {
+                        if( !locked(rc.getLocation().add(newDir))){
+                            rc.move(newDir);
+                        }else{
+                            mode = 2;
+                        }
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    
+    
+
+    // move to location /for drone/ avoiding enemy MODE 0
     public void moveToLocationExtandingRange(MapLocation location) throws GameActionException {
         if (rc.isCoreReady()) {
             //Directions where normal exist
@@ -211,40 +262,43 @@ public class Drone extends Unit {
             
             MapLocation rightLoc = currentLoc.add(towardDest.rotateRight().rotateRight(), 2);
             MapLocation leftLoc = currentLoc.add(towardDest.rotateLeft().rotateLeft(), 2);
-            TerrainTile forward = rc.senseTerrainTile(currentLoc.add(towardDest));
+            MapLocation forward = currentLoc.add(towardDest, 2);
             
-            if (forward.equals(TerrainTile.NORMAL)){
-                dirs = getDirectionsToward(destination);
-            }else if(forward.equals(TerrainTile.OFF_MAP)){
-                destination = theirHQ;
-                dirs = getDirectionsToward(destination);
-            }else{
+     
                 int leftNormals = numNormalsdAround(leftLoc);
                 int rightNormals = numNormalsdAround( rightLoc);
+                int forwardNormals = numNormalsdAround(forward);
+                int maxNormals = Math.max(Math.max(leftNormals, rightNormals), forwardNormals);
                 
-                if ( leftNormals > rightNormals){
+                if (currentLoc.distanceSquaredTo(destination) < 3 || maxNormals == 0){
+                    System.out.println("to their HQ");
+                    destination = destination.add(toEnemy, 10);
+                    mode = 1;
+                    dirs = getDirectionsToward(destination);
+                }else if (forwardNormals == maxNormals){
+                    dirs = getDirectionsToward(destination);
+                }else if ( leftNormals == maxNormals){
                     dirs = getDirectionsToward(leftLoc);
                 }else{
                     dirs = getDirectionsToward(rightLoc);
                 }
-            }
-            
-            if (currentLoc.distanceSquaredTo(destination) < 5){
-                destination = theirHQ;
-            }
+                
+          
             
             for (Direction newDir : dirs) {
                 if (rc.canMove(newDir)) {
-                    
-                    System.out.println("left bytecode: " + Clock.getBytecodesLeft());
                     if (!safeToMove2(rc.getLocation().add(newDir))
                             || !safeFromShortShooters(rc.getLocation().add(
                                     newDir))) {
-                        System.out.println("NOT  MOVING!!!");
+//                        System.out.println("NOT  MOVING!!!");
                         continue;
                     } else if (rc.canMove(newDir)) {
-                        rc.move(newDir);
-//                        System.out.println("MOVING!!!");
+                        if( !locked(currentLoc.add(newDir))){
+                            rc.move(newDir);
+                        }else{
+                            destination = destination.add(toEnemy, 10);
+                            mode = 1;
+                        }
                         return;
                     }
                 }
@@ -252,7 +306,7 @@ public class Drone extends Unit {
             
             
             
-            System.out.println("no way to move");
+//            System.out.println("no way to move");
         }
     }
 
