@@ -71,7 +71,6 @@ public class Beaver extends Unit {
 	    		}
 	    		else if(rc.readBroadcast(Channel_SupplyDepot) < 8){
 	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
-                    System.out.println("supply " + rc.readBroadcast(Channel_SupplyDepot));
 	    		}
 	    		else if(rc.readBroadcast(Channel_TankFactory) < 3 || rc.getTeamOre() > 1500){
 	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
@@ -154,7 +153,13 @@ public class Beaver extends Unit {
     }
 
 
-    
+    /**
+     * if this can, start building a given particular structure and increment its number.
+     * Otherwise, move. 
+     * @param type
+     * @param channelForNumStructure
+     * @throws GameActionException
+     */
     public void buildUnit(RobotType type, int channelForNumStructure) throws GameActionException {
         if (rc.getTeamOre() > type.oreCost) {
             MapLocation buildLoc = getBuildLocationChess();
