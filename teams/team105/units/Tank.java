@@ -39,7 +39,7 @@ public class Tank extends Unit {
     public void execute() throws GameActionException {
         int numOfTowers = rc.senseTowerLocations().length;
 
-        if (Clock.getRoundNum() < 1600) {
+        if (Clock.getRoundNum() < 1200) {
         	harassToLocationTank(theirHQ);
         	/*
             if (rc.readBroadcast(this.channelID) != 1) {
@@ -68,7 +68,7 @@ public class Tank extends Unit {
                 }
             }
             */
-        } else if (Clock.getRoundNum() > 1600 && Clock.getRoundNum() < 1700) {
+        } else if (Clock.getRoundNum() < 1700) {
         	MapLocation nearestTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(
                     rc.senseEnemyTowerLocations());
             harassToLocationTank(nearestTowerSafeFromHQ);
@@ -230,10 +230,38 @@ public class Tank extends Unit {
             	if(rc.isWeaponReady() && rc.canAttackLocation(nearestEnemy.location))
             		rc.attackLocation(nearestEnemy.location);
             	//attackLeastHealthEnemy();
-            } else if (nearestEnemy.type != RobotType.TANK || 
+            } else if (nearestEnemy.type != RobotType.TANK && 
             		nearestEnemy.type != RobotType.LAUNCHER) {
             	moveToLocation(nearestEnemy.location);
+            } else if(nearestEnemy.type == RobotType.TANK && distanceToEnemy > rc.getType().sensorRadiusSquared){
+            	moveToLocation(nearestEnemy.location);
+            } else if(nearestEnemy.type == RobotType.TANK){ // distanceToEnemy < rc.getType().sensorRadiusSquared
+            	int numAlliesAroundTank = rc.senseNearbyRobots(nearestEnemy.location, rc.getType().sensorRadiusSquared, myTeam).length;
+            	numAlliesAroundTank -= rc.senseNearbyRobots(nearestEnemy.location, rc.getType().sensorRadiusSquared, theirTeam).length;
+            	//System.out.println("polidood");
+//            	if(numAlliesAroundTank > 2)
+//            		moveToLocation(nearestEnemy.location);
+            	if(numAlliesAroundTank > 1 || rc.senseNearbyRobots(nearestEnemy.location, nearestEnemy.type.attackRadiusSquared, myTeam).length > 0)
+            		moveToLocation(nearestEnemy.location);
             }
+            
+            else if(nearestEnemy.type == RobotType.LAUNCHER && distanceToEnemy > rc.getType().sensorRadiusSquared){
+            	moveToLocation(nearestEnemy.location);
+        	} 
+            else if(nearestEnemy.type == RobotType.LAUNCHER){ // distanceToEnemy <= rc.getType().sensorRadiusSquared
+            	int numAlliesAroundTank = rc.senseNearbyRobots(nearestEnemy.location, rc.getType().sensorRadiusSquared, myTeam).length;
+            	numAlliesAroundTank -= rc.senseNearbyRobots(nearestEnemy.location, rc.getType().sensorRadiusSquared, theirTeam).length;
+            	//System.out.println("polidood");
+            	if(numAlliesAroundTank > 4)
+        			startAttackingTowersAndHQ();
+            }
+            
+            else if(nearestEnemy.type == RobotType.TOWER){
+        		int numAlliesAroundTower = rc.senseNearbyRobots(nearestEnemy.location, 50, myTeam).length;
+        		numAlliesAroundTower -= rc.senseNearbyRobots(nearestEnemy.location, 50, theirTeam).length;
+        		if(numAlliesAroundTower > 5)
+        			startAttackingTowersAndHQ();
+        	}
         } else {
             moveToLocation(ml);
         }
@@ -249,8 +277,8 @@ public class Tank extends Unit {
                 int distance = rc.getLocation().distanceSquaredTo(
                         robot.location);
                 if (distance < nearestDistance && 
-                		robot.type != RobotType.TOWER &&
-                		robot.type != RobotType.HQ) {
+                		robot.type != RobotType.HQ &&
+                		robot.location.distanceSquaredTo(theirHQ) > 10) {
                     nearestDistance = distance;
                     nearestRobot = robot;
                 }
@@ -262,7 +290,7 @@ public class Tank extends Unit {
 
     // return all the sensible enemies
     public RobotInfo[] senseNearbyEnemiesTank(RobotType type) {
-        return rc.senseNearbyRobots(500, theirTeam);
+        return rc.senseNearbyRobots(1000, theirTeam);
     }
 
 }
