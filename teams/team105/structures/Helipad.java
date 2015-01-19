@@ -9,25 +9,28 @@ import battlecode.common.RobotType;
 
 public class Helipad extends Structure {
 
+    //We would have only one helipad!
+    private int numDrones =0;
     public Helipad(RobotController rc) throws GameActionException {
         super(rc);
-
-        // Initialize channelID and increment total number of this RobotType
-        channelStartWith = Channel_Helipad;
-        initChannelNum();
     }
 
     public void execute() throws GameActionException {
-        try {
-        	int roundNum = Clock.getRoundNum();
-            if(rc.isCoreReady() && rc.readBroadcast(Channel_Drone) < 5) {
-                Direction spawnDir = getSpawnDirection(RobotType.DRONE);
-                if (spawnDir != null) {
-                    rc.spawn(spawnDir, RobotType.DRONE);
+
+        if (numDrones < 3){
+
+            try {
+                int roundNum = Clock.getRoundNum();
+                if(rc.isCoreReady() && rc.readBroadcast(Channel_Drone) < 5) {
+                    Direction spawnDir = getSpawnDirection(RobotType.DRONE);
+                    if (spawnDir != null) {
+                        numDrones +=1;
+                        rc.spawn(spawnDir, RobotType.DRONE);
+                    }
                 }
+            } catch (GameActionException e) {
+                e.printStackTrace();
             }
-        } catch (GameActionException e) {
-            e.printStackTrace();
         }
 
         rc.yield();

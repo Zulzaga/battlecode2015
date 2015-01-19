@@ -28,24 +28,67 @@ public abstract class Unit extends BaseBot {
     protected MapLocation destination = null;
 
     protected MapLocation exploreToDest = null; // null if it is not an explorer
-                                                // drone!
-    protected MapLocation endCorner1, endCorner2, middle1, middle2;
+    // drone!
+    
+    protected Direction toEnemy;
+    protected double distanceToCenter;
+    protected MapLocation endCorner1, endCorner2, centerOfMap;
 
     public Unit(RobotController rc) {
         super(rc);
         facing = getRandomDirection();
         rand = new Random(rc.getID());
 
+//        emptyMatrix();
         // These directions are general and HQ is likely to order this unit to
         // go forward one of them.
-        endCorner2 = new MapLocation(myHQ.x, theirHQ.y);
-        endCorner1 = new MapLocation(theirHQ.x, myHQ.y);
-        MapLocation centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
+        toEnemy = myHQ.directionTo(theirHQ);
+        Direction toRight = toEnemy.rotateRight().rotateRight();
+        
+       
+        centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
                 (myHQ.y + theirHQ.y) / 2);
-        middle1 = new MapLocation((centerOfMap.x + endCorner1.x) / 2,
-                (centerOfMap.y + endCorner1.y) / 2);
-        middle2 = new MapLocation((centerOfMap.x + endCorner2.x) / 2,
-                (centerOfMap.y + endCorner2.y) / 2);
+        distanceToCenter = Math.pow(myHQ.distanceSquaredTo(centerOfMap), 0.5);
+        
+        endCorner2 = centerOfMap.add(toRight, (int) distanceToCenter).add(toEnemy, 2);
+        endCorner1 = centerOfMap.add(toRight.opposite(), (int) distanceToCenter).add(toEnemy, 2);
+//        System.out.println("enemy: " + theirHQ.x + " " + theirHQ.y);
+//        System.out.println("our: " + myHQ.x + " " + myHQ.y);
+//        
+//        System.out.println("corner: " + endCorner1.x + " " + endCorner1.y);
+//        System.out.println("corner: " + endCorner2.x + " " + endCorner2.y);
+
+
+//        markPathMatrix(centerOfMap);
+//        markStartMatrix(myHQ);
+//        markDestMartrix(theirHQ);
+//        markPathMatrix(endCorner1);
+//        markPathMatrix(endCorner2);
+//        MatrixtoString();
+//        middle1 = new MapLocation((centerOfMap.x + endCorner1.x) / 2,
+//                (centerOfMap.y + endCorner1.y) / 2);
+//        middle2 = new MapLocation((centerOfMap.x + endCorner2.x) / 2,
+//                (centerOfMap.y + endCorner2.y) / 2);
+
+    }
+    
+    public void beginningOfTurn() {
+        if (rc.senseEnemyHQLocation() != null) {
+            theirHQ = rc.senseEnemyHQLocation();
+        }
+    }
+
+    public void endOfTurn() throws GameActionException {
+        transferSupplies();
+    }
+
+    public void go() throws GameActionException {
+        beginningOfTurn();
+        execute();
+        endOfTurn();
+    }
+
+    public void execute() throws GameActionException {
 
     }
 
@@ -146,7 +189,7 @@ public abstract class Unit extends BaseBot {
             miningRecord.remove(0);
         }
     }
-    
+
 
     public void moveAround() throws GameActionException {
         if (rand.nextDouble() < 0.05) {
@@ -456,7 +499,7 @@ public abstract class Unit extends BaseBot {
         return enemiesFromLocation.length == 0;
     }
 
-    // move to location
+    // move to location (Safe!)
     public void moveToLocation(MapLocation location) throws GameActionException {
         if (rc.isCoreReady()) {
             Direction dirs[] = getDirectionsToward(location);
@@ -574,7 +617,6 @@ public abstract class Unit extends BaseBot {
             moveToLocation(ml);
             // attackRobot(nearestEnemy.location);
         }
-
     }
 
     // return the nearest enemy robot

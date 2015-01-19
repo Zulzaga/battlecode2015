@@ -33,6 +33,7 @@ public class Tank extends Unit {
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Tank;
         initChannelNum();
+        supplyUpkeep = 15;
     }
 
     public void execute() throws GameActionException {

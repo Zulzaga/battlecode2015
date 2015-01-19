@@ -13,6 +13,7 @@ public class Commander extends Unit{
         //Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Commander;
         initChannelNum(); 
+        supplyUpkeep = 5;
     }
 
 }

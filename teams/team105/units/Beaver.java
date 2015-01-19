@@ -1,5 +1,9 @@
 package team105.units;
 
+import java.util.ArrayList;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import team105.Unit;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
@@ -21,12 +25,13 @@ import battlecode.common.TerrainTile;
  * 
  */
 public class Beaver extends Unit {
-
+    
     public Beaver(RobotController rc) throws GameActionException {
         super(rc);
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Beaver;
         initChannelNum();
+        supplyUpkeep = 10;
     }
 
     public void execute() throws GameActionException {
@@ -45,39 +50,50 @@ public class Beaver extends Unit {
     public void improvedStrategy1(){
     	try{
     		attackLeastHealthEnemy();
+    		
     		if (rc.isCoreReady()) {
 	    		int turn = Clock.getRoundNum();
 	    		double teamOre = rc.getTeamOre();
 	    		
+//	    		if (rc.readBroadcast(Channel_Helipad) < 1)
+//                    buildUnit(RobotType.HELIPAD, Channel_Helipad);
+//	    		
 	    		if(rc.readBroadcast(Channel_MinerFactory) < 1){
-	    			buildUnit(RobotType.MINERFACTORY);
+	    			buildUnit(RobotType.MINERFACTORY, Channel_MinerFactory);
 	    		}
-	    		/*
-	    		else if (rc.readBroadcast(Channel_Helipad) == 0){
-	    			buildUnit(RobotType.HELIPAD);
+	    		
+	    		else if (rc.readBroadcast(Channel_Helipad) < 1){
+	    			buildUnit(RobotType.HELIPAD, Channel_Helipad);
 	    		}
-	    		*/
+	    		
 	    		//else if(rc.readBroadcast(Channel_Barracks) < 1 && rc.readBroadcast(Channel_Helipad) != 0){
 	    		else if(rc.readBroadcast(Channel_Barracks) < 1){
-	    			buildUnit(RobotType.BARRACKS);
+	    			buildUnit(RobotType.BARRACKS, Channel_Barracks);
 	    		}
 	    		else if(rc.readBroadcast(Channel_TankFactory) < 2){
-	    			buildUnit(RobotType.TANKFACTORY);
+	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
 	    		}
 	    		else if(rc.readBroadcast(Channel_SupplyDepot) < 8){
-	    			buildUnit(RobotType.SUPPLYDEPOT);
+	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
 	    		}
 	    		else if(rc.readBroadcast(Channel_TankFactory) < 3 || rc.getTeamOre() > 1500){
-	    			buildUnit(RobotType.TANKFACTORY);
+	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
 	    		}
 	    		else if(rc.getTeamOre() > 500){
-	    			buildUnit(RobotType.SUPPLYDEPOT);
+	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_TankFactory);
 	    		}
+	    		
+	    		
     		}
     		
 	    } catch (GameActionException e) {
 	        e.printStackTrace();
 	    }
+    }
+    
+    public synchronized static void incrementNumStructure(RobotController rc, int channel) throws GameActionException{
+        int spawnedOrder = rc.readBroadcast(channel) + 1;
+        rc.broadcast(channel, spawnedOrder);
     }
 
     public void hugoDroneStrategySmallMap() throws GameActionException {
@@ -142,107 +158,15 @@ public class Beaver extends Unit {
 
     }
 
-    public void kairatCombinedStrategyPart2() throws GameActionException {
-        int turn = Clock.getRoundNum();
-
-        if (turn % 2 == 0) {
-            if (turn >= 200 && turn < 700
-                    && rc.readBroadcast(Channel_Barracks) < 1) {
-                buildUnit(RobotType.BARRACKS);
-            } else if (turn >= 600 && rc.readBroadcast(Channel_Tank) < 3) {
-                buildUnit(RobotType.TANKFACTORY);
-            }
-
-        } else if (turn % 3 == 0) {
-            if (turn >= 1800 && rc.readBroadcast(Channel_HandwashStation) < 3) {
-                buildUnit(RobotType.HANDWASHSTATION);
-            } else if (turn > 500 && turn < 1500
-                    && rc.readBroadcast(Channel_Helipad) < 3) {
-                buildUnit(RobotType.HELIPAD);
-            }
-        }
-
-        // if not building anything
-        if (Math.random() < 0.9) {
-            mineAndMove();
-        } else {
-            moveAroundAlways();
-        }
-    }
 
     /**
-     * Build structures depending on time turn if there is enough ore.
-     * Otherwise, mine or move.
-     * 
+     * if this can, start building a given particular structure and increment its number.
+     * Otherwise, move. 
+     * @param type
+     * @param channelForNumStructure
      * @throws GameActionException
      */
-    public void basicDistributedConstruction() throws GameActionException {
-
-        // * 7. Barrack 4; 200-700 -125
-        // * 8. Miner factory 3; 0-300 -100
-        // * 11. Tank factory 4; 700-1200 -120
-
-        // * 9. HandwashStation 2; 1000-1300 - 150
-
-        // * 10. Helipad 2; 500-1000 - 250
-        // * 12. Aerospace lab 2; 1000-1700 -350
-
-        int turn = Clock.getRoundNum();
-
-        // try build structures in particular time steps if there is enough
-        // amount of ore.
-        if (turn % 20 == 0) {
-            if (turn <= 300 && rc.readBroadcast(8) < 4) {
-                buildUnit(RobotType.MINERFACTORY);
-            } else if (turn >= 200 && turn < 700 && rc.readBroadcast(7) < 5) {
-                buildUnit(RobotType.BARRACKS);
-            } else if (turn >= 700 && turn <= 1200 && rc.readBroadcast(11) < 4) {
-                buildUnit(RobotType.TANK);
-            }
-
-        } else if (turn % 33 == 0) {
-            if (turn >= 1000 && turn <= 1300 && rc.readBroadcast(9) < 3) {
-                buildUnit(RobotType.HANDWASHSTATION);
-
-            } else if (turn % 49 == 0) {
-                if (turn <= 500 && turn < 1000 && rc.readBroadcast(2) < 3) {
-                    buildUnit(RobotType.HELIPAD);
-                } else if (turn >= 1000 && turn < 1700
-                        && rc.readBroadcast(12) < 3) {
-                    buildUnit(RobotType.AEROSPACELAB);
-                }
-            }
-        }
-
-        // if building nothing.
-        if (Math.random() < 0.3) {
-            mineAndMove();
-        } else {
-            moveAroundAlways();
-        }
-
-        // swarmPot() ;
-
-    }
-
-    /**
-     * Transfer supply, player 6 example
-     * 
-     * @throws GameActionException
-     */
-    public void player6() throws GameActionException {
-        attackEnemyZero();
-        if (Clock.getRoundNum() < 700) {
-            buildUnit(RobotType.MINERFACTORY);
-        } else {
-            buildUnit(RobotType.BARRACKS);
-        }
-        mineAndMove();
-        transferSupplies();
-
-    }
-    
-    public void buildUnit(RobotType type) throws GameActionException {
+    public void buildUnit(RobotType type, int channelForNumStructure) throws GameActionException {
         if (rc.getTeamOre() > type.oreCost) {
             MapLocation buildLoc = getBuildLocationChess();
             
@@ -255,6 +179,7 @@ public class Beaver extends Unit {
 	        	// can build at the location now
 	            if(rc.getLocation().distanceSquaredTo(buildLoc) <= 2){
 		            if (rc.isCoreReady() && rc.canBuild(buildDir, type)) {
+		                incrementNumStructure(rc,channelForNumStructure );
 		                rc.build(buildDir, type);
 		            }
 	        	}

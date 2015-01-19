@@ -12,6 +12,7 @@ import team105.units.Drone.RobotHealthComparator;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
@@ -24,9 +25,8 @@ public class Drone extends Unit {
     //destination  null if it is not an explorer drone!
 
     //Path exploring variables
-    public boolean searchAlongY = true;
-    public int searchCoord;
-    public boolean exploredDeadLock = false;
+    public int mode = 0; //0= exploring, 1= reached its initial destination going to HQ, 2= transfering supply
+    public boolean onDutyForSupply = false;
     public boolean freePath = false; //if it is true, it guarantees that there is a way to reach its destination.
     public int pathTo;
     public String path; //just for debugging!
@@ -35,8 +35,16 @@ public class Drone extends Unit {
     public int channel_maxOreX; //channelID +1
     public int channel_maxOreY; //channelID +2
     public int channel_maxOreAmount; //channelID +3
+    public int channel_callOfSupply;
+    public int channel_callOfSupplyX;
+    public int channel_callOfSupplyY;
+
+    
+    public Direction[] allDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH,
+            Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
 
     public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
+    public ArrayList<MapLocation> recentPathRecord = new ArrayList<MapLocation>();
 
     public Drone(RobotController rc) throws GameActionException {
         super(rc);
@@ -44,32 +52,7 @@ public class Drone extends Unit {
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Drone;
         initChannelNum(); 
-
-        //differences coordX and coordY.
-        if (Math.abs(myHQ.x - theirHQ.x) > Math.abs(myHQ.y - theirHQ.y) ){
-            searchAlongY = false;
-            searchCoord = rc.getLocation().x;
-
-            //add free spots along x axis
-            int y = rc.getLocation().y-3;
-            for (int i = 0; i < 7; i++ ){
-                TerrainTile t = rc.senseTerrainTile(new MapLocation(searchCoord, y));
-                if (t == TerrainTile.NORMAL){
-                    reachableSpots.add(new MapLocation(searchCoord, y));
-                }
-            }
-        }else{
-            searchCoord = rc.getLocation().y;
-            //add free spots along y axis
-            int x = rc.getLocation().x-3;
-            for (int i = 0; i < 7; i++ ){
-                TerrainTile t = rc.senseTerrainTile(new MapLocation(x, searchCoord));
-                if (t == TerrainTile.NORMAL){
-                    reachableSpots.add(new MapLocation(x, searchCoord));
-                }
-            }
-
-        }
+        supplyUpkeep = 10;
     }
 
     /**
@@ -86,31 +69,24 @@ public class Drone extends Unit {
         channel_maxOreX = channelID + 1;
         channel_maxOreY = channelID + 2;
         channel_maxOreAmount = channelID + 3;
-        //first three drones are going to explore map.
+        
+        channel_callOfSupply = channelID + 5;
+        channel_callOfSupplyX =  channelID + 6;
+        channel_callOfSupplyY = channelID + 7;
+        
+        pathTo = spawnedOrder %3; //would be used for broadcasting! BE CAREFUL
 
-        pathTo = spawnedOrder %5; //would be used for broadcasting! BE CAREFUL
-        // System.out.println("spawned order: " + spawnedOrder + " type: " + type);
-
-
-        if( pathTo ==1  ){
+        if( pathTo ==1 || spawnedOrder >3 ){
             //ourHQ - > theirHQ
-            destination = theirHQ;
+            destination = centerOfMap;
             path = "centerOfMap";
         }else if( pathTo ==2 ){
             destination = endCorner2;
             path = "endCorner";
-        }else if( pathTo ==3 ){
+        }else if( pathTo ==0 ){
             destination = endCorner1;
             path = "endCorner";
-        }else if( pathTo ==4 ){
-            destination = middle1;
-            path = "middle bwtn end and center";
-        }else if( pathTo == 0){
-            destination = middle2;
-            pathTo = 5;
-            path = "middle bwtn end and center";
         }
-
     }
 
 
@@ -121,36 +97,6 @@ public class Drone extends Unit {
      * @throws GameActionException
      */
 
-    public void explore() throws GameActionException{
-//        System.out.println("destination -- " + exploreToDest);
-        if (destination != null){
-            //check if it has reached its destination
-            MapLocation currentDest = rc.getLocation();
-//            System.out.println("current dest==" + currentDest );
-
-            int diff = currentDest.distanceSquaredTo(destination);
-            //            System.out.println("difference -----" + Math.abs(diff));
-
-            if  ( Math.abs(diff) < 6){
-                destination = theirHQ;
-                //                System.out.println("here we seee-------" + exploredDeadLock);
-
-                if (!exploredDeadLock && channelID < 40051){
-                    freePath = true;
-                    broadcastExporation(1);
-                    //                    rc.broadcast(Channel_FreePathFound, pathTo); 
-                    // System.out.println("FOUND FREE PATH TO------ " + pathTo + " " + path + "\n channelID: " + channelID);
-                }
-                broadcastExporation(2);
-
-            }
-
-            harassToLocation(destination);
-            extendExploration();
-            //            System.out.println("here we seee-------");
-        }
-
-    }
 
 
     private void broadcastExporation(int status) throws GameActionException {
@@ -177,45 +123,283 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-        hugoPlan();
+
+        int roundNum = Clock.getRoundNum();
+        //        if (roundNum < 700 && destination != null){
+        goAroungWithSpecialMode(destination);
+        //        }else{
+        //            goAroundTransferingSupply();
+        //        }
         rc.yield();
     }
-    
-    public void hugoPlan(){
-        try{
-            int roundNum = Clock.getRoundNum();
-            if(roundNum < 1700){
-                if(roundNum < 400) // start exploring
-                    explore();
-                else if(roundNum < 1300){
-                    if((roundNum / 40) % 5 == 0){
-                        // retreat
-                        MapLocation loc = rc.getLocation();
-                        harassToLocation(loc.add(loc.directionTo(theirHQ).opposite()));
+
+    //    public void hugoPlan(){
+    //        try{
+    //            int roundNum = Clock.getRoundNum();
+    //            if(roundNum < 1700){
+    //                if(roundNum < 400) // start exploring
+    //                    explore();
+    //                else if(roundNum < 1300){
+    //                    if((roundNum / 40) % 5 == 0){
+    //                        // retreat
+    //                        MapLocation loc = rc.getLocation();
+    //                        harassToLocation(loc.add(loc.directionTo(theirHQ).opposite()));
+    //                    }
+    //                    else { // advance
+    //                        explore();
+    //                    }
+    //                }
+    //                else  // advance
+    //                    explore();
+    //            }
+    //                
+    //            else{ // after round 1800
+    //                startAttackingTowersAndHQ();
+    //            }
+    //        }
+    //        catch(GameActionException e){
+    //            e.printStackTrace();
+    //        }
+    //        rc.yield();
+    //    }
+
+    public void goAroungWithSpecialMode(MapLocation ml) throws GameActionException{
+        RobotInfo nearestEnemy = senseNearestEnemy(rc.getType()) ;
+        if (nearestEnemy != null) {
+            int distanceToEnemy = rc.getLocation().distanceSquaredTo(
+                    nearestEnemy.location);
+            if (distanceToEnemy <= rc.getType().attackRadiusSquared) {
+                attack();
+                // attackRobot(nearestEnemy.location);
+                avoid(nearestEnemy);
+            } else {
+
+                if (nearestEnemy.type == RobotType.DRONE) {
+                    if (shouldStand) {
+                        shouldStand = false; // waited once
+                    } else {
+                        moveToLocation(nearestEnemy.location);
+                        shouldStand = true;
                     }
-                    else { // advance
-                        explore();
+                } else {
+                    avoid(nearestEnemy);
+                }
+            }
+        } else {
+            if (mode == 0){
+                //expanding map range and exploring path.
+                moveToLocationExtandingRange(destination);
+            }else if(mode ==1){
+                //going to theirHQ, exploring map too.
+                moveToLocation(destination);
+            }else{
+                //transfering supply
+                provideSupply();
+            }
+            //avoiding enemies
+        }
+
+    }
+
+
+
+    public boolean locked(MapLocation ml){
+        recentPathRecord.add(ml);
+        int repetition = 0;
+        if ( recentPathRecord.size() > 8){
+            recentPathRecord.remove(0);
+        }
+        for (int i =0; i< recentPathRecord.size(); i++){
+            if (recentPathRecord.get(i).equals(ml)){
+                repetition +=1;
+            }
+        }
+        if (repetition > 2){return true;}
+        return false;
+    }
+
+    public int numNormalsdAround(MapLocation ml){
+        int numNormals = 0;
+
+        TerrainTile loc = rc.senseTerrainTile(ml);
+        if (loc.equals(TerrainTile.NORMAL)){
+            numNormals +=1;
+        }
+        for (Direction dir: allDirs){
+            loc = rc.senseTerrainTile(ml.add(dir));
+            if (loc.equals(TerrainTile.NORMAL)){
+                numNormals +=1;
+            }
+
+        }
+        return numNormals;
+
+    }
+
+    public void provideSupply() throws GameActionException{
+        if (rc.getSupplyLevel() < 20){
+            destination = myHQ;
+            moveToLocation(destination);
+        }else{
+            if (onDutyForSupply){
+                if (rc.getLocation().distanceSquaredTo(destination) < 10){
+                    //structures always 0 then never calls drone.
+                    RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+                            GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+                    double lowestSupply = rc.getSupplyLevel();
+                    double transferAmount = 0;
+                    MapLocation suppliesToThisLocation = null;
+                    for (RobotInfo ri : nearbyAllies) {
+                        if (ri.supplyLevel < lowestSupply) {
+                            lowestSupply = ri.supplyLevel;
+                            transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                            suppliesToThisLocation = ri.location;
+                        }
+                    }
+                    if (suppliesToThisLocation != null) {
+                        rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
                     }
                 }
-                else  // advance
-                    explore();
-            }
                 
-            else{ // after round 1800
-                startAttackingTowersAndHQ();
+                //after transfer
+                if (aroundAverageSupply() >20 || rc.getSupplyLevel() < 20 ){
+                    destination = myHQ;
+                    moveToLocation(destination);
+                }
+            }else{
+                if (rc.readBroadcast(channel_callOfSupply) !=0 ){
+                    int x = rc.readBroadcast(channel_callOfSupplyX);
+                    int y = rc.readBroadcast(channel_callOfSupplyY);
+                    destination = new MapLocation(x,y);
+                    moveToLocation(destination);
+                    rc.broadcast(channel_callOfSupply, 0);
+                }
+            }
+
+        }
+
+    }
+
+    // move to location (Safe!)
+    public void moveToLocation(MapLocation location) throws GameActionException {
+        if (rc.isCoreReady()) {
+            Direction dirs[] = getDirectionsToward(location);
+
+            for (Direction newDir : dirs) {
+                if (rc.canMove(newDir)) {
+                    if (!safeToMove2(rc.getLocation().add(newDir))
+                            || !safeFromShortShooters(rc.getLocation().add(
+                                    newDir))) {
+                        continue;
+                    } else if (rc.canMove(newDir)) {
+                        if( !locked(rc.getLocation().add(newDir))){
+                            rc.move(newDir);
+                        }else{
+                            if (mode ==1){
+                                mode = 2;
+                            }
+                        }
+                        return;
+                    }
+                }
             }
         }
-        catch(GameActionException e){
-            e.printStackTrace();
-        }
-        rc.yield();
     }
-    
+
+
+
+    // move to location /for drone/ avoiding enemy MODE 0
+    public void moveToLocationExtandingRange(MapLocation location) throws GameActionException {
+        if (rc.isCoreReady()) {
+            //Directions where normal exist
+            MapLocation currentLoc = rc.getLocation();
+            Direction[] dirs;
+            Direction towardDest = currentLoc.directionTo(location);
+
+            MapLocation rightLoc = currentLoc.add(towardDest.rotateRight().rotateRight(), 2);
+            MapLocation leftLoc = currentLoc.add(towardDest.rotateLeft().rotateLeft(), 2);
+            MapLocation forward = currentLoc.add(towardDest, 2);
+
+
+            int leftNormals = numNormalsdAround(leftLoc);
+            int rightNormals = numNormalsdAround( rightLoc);
+            int forwardNormals = numNormalsdAround(forward);
+            int maxNormals = Math.max(Math.max(leftNormals, rightNormals), forwardNormals);
+
+            if (currentLoc.distanceSquaredTo(destination) < 3 || maxNormals == 0){
+                System.out.println("to their HQ");
+                destination = destination.add(toEnemy, 10);
+                mode = 1;
+                dirs = getDirectionsToward(destination);
+            }else if (forwardNormals == maxNormals){
+                dirs = getDirectionsToward(destination);
+            }else if ( leftNormals == maxNormals){
+                dirs = getDirectionsToward(leftLoc);
+            }else{
+                dirs = getDirectionsToward(rightLoc);
+            }
+
+
+
+            for (Direction newDir : dirs) {
+                if (rc.canMove(newDir)) {
+                    if (!safeToMove2(rc.getLocation().add(newDir))
+                            || !safeFromShortShooters(rc.getLocation().add(
+                                    newDir))) {
+                        //                        System.out.println("NOT  MOVING!!!");
+                        continue;
+                    } else if (rc.canMove(newDir)) {
+                        if( !locked(currentLoc.add(newDir))){
+                            rc.move(newDir);
+                        }else{
+                            destination = destination.add(toEnemy, 10);
+                            mode = 1;
+                        }
+                        return;
+                    }
+                }
+            }
+
+
+
+            //            System.out.println("no way to move");
+        }
+    }
+
+
+    // return the nearest enemy robot within radius
+    public RobotInfo senseNearestEnemyWithin(int radiusSquared) {
+        RobotInfo[] enemies = rc.senseNearbyRobots( radiusSquared, theirTeam);
+
+        if (enemies.length > 0) {
+            RobotInfo nearestRobot = null;
+            int nearestDistance = Integer.MAX_VALUE;
+            for (RobotInfo robot : enemies) {
+                int distance = rc.getLocation().distanceSquaredTo(
+                        robot.location);
+                if (distance < nearestDistance) {
+                    nearestDistance = distance;
+                    nearestRobot = robot;
+                }
+            }
+
+            if (nearestDistance > radiusSquared){
+                return null;
+            }
+            return nearestRobot;
+        }
+        return null;
+    }
+
+    public void goAroundTransferingSupply(){
+
+    }
+
     public void startAttackingTowersAndHQ() throws GameActionException{
         MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
-        
+
         MapLocation nearestAttackableTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(enemyTowers);
-        
+
         if(nearestAttackableTowerSafeFromHQ != null){
             attackTower();
             moveToLocationSafeFromHQ(nearestAttackableTowerSafeFromHQ);
@@ -229,12 +413,12 @@ public class Drone extends Unit {
             moveToLocationNotSafe(theirHQ);
         }
     }
-    
+
     public MapLocation nearestAttackableTowerSafeFromHQ(MapLocation[] enemyTowers){
         MapLocation towerLocation = null;
         int distance = Integer.MAX_VALUE;
         MapLocation droneLocation = rc.getLocation();
-        
+
         for(MapLocation location : enemyTowers){
             int tempDistance = droneLocation.distanceSquaredTo(location);
             if(tempDistance < distance && safelyAttackableFromHQ(location)){
@@ -242,14 +426,14 @@ public class Drone extends Unit {
                 towerLocation = location;
             }
         }
-        
+
         return towerLocation;
     }
-    
+
     public boolean safelyAttackableFromHQ(MapLocation location){
         return location.distanceSquaredTo(theirHQ) > 1;
     }
-    
+
     public void harassStrategy(MapLocation ml) throws GameActionException {
         harassToLocation(ml);
     }
@@ -275,7 +459,7 @@ public class Drone extends Unit {
         }
     }
 
-    
+
     /**
      * Check if it has found greater ore area than it had found before.
      * If so , broadcast it. (since that spot is reachable).
@@ -293,56 +477,15 @@ public class Drone extends Unit {
                 coordY = loc.y;
             }
         }
-        
-        if (maxOreArea < tempMax){
-        maxOreArea = tempMax;
-        rc.broadcast(channel_maxOreAmount, (int) Math.ceil(maxOreArea));
-        rc.broadcast(channel_maxOreX, coordX);
-        rc.broadcast(channel_maxOreY, coordY);
-        }
-    }
-    //    }
 
-    public void extendExploration() throws GameActionException{
-        //only first 5 drones should explore path!
-        if (!exploredDeadLock && channelID < 40051){ 
-            checkOreArea();
-            //have not moved along y coord
-            if (searchCoord == rc.getLocation().y){
-                int x = rc.getLocation().x-3;
-                for (int i = 0; i < 7; i++ ){
-                    TerrainTile t = rc.senseTerrainTile(new MapLocation(x, searchCoord));
-                    if (t == TerrainTile.NORMAL){
-                        reachableSpots.add(new MapLocation(x, searchCoord));
-                    }
-                }
-                //moved and has to level up reachableSpots  (Assuming drones not going back)  
-            }else{
-                HashSet<MapLocation> newReachableSpots = new HashSet<MapLocation>();
-                for (MapLocation loc: reachableSpots){
-                    for(int i = -1; i<=1; i++){
-                        TerrainTile t = rc.senseTerrainTile(new MapLocation(loc.x + i, searchCoord));
-                        if (t == TerrainTile.NORMAL){
-                            newReachableSpots.add(new MapLocation(loc.x + i, searchCoord));
-                        }
-                    }
-                }
-                if (newReachableSpots.size() == 0){
-                    exploredDeadLock = true;
-                }
-                reachableSpots = newReachableSpots;
-            }
-            searchCoord = rc.getLocation().y;
-            //add free spots along y axis
-            int x = rc.getLocation().x-3;
-            for (int i = 0; i < 7; i++ ){
-                TerrainTile t = rc.senseTerrainTile(new MapLocation(x, searchCoord));
-                if (t == TerrainTile.NORMAL){
-                    reachableSpots.add(new MapLocation(x, searchCoord));
-                }
-            }
+        if (maxOreArea < tempMax){
+            maxOreArea = tempMax;
+            rc.broadcast(channel_maxOreAmount, (int) Math.ceil(maxOreArea));
+            rc.broadcast(channel_maxOreX, coordX);
+            rc.broadcast(channel_maxOreY, coordY);
         }
     }
+
 
     /**
      * Attack towers if it sees towers, otherwise attack enemy with lowest
@@ -395,6 +538,7 @@ public class Drone extends Unit {
             }
         }
     }
+
 
 
 

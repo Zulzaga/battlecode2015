@@ -13,6 +13,7 @@ public class Computer extends Unit{
         //Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Computer;
         initChannelNum(); 
+        supplyUpkeep = 2;
     }
 
 }
