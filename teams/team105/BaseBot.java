@@ -372,6 +372,17 @@ public abstract class BaseBot {
 
         return dirs;
     }
+    
+    public Direction[] getDirectionsTowardAndNext(MapLocation dest){
+        Direction toDest = rc.getLocation().directionTo(dest);
+        Direction[] dirs = { toDest, toDest.rotateLeft(), toDest.rotateRight(),
+                toDest.rotateLeft().rotateLeft(),
+                toDest.rotateRight().rotateRight(),
+                toDest.rotateLeft().rotateLeft().rotateLeft(),
+                toDest.rotateRight().rotateRight().rotateRight()};
+
+        return dirs;
+    }
 
 
     /**

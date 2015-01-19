@@ -39,7 +39,7 @@ public class Drone extends Unit {
     public int channel_callOfSupplyX;
     public int channel_callOfSupplyY;
 
-    
+
     public Direction[] allDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH,
             Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
 
@@ -69,11 +69,11 @@ public class Drone extends Unit {
         channel_maxOreX = channelID + 1;
         channel_maxOreY = channelID + 2;
         channel_maxOreAmount = channelID + 3;
-        
+
         channel_callOfSupply = channelID + 5;
         channel_callOfSupplyX =  channelID + 6;
         channel_callOfSupplyY = channelID + 7;
-        
+
         pathTo = spawnedOrder %3; //would be used for broadcasting! BE CAREFUL
 
         if( pathTo ==1 || spawnedOrder >3 ){
@@ -82,11 +82,15 @@ public class Drone extends Unit {
             path = "centerOfMap";
         }else if( pathTo ==2 ){
             destination = endCorner2;
+
             path = "endCorner";
         }else if( pathTo ==0 ){
             destination = endCorner1;
             path = "endCorner";
         }
+        
+        System.out.println("Destination: " + destination.x + " " + destination.y);
+
     }
 
 
@@ -181,16 +185,16 @@ public class Drone extends Unit {
             }
         } else {
             if (mode == 0){
-                System.out.println(channelID + "mode 0, exploring map. time: " + Clock.getRoundNum());
+//                System.out.println(channelID + "mode 0, exploring map. time: " + Clock.getRoundNum());
                 //expanding map range and exploring path.
                 moveToLocationExtandingRange(destination);
             }else if(mode ==1){
                 //going to theirHQ, exploring map too.
-                System.out.println(channelID  + "mode 1, to theirHQ. time: " + Clock.getRoundNum());
+//                System.out.println(channelID  + "mode 1, to theirHQ. time: " + Clock.getRoundNum());
                 moveToLocation(destination);
             }else{
                 //transfering supply
-                System.out.println(channelID  + "mode 2, supply ... time: " + Clock.getRoundNum());
+//                System.out.println(channelID  + "mode 2, supply ... time: " + Clock.getRoundNum());
 
                 provideSupply();
             }
@@ -212,7 +216,7 @@ public class Drone extends Unit {
                 repetition +=1;
             }
         }
-        if (repetition > 2){
+        if (repetition > 3){
             System.out.println("locked!") ;return true;}
         return false;
     }
@@ -243,7 +247,7 @@ public class Drone extends Unit {
         }else{
             if (onDutyForSupply){
                 if (rc.getLocation().distanceSquaredTo(destination) < 10){
-                    //structures always 0 then never calls drone.
+                    //structures are always 0 then never call drones.
                     RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
                             GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
                     double lowestSupply = rc.getSupplyLevel();
@@ -260,7 +264,7 @@ public class Drone extends Unit {
                         rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
                     }
                 }
-                
+
                 //after transfer
                 if (aroundAverageSupply() >500 || rc.getSupplyLevel() < 100 ){
                     destination = myHQ;
@@ -285,7 +289,7 @@ public class Drone extends Unit {
     // move to location (Safe!)
     public void moveToLocation(MapLocation location) throws GameActionException {
         if (rc.isCoreReady()) {
-            Direction dirs[] = getDirectionsToward(location);
+            Direction dirs[] = getDirectionsTowardAndNext(location);
 
             for (Direction newDir : dirs) {
                 if (rc.canMove(newDir)) {
@@ -328,20 +332,32 @@ public class Drone extends Unit {
             int forwardNormals = numNormalsdAround(forward);
             int maxNormals = Math.max(Math.max(leftNormals, rightNormals), forwardNormals);
 
-            if (currentLoc.distanceSquaredTo(destination) < 3 || maxNormals == 0){
+            if (currentLoc.distanceSquaredTo(destination) < 16 || maxNormals == 0){
                 System.out.println("to their HQ");
-                destination = destination.add(toEnemy, 10);
                 mode = 1;
-                dirs = getDirectionsToward(destination);
+                dirs = getDirectionsTowardAndNext(destination);
+
+                for (Direction newDir : dirs) {
+                    if (rc.canMove(newDir)) {
+                        if (!safeToMove2(rc.getLocation().add(newDir))
+                                || !safeFromShortShooters(rc.getLocation().add(
+                                        newDir))) {
+                            //                        System.out.println("NOT  MOVING!!!");
+                            continue;
+                        } else if (rc.canMove(newDir)) {
+                            rc.move(newDir);
+                            return;
+                        }
+                    }
+                }
+                
             }else if (forwardNormals == maxNormals){
-                dirs = getDirectionsToward(destination);
+                dirs = getDirectionsTowardAndNext(destination);
             }else if ( leftNormals == maxNormals){
-                dirs = getDirectionsToward(leftLoc);
+                dirs = getDirectionsTowardAndNext(leftLoc);
             }else{
-                dirs = getDirectionsToward(rightLoc);
+                dirs = getDirectionsTowardAndNext(rightLoc);
             }
-
-
 
             for (Direction newDir : dirs) {
                 if (rc.canMove(newDir)) {
@@ -354,13 +370,16 @@ public class Drone extends Unit {
                         if( !locked(currentLoc.add(newDir))){
                             rc.move(newDir);
                         }else{
-                            destination = destination.add(toEnemy, 10);
                             mode = 1;
                         }
                         return;
                     }
                 }
             }
+
+
+
+
 
 
 
