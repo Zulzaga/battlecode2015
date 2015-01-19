@@ -200,7 +200,8 @@ public abstract class Unit extends BaseBot {
             }
         }
         MapLocation tileInFront = rc.getLocation().add(facing);
-
+        // hehe. lol. Just writing something for the camera.
+        
         // check that the direction in front is not a tile that can be attacked
         // by the enemy towers
         MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();

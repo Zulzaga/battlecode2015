@@ -606,7 +606,7 @@ public abstract class BaseBot {
     //Drones should not use this!!!
     public void transferSupplies() throws GameActionException {
         //have enough supply to share
-        if ( rc.getSupplyLevel() > this.supplyUpkeep){
+        if ( rc.getSupplyLevel() > this.supplyUpkeep*3){
             //structures always 0 then never calls drone.
             RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
                     GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
@@ -627,7 +627,7 @@ public abstract class BaseBot {
             //need to call drones for supple
         }else {
             int aveSupply = (int) Math.ceil(aroundAverageSupply()) +1 ;  //should never broadcast 0
-            if (aveSupply < 6 || rc.senseNearbyRobots(20, myTeam).length > 3);
+            if (aveSupply < 50 || rc.senseNearbyRobots(20, myTeam).length > 4 );
             if (rc.readBroadcast(Channel_CalledOn1) == 0){
                 rc.broadcast(Channel_CalledOn1, aveSupply +1);
                 rc.broadcast(Channel_CallSupplyX1, rc.getLocation().x);
@@ -648,7 +648,7 @@ public abstract class BaseBot {
     
 
     public double aroundAverageSupply(){
-        RobotInfo[] mySide = rc.senseNearbyRobots(20, myTeam);
+        RobotInfo[] mySide = rc.senseNearbyRobots(15, myTeam);
         double totalSupply = rc.getSupplyLevel();
         for(RobotInfo fellow: mySide){
             totalSupply = fellow.supplyLevel;

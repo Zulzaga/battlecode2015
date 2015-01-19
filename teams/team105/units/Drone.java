@@ -123,13 +123,8 @@ public class Drone extends Unit {
     }
 
     public void execute() throws GameActionException {
-
         int roundNum = Clock.getRoundNum();
-        //        if (roundNum < 700 && destination != null){
         goAroungWithSpecialMode(destination);
-        //        }else{
-        //            goAroundTransferingSupply();
-        //        }
         rc.yield();
     }
 
@@ -173,7 +168,6 @@ public class Drone extends Unit {
                 // attackRobot(nearestEnemy.location);
                 avoid(nearestEnemy);
             } else {
-
                 if (nearestEnemy.type == RobotType.DRONE) {
                     if (shouldStand) {
                         shouldStand = false; // waited once
@@ -187,13 +181,17 @@ public class Drone extends Unit {
             }
         } else {
             if (mode == 0){
+                System.out.println(channelID + "mode 0, exploring map. time: " + Clock.getRoundNum());
                 //expanding map range and exploring path.
                 moveToLocationExtandingRange(destination);
             }else if(mode ==1){
                 //going to theirHQ, exploring map too.
+                System.out.println(channelID  + "mode 1, to theirHQ. time: " + Clock.getRoundNum());
                 moveToLocation(destination);
             }else{
                 //transfering supply
+                System.out.println(channelID  + "mode 2, supply ... time: " + Clock.getRoundNum());
+
                 provideSupply();
             }
             //avoiding enemies
@@ -214,7 +212,8 @@ public class Drone extends Unit {
                 repetition +=1;
             }
         }
-        if (repetition > 2){return true;}
+        if (repetition > 2){
+            System.out.println("locked!") ;return true;}
         return false;
     }
 
@@ -237,9 +236,10 @@ public class Drone extends Unit {
     }
 
     public void provideSupply() throws GameActionException{
-        if (rc.getSupplyLevel() < 20){
+        if (rc.getSupplyLevel() < 100){
             destination = myHQ;
             moveToLocation(destination);
+            onDutyForSupply = false;
         }else{
             if (onDutyForSupply){
                 if (rc.getLocation().distanceSquaredTo(destination) < 10){
@@ -256,15 +256,16 @@ public class Drone extends Unit {
                             suppliesToThisLocation = ri.location;
                         }
                     }
-                    if (suppliesToThisLocation != null) {
+                    if (suppliesToThisLocation != null && Clock.getBytecodesLeft() > 500) {
                         rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
                     }
                 }
                 
                 //after transfer
-                if (aroundAverageSupply() >20 || rc.getSupplyLevel() < 20 ){
+                if (aroundAverageSupply() >500 || rc.getSupplyLevel() < 100 ){
                     destination = myHQ;
                     moveToLocation(destination);
+                    onDutyForSupply = false;
                 }
             }else{
                 if (rc.readBroadcast(channel_callOfSupply) !=0 ){
@@ -273,6 +274,7 @@ public class Drone extends Unit {
                     destination = new MapLocation(x,y);
                     moveToLocation(destination);
                     rc.broadcast(channel_callOfSupply, 0);
+                    onDutyForSupply = true;
                 }
             }
 
