@@ -41,9 +41,6 @@ public class Drone extends Unit {
     public int channel_callOfSupplyY;
 
 
-    public Direction[] allDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH,
-            Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
-
     public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
     public ArrayList<MapLocation> recentPathRecord = new ArrayList<MapLocation>();
 
@@ -188,13 +185,11 @@ public class Drone extends Unit {
             if (mode == 0){
                 //expanding map range and exploring path.
                 moveToLocationExtandingRange();
-                System.out.println("Mode 0" + searchedPath);
             }else if( !searchedPath){
-//                System.out.println("SearchPATH" + Clock.getRoundNum());
-//                    findShortestPathAstar( myHQ, 10000 );
-//                    searchedPath = true;
-//                    System.out.println("searched!" + Clock.getRoundNum());
-//                
+                    findShortestPathAstar( myHQ, 10000 );
+                    searchedPath = true;
+                    System.out.println("searched!" + Clock.getRoundNum());
+                
                 //transfering supply
 //                provideSupply();
             }
@@ -333,11 +328,9 @@ public class Drone extends Unit {
             if (currentLoc.distanceSquaredTo(destination) < 5 || locked()){
                 if (destination.equals(theirHQ)){
                     mode = 1; //stop this execution! 
-                    System.out.println("change mode to" + mode );
                     recentPathRecord = new ArrayList<MapLocation>();
                 }else{
                     destination = theirHQ;
-                    System.out.println("to their HQ");
                     recentPathRecord = new ArrayList<MapLocation>();
                 }
             }else{

@@ -201,20 +201,26 @@ public abstract class BaseBot {
     public static int Channel_OreAreaX5 = 40051;
     public static int Channel_OreAreaY5 = 40052;
     public static int Channel_OreAmount5 = 40053;
-    
+
     //Call drones for supple support
     public static int Channel_CalledOn1 = 40015; //amount, if its drone has not been called, then it must be 0;
     public static int Channel_CallSupplyX1 = 40016;
     public static int Channel_CallSupplyY1 = 40017;
-    
+
     public static int Channel_CalledOn2 = 40025;
     public static int Channel_CallSupplyX2 = 40026;
     public static int Channel_CallSupplyY2 = 40027;
-    
+
     public static int Channel_CalledOn3 = 40035;
     public static int Channel_CallSupplyX3 = 40036;
     public static int Channel_CallSupplyY3 = 40037;
-    
+
+
+    //90 degree relations between directions.
+    protected HashMap<Direction, Direction[]> degree90 = new HashMap<Direction, Direction[]>();
+    public Direction[] allDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH,
+            Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
+
 
     // for channeling
     protected int channelID; // this channel would be used for this robot's
@@ -242,6 +248,11 @@ public abstract class BaseBot {
         this.rand = new Random(rc.getID());
         criticalDirection = myHQ.directionTo(theirHQ);
         emptyMatrix();
+
+
+        for (Direction dir: allDirs){
+            degree90.put(dir,  new Direction[]{dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()});
+        }
     }
 
     public Boolean isNormalTerrain(MapLocation loc){
@@ -251,41 +262,6 @@ public abstract class BaseBot {
         }
         return false;
     }
-
-
-    /**
-     * 
-     * @param finalDest
-     * returns if it found a path, getting out of the maze
-     */
-    public void discoverCriticalLocations(MapLocation finalDest){
-        MapLocation currentLoc = rc.getLocation();
-        Boolean criticalLoc = false;
-        while (rc.canSenseLocation(currentLoc) ){
-            MapLocation temp = currentLoc.add(criticalDirection);
-            if (isNormalTerrain(temp)){
-                criticalDirection = temp.directionTo(finalDest);
-                criticalPath.put(temp, currentLoc);
-                return;
-            }
-
-            for (int i= 0; i < 3; i++){
-                TerrainTile t = rc.senseTerrainTile(temp);
-                if ( t == TerrainTile.NORMAL){
-                    criticalPath.put(temp, currentLoc);
-                    currentLoc = temp;
-                    criticalLoc = true;
-                    break;
-                }
-            }
-
-            if(!criticalLoc){
-
-            }
-
-        }
-    }
-
 
 
     public void emptyMatrix(){
@@ -324,7 +300,7 @@ public abstract class BaseBot {
         matrix[ loc.x - myHQ.x + halfMatrixSize][loc.y  -myHQ.y  +halfMatrixSize ] = "S";
     }
 
-    public void markDestMartrix(MapLocation loc){
+    public void markDestMatrix(MapLocation loc){
         matrix[ loc.x - myHQ.x + halfMatrixSize][loc.y  -myHQ.y  + halfMatrixSize] = "D";
     }
 
@@ -372,7 +348,7 @@ public abstract class BaseBot {
 
         return dirs;
     }
-    
+
     public Direction[] getDirectionsTowardAndNext(MapLocation dest){
         Direction toDest = rc.getLocation().directionTo(dest);
         Direction[] dirs = { toDest, toDest.rotateLeft(), toDest.rotateRight(),
@@ -476,18 +452,18 @@ public abstract class BaseBot {
      */
     public ArrayList<MapLocation> findShortestPathAstar(MapLocation dest,double searchWithinRadius ){
         //dest is not our sense range, it is likely we could not any path.
-//        if (rc.canSenseLocation(dest)){
-//            return null;
-//        }
-        
-//        emptyMatrix();
+        //        if (rc.canSenseLocation(dest)){
+        //            return null;
+        //        }
 
-     
-        
+        //        emptyMatrix();
+
+
+
         MapLocation start = rc.getLocation(); 
         markStartMatrix(start);
-        markDestMartrix(dest);
-        
+        markDestMatrix(dest);
+
         HashSet<MapLocation> closedSet = new HashSet<MapLocation>(); // The set of nodes already evaluated.
         HashSet<MapLocation> openSet = new HashSet<MapLocation>(); // The set of tentative nodes to be evaluated, initially containing the start node
         HashMap<MapLocation, Double> getHereCost = new HashMap<MapLocation, Double>();
@@ -504,7 +480,8 @@ public abstract class BaseBot {
             MapLocation current = findLowestCostLocation(openSet, getHereCost, dest);
             markSpecMartrix(current);
             if ( current.equals(dest)){
-                return constructPath( cameFrom, dest);
+                //                return constructPath( cameFrom, dest);
+                return constructCriticalPathPoints( cameFrom, dest);
             }
 
             openSet.remove(current);
@@ -547,6 +524,38 @@ public abstract class BaseBot {
             start = came_from.get(start);
         }
         MatrixtoString();
+        return path;
+
+    }
+
+    public ArrayList<MapLocation> constructCriticalPathPoints( HashMap<MapLocation, MapLocation> came_from, MapLocation goal){
+        ArrayList<MapLocation> path = new ArrayList<MapLocation>();
+
+        MapLocation start = goal;
+        markDestMatrix(start);
+        path.add(start);
+        MapLocation end = null;
+        Direction pre = null;
+        Direction after = null;
+        while( start != null){
+            if (after != null){
+                if (after == pre.rotateLeft().rotateLeft() || after == pre.rotateRight().rotateRight() ){
+                    if (end != null){
+                        path.add(end);
+                        markDestMatrix(end);
+                    }
+                } 
+            }
+
+            after = pre;
+            end = start;
+            start = came_from.get(start);
+            if (start != null){
+                pre = start.directionTo(end);
+            }
+        }
+        MatrixtoString();
+        System.out.println("/n CRITICAL POINTS");
         return path;
 
     }
@@ -613,7 +622,7 @@ public abstract class BaseBot {
             }
         }
     }
-    
+
     //This method should be written in sturctures and units.
     public void go() throws GameActionException {
     }
@@ -639,7 +648,7 @@ public abstract class BaseBot {
             if (suppliesToThisLocation != null) {
                 rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
             }
-            
+
             //need to call drones for supple
         }else {
             int aveSupply = (int) Math.ceil(aroundAverageSupply()) +1 ;  //should never broadcast 0
@@ -657,11 +666,11 @@ public abstract class BaseBot {
                 rc.broadcast(Channel_CallSupplyX3, rc.getLocation().x);
                 rc.broadcast(Channel_CallSupplyY3, rc.getLocation().y);
             }
-            
+
         }
     }
-    
-    
+
+
 
     public double aroundAverageSupply(){
         RobotInfo[] mySide = rc.senseNearbyRobots(15, myTeam);
