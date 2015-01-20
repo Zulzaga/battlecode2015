@@ -27,8 +27,9 @@ public abstract class Unit extends BaseBot {
     protected int armyChannel;
     protected MapLocation destination = null;
 
-    protected MapLocation exploreToDest = null; // null if it is not an explorer
-    // drone!
+    
+    public ArrayList<MapLocation> recentPathRecord = new ArrayList<MapLocation>();
+
     
     protected Direction toEnemy;
     protected double distanceToCenter;
@@ -744,5 +745,41 @@ public abstract class Unit extends BaseBot {
     public boolean safelyAttackableFromHQ(MapLocation location) {
         return location.distanceSquaredTo(theirHQ) > 1;
 
+    }
+    
+    public boolean blocked(){
+        int repetition = 0;
+        for (int i =0; i< recentPathRecord.size(); i++){
+            if (recentPathRecord.get(i).equals(rc.getLocation())){
+                repetition +=1;
+            }
+        }
+        if (repetition > 3){
+            System.out.println("locked!") ;return true;}
+        return false;
+    }
+
+    public void recordMovement(){
+        recentPathRecord.add(rc.getLocation());
+        if ( recentPathRecord.size() > 10){
+            recentPathRecord.remove(0);
+        }
+
+    }
+
+    public int numNormalsdAround(MapLocation ml){
+        int numNormals = 0;
+
+        TerrainTile loc = rc.senseTerrainTile(ml);
+        if (loc.equals(TerrainTile.NORMAL)){
+            numNormals +=1;
+        }
+        for (Direction dir: allDirs){
+            loc = rc.senseTerrainTile(ml.add(dir));
+            if (loc.equals(TerrainTile.NORMAL)){
+                numNormals +=1;
+            }
+        }
+        return numNormals;
     }
 }

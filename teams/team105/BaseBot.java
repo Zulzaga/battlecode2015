@@ -179,7 +179,11 @@ public abstract class BaseBot {
     public static int Channel_PathMiddle2= 1004;
     public static int Channel_PathCorner1= 1005;
     public static int Channel_PathCorner2= 1006;
-
+    
+    ///// Channels for path which 3 drones may find///////
+    public static int Channel_PathToCenter = 1100;
+    public static int Channel_PathToCorner1 = 1200;
+    public static int Channel_PathToCorner2 = 1300;
 
     //Reachable ore areas (first 5 explorer drones' channels)
     public static int Channel_OreAreaX1 = 40011; 
@@ -455,10 +459,6 @@ public abstract class BaseBot {
         //        if (rc.canSenseLocation(dest)){
         //            return null;
         //        }
-
-        //        emptyMatrix();
-
-
 
         MapLocation start = rc.getLocation(); 
         markStartMatrix(start);

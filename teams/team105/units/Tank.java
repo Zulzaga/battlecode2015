@@ -267,6 +267,26 @@ public class Tank extends Unit {
         }
     }
     
+    public void moveToLocationWithoutBlocked(MapLocation location) throws GameActionException{
+        if (rc.isCoreReady()) {
+            Direction dirs[] = getDirectionsToward(location);
+
+            for (Direction newDir : dirs) {
+                if (rc.canMove(newDir)) {
+                    if (!safeToMove2(rc.getLocation().add(newDir))
+                            || !safeFromShortShooters(rc.getLocation().add(
+                                    newDir))) {
+                        continue;
+                    } else if (rc.canMove(newDir)) {
+                        rc.move(newDir);
+                        return;
+                    }
+                }
+            }
+        }
+        
+    }
+    
     public RobotInfo senseNearestEnemyTank(RobotType type) {
         RobotInfo[] enemies = senseNearbyEnemiesTank(type);
 

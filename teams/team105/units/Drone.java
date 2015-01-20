@@ -30,6 +30,7 @@ public class Drone extends Unit {
     public boolean searchedPath = false; //try to find path to its current destination;
     public boolean freePath = false; //if it is true, it guarantees that there is a way to reach its destination.
     public int pathTo;
+    public int channel_PathReporting;
     public String path; //just for debugging!
     public MapLocation oreAreaPoint = null;
     public double maxOreArea = 0;
@@ -42,7 +43,6 @@ public class Drone extends Unit {
 
 
     public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
-    public ArrayList<MapLocation> recentPathRecord = new ArrayList<MapLocation>();
 
     public Drone(RobotController rc) throws GameActionException {
         super(rc);
@@ -77,15 +77,15 @@ public class Drone extends Unit {
         if( pathTo ==1 || spawnedOrder >3 ){
             //ourHQ - > theirHQ
             destination = centerOfMap;
-            path = "centerOfMap";
+            channel_PathReporting = Channel_PathToCenter;
         }else if( pathTo ==2 ){
             destination = endCorner2;
-
-            path = "endCorner";
+            channel_PathReporting = Channel_PathToCorner1;
         }else if( pathTo ==0 ){
             destination = endCorner1;
-            path = "endCorner";
+            channel_PathReporting = Channel_PathToCorner2;
         }
+        
 
         System.out.println("Destination: " + destination.x + " " + destination.y);
 
@@ -130,35 +130,6 @@ public class Drone extends Unit {
         rc.yield();
     }
 
-    //    public void hugoPlan(){
-    //        try{
-    //            int roundNum = Clock.getRoundNum();
-    //            if(roundNum < 1700){
-    //                if(roundNum < 400) // start exploring
-    //                    explore();
-    //                else if(roundNum < 1300){
-    //                    if((roundNum / 40) % 5 == 0){
-    //                        // retreat
-    //                        MapLocation loc = rc.getLocation();
-    //                        harassToLocation(loc.add(loc.directionTo(theirHQ).opposite()));
-    //                    }
-    //                    else { // advance
-    //                        explore();
-    //                    }
-    //                }
-    //                else  // advance
-    //                    explore();
-    //            }
-    //                
-    //            else{ // after round 1800
-    //                startAttackingTowersAndHQ();
-    //            }
-    //        }
-    //        catch(GameActionException e){
-    //            e.printStackTrace();
-    //        }
-    //        rc.yield();
-    //    }
 
     public void goAroungWithSpecialMode(MapLocation ml) throws GameActionException{
         RobotInfo nearestEnemy = senseNearestEnemy(rc.getType()) ;
@@ -186,12 +157,31 @@ public class Drone extends Unit {
                 //expanding map range and exploring path.
                 moveToLocationExtandingRange();
             }else if( !searchedPath){
-                    findShortestPathAstar( myHQ, 10000 );
+                ArrayList<MapLocation> pathToMyHQ = findShortestPathAstar( myHQ, 10000 );
+                    if ( pathToMyHQ != null){
+                        if( pathTo ==1 ){
+                            //ourHQ - > theirHQ
+                            destination = centerOfMap;
+                            path = "centerOfMap";
+                        }else if( pathTo ==2 ){
+                            destination = endCorner2;
+
+                            path = "endCorner";
+                        }else if( pathTo ==0 ){
+                            destination = endCorner1;
+                            path = "endCorner";
+                        }
+                        for( MapLocation criticalPathPoint: pathToMyHQ ){
+                            rc.broadcast(channel_PathReporting, criticalPathPoint.x);
+                            rc.broadcast(channel_PathReporting, criticalPathPoint.y);
+                            channel_PathReporting +=2;
+                        }
+                    };
                     searchedPath = true;
                     System.out.println("searched!" + Clock.getRoundNum());
-                
+            }else{
                 //transfering supply
-//                provideSupply();
+//              provideSupply();
             }
         }
     }
