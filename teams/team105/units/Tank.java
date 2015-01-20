@@ -1,5 +1,6 @@
 package team105.units;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -26,6 +27,9 @@ public class Tank extends Unit {
      */
 
     private MapLocation movingLocation;
+    private boolean triedExploredPath = false;
+    private boolean followingCriticalPath = false;
+    private ArrayList<MapLocation> criticalPathPoints = new ArrayList<MapLocation>();
 
     public Tank(RobotController rc) throws GameActionException {
         super(rc);
@@ -267,26 +271,115 @@ public class Tank extends Unit {
         }
     }
     
-    public void moveToLocationWithoutBlocked(MapLocation location) throws GameActionException{
+    public void moveToLocationWithoutBeingBlocked(MapLocation location) throws GameActionException{
         if (rc.isCoreReady()) {
-            Direction dirs[] = getDirectionsToward(location);
-
-            for (Direction newDir : dirs) {
-                if (rc.canMove(newDir)) {
-                    if (!safeToMove2(rc.getLocation().add(newDir))
-                            || !safeFromShortShooters(rc.getLocation().add(
-                                    newDir))) {
-                        continue;
-                    } else if (rc.canMove(newDir)) {
-                        rc.move(newDir);
-                        return;
+            
+                //try to use explored path
+                if (!triedExploredPath){
+                    int xCenter = rc.readBroadcast(Channel_PathCenter);
+                    int yCenter = rc.readBroadcast(Channel_PathCenter +1 );
+                    int xCorner1 = rc.readBroadcast(Channel_PathCorner1);
+                    int yCorner1 = rc.readBroadcast(Channel_PathCorner1 +1 );
+                    int xCorner2 = rc.readBroadcast(Channel_PathCenter);
+                    int yCorner2 = rc.readBroadcast(Channel_PathCorner1 +1 );
+                    
+                    MapLocation locCenter = new MapLocation(xCenter, yCenter);
+                    MapLocation locCorner1 = new MapLocation(xCorner1, yCorner1);
+                    MapLocation locCorner2 = new MapLocation(xCorner2, yCorner2);
+                    double distToCenter = rc.getLocation().distanceSquaredTo(locCenter);
+                    double distToCorner1 = rc.getLocation().distanceSquaredTo(locCorner1);
+                    double distToCorner2 = rc.getLocation().distanceSquaredTo(locCorner2);
+                    double nullDest = rc.getLocation().distanceSquaredTo(new MapLocation(0,0));
+                    
+                    double closestPath = Math.min(distToCorner2, Math.min(distToCenter, distToCorner1));
+                    
+                    if (closestPath == nullDest){
+                        
+                    }else if (closestPath == distToCenter ){
+                        setCriticalPathPoints(Channel_PathCenter);
+                        triedExploredPath = true;
+                        followingCriticalPath = true;
+                        destination = criticalPathPoints.remove(0);
+                        recentPathRecord= new ArrayList<MapLocation>();
+                    }else if ( closestPath == distToCorner1 ){
+                        setCriticalPathPoints(Channel_PathCorner1);
+                        triedExploredPath = true;
+                        followingCriticalPath = true;
+                        destination = criticalPathPoints.remove(0);
+                        recentPathRecord= new ArrayList<MapLocation>();
+                    }else if (closestPath == distToCorner2){
+                        setCriticalPathPoints(Channel_PathCorner2);
+                        triedExploredPath = true;
+                        followingCriticalPath = true;
+                        destination = criticalPathPoints.remove(0);
+                        recentPathRecord= new ArrayList<MapLocation>();
                     }
-                }
+                 
+                    
             }
+            
+            if (followingCriticalPath){
+                if (blocked()){
+                    if (criticalPathPoints.size() > 0){
+                        destination = criticalPathPoints.remove(0);
+                        recentPathRecord= new ArrayList<MapLocation>();
+                        moveAndRecordLocation(destination);
+                    }else{
+                        followingCriticalPath = false;
+                    } 
+                }else{
+                    //destination is normal and turning point so it is necessary to get there)
+                    if (rc.getLocation().equals((destination))){
+                        if (criticalPathPoints.size() > 0){
+                        destination = criticalPathPoints.remove(0);
+                        recentPathRecord= new ArrayList<MapLocation>();
+                        moveAndRecordLocation(destination);
+                        }else{
+                            //we reached destination
+                            followingCriticalPath = false;
+                            moveAndRecordLocation(location);
+                        }
+                    }else{
+                        moveAndRecordLocation(destination);
+                    }   
+                }
+            }else{
+                moveAndRecordLocation(location);
+          
+        }
         }
         
     }
     
+    public void moveAndRecordLocation(MapLocation location) throws GameActionException{
+        Direction dirs[] = getDirectionsToward(location);
+
+        for (Direction newDir : dirs) {
+            if (rc.canMove(newDir)) {
+                if (!safeToMove2(rc.getLocation().add(newDir))
+                        || !safeFromShortShooters(rc.getLocation().add(
+                                newDir))) {
+                    continue;
+                } else if (rc.canMove(newDir)) {
+                    rc.move(newDir);
+                    return;
+                }
+            }
+        }
+        recordMovement();
+    }
+    
+    private void setCriticalPathPoints(int channelPath) throws GameActionException {
+        int x = rc.readBroadcast(channelPath);
+        int y = rc.readBroadcast(channelPath + 1);
+        while (x != 0 && y !=0){
+            criticalPathPoints.add(new MapLocation(x,y));
+            x = rc.readBroadcast(channelPath);
+            y = rc.readBroadcast(channelPath + 1);
+            System.out.println(channelPath + "  x -" + x + " y-"  + y);
+        }
+    }
+
     public RobotInfo senseNearestEnemyTank(RobotType type) {
         RobotInfo[] enemies = senseNearbyEnemiesTank(type);
 

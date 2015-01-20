@@ -533,7 +533,7 @@ public abstract class BaseBot {
 
         MapLocation start = goal;
         markDestMatrix(start);
-        path.add(start);
+//        path.add(start);  //it is our HQ
         MapLocation end = null;
         Direction pre = null;
         Direction after = null;

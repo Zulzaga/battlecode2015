@@ -187,7 +187,7 @@ public class Drone extends Unit {
     }
 
 
-    public boolean locked(){
+    public boolean blocked(){
         int repetition = 0;
         for (int i =0; i< recentPathRecord.size(); i++){
             if (recentPathRecord.get(i).equals(rc.getLocation())){
@@ -221,8 +221,6 @@ public class Drone extends Unit {
             }
         }
         return numNormals;
-
-
     }
 
     public void provideSupply() throws GameActionException{
@@ -283,7 +281,7 @@ public class Drone extends Unit {
                                     newDir))) {
                         continue;
                     } else if (rc.canMove(newDir)) {
-                        if( !locked()){
+                        if( !blocked()){
                             rc.move(newDir);
                         }
                     }
@@ -315,7 +313,7 @@ public class Drone extends Unit {
             int forwardNormals = numNormalsdAround(forward);
             int maxNormals = Math.max(Math.max(leftNormals, rightNormals), forwardNormals);
 
-            if (currentLoc.distanceSquaredTo(destination) < 5 || locked()){
+            if (currentLoc.distanceSquaredTo(destination) < 5 || blocked()){
                 if (destination.equals(theirHQ)){
                     mode = 1; //stop this execution! 
                     recentPathRecord = new ArrayList<MapLocation>();

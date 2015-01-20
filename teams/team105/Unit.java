@@ -755,7 +755,8 @@ public abstract class Unit extends BaseBot {
             }
         }
         if (repetition > 3){
-            System.out.println("locked!") ;return true;}
+//            System.out.println("locked!") ;
+            return true;}
         return false;
     }
 
