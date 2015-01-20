@@ -52,7 +52,7 @@ public abstract class Structure extends BaseBot {
         double transferAmount = 0;
         MapLocation suppliesToThisLocation = null;
         for (RobotInfo ri : nearbyAllies) {
-            //prefer drones which gone spread it.
+            //prefer drones. They would spread supply.
             if ( ri.type == RobotType.DRONE && ri.supplyLevel < 10000){
                 transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
                 rc.transferSupplies((int) transferAmount, ri.location);

@@ -62,9 +62,9 @@ public class Beaver extends Unit {
 	    			buildUnit(RobotType.MINERFACTORY, Channel_MinerFactory);
 	    		}
 	    		
-	    		else if (rc.readBroadcast(Channel_Helipad) < 1){
-	    			buildUnit(RobotType.HELIPAD, Channel_Helipad);
-	    		}
+//	    		else if (rc.readBroadcast(Channel_Helipad) < 1){
+//	    			buildUnit(RobotType.HELIPAD, Channel_Helipad);
+//	    		}
 	    		
 	    		//else if(rc.readBroadcast(Channel_Barracks) < 1 && rc.readBroadcast(Channel_Helipad) != 0){
 	    		else if(rc.readBroadcast(Channel_Barracks) < 1){

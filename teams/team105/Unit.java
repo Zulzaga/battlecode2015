@@ -847,4 +847,22 @@ public abstract class Unit extends BaseBot {
         }
         return totalOre;
     }
+    
+    public void moveAndRecordLocation(MapLocation location) throws GameActionException{
+        Direction dirs[] = getDirectionsToward(location);
+
+        for (Direction newDir : dirs) {
+            if (rc.canMove(newDir)) {
+                if (!safeToMove2(rc.getLocation().add(newDir))
+                        || !safeFromShortShooters(rc.getLocation().add(
+                                newDir))) {
+                    continue;
+                } else if (rc.canMove(newDir)) {
+                    rc.move(newDir);
+                    return;
+                }
+            }
+        }
+        recordMovement();
+    }
 }

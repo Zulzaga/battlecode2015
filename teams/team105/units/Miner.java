@@ -15,8 +15,6 @@ import battlecode.common.RobotController;
  * Spawned at Miner Factory
  * Has a weak attack at short range
  * One of two units that can mine ore [0.2, 3].
- * 
- * 
  */
 public class Miner extends Unit {
     
@@ -87,108 +85,15 @@ public class Miner extends Unit {
           destination = new MapLocation(coordX , coordY);
           
       }
-            // System.out.println( "DESTINATION for ore ----" + destination);
+    }   
     }
-        
-    }
-    
-    public double getLastMinedAmount(){
-        double sumOre = 0; 
-        for (int i = 0; i<  miningRecord.size(); i++){
-            sumOre = sumOre +  miningRecord.get(i);
-        }
-        return sumOre;
-    }
-    
-    public boolean notMoving(){
-        if (lastSteps.size() < 6 ){
-            return false;
-        }else{
-            double maxDist = 0;
-            for (int i = 0; i<  lastSteps.size() ; i++){
-                for (int j = 0; j<  lastSteps.size() ; j++){
-                    if (i != j){
-                        double dist = lastSteps.get(i).distanceSquaredTo(lastSteps.get(j));
-                        if ( dist > maxDist){
-                            maxDist = dist;
-                        }
-                    }
-                }
-            }
-            System.out.println("maxDist  ----- " + maxDist);
-            if (maxDist < 2){
-                return true;
-            }
-            return false;
-
-        }
-    }
-
-    public void improveOreDest() throws GameActionException{
-        if (Clock.getRoundNum() > 1100){
-            destination = null; 
-            return;
-        }else if ( getLastMinedAmount() < 5 && miningRecord.size() ==10 ){
-//            findOreArea();
-            destination = null;
-        }
-        
-//        else if (notMoving()){
-//            if ( getLastMinedAmount() < 10){
-//                destination = null;
-//            }
-//        }
-        
-        
-    }
-    
-    public void considerMovement(){
-        lastSteps.add(rc.getLocation());
-        if (lastSteps.size() > 6){
-            lastSteps.remove(0);
-        }
-//        
-//        lastNumMine.add(rc.getLocation());
-//        if (lastNumMine.size() > 6){
-//            lastNumMine.remove(0);
-//        }
-//        
-//        lastNumMine 
-    }
-    
-
     
     public void execute() throws GameActionException {
-        
         attackEnemyZero();
-        mineAndMove();
-        
-//        considerMovement();
-//        improveOreDest();
-//        destination = null; // temporary added by Hugo
-//        if (destination == null){
-//        attackEnemyZero();
-//        mineAndMove();
-//        }else{
-////            avoid();
-//            moveToLocation(destination);
-//            if (rc.getLocation().distanceSquaredTo(destination) < 3){
-//                destination = null;
-//            }
-//        }
-        
+        mineAndMove();  
     }
 
-    public void explorePathWithRightPreferenceToward(MapLocation dest) {
 
-    }
-    
-    public void toDestWithMiningOre(MapLocation dest){
-        MapLocation currentState = rc.getLocation();
-        Direction toDest = currentState.directionTo(dest);
-        //Directions toward toDest
-    }
-    
  
     
 
