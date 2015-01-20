@@ -30,6 +30,8 @@ public class Drone extends Unit {
     public boolean searchedPath = false; //try to find path to its current destination;
     public boolean freePath = false; //if it is true, it guarantees that there is a way to reach its destination.
     public int pathTo;
+    public MapLocation connectionDest;
+    public MapLocation aroundEnemyDest;
     public int channel_PathReporting;
     public String path; //just for debugging!
     public MapLocation oreAreaPoint = null;
@@ -87,7 +89,7 @@ public class Drone extends Unit {
         }
         
 
-        System.out.println("Destination: " + destination.x + " " + destination.y);
+//        System.out.println("Destination: " + destination.x + " " + destination.y);
 
     }
 
@@ -125,47 +127,34 @@ public class Drone extends Unit {
             if (mode == 0){
                 //expanding map range and exploring path.
                 moveToLocationExtandingRange();
-            }else if( !searchedPath){
-                ArrayList<MapLocation> pathToMyHQ = findShortestPathAstar( myHQ, 10000 );
-                    if ( pathToMyHQ != null){
-                        if( pathTo ==1 ){
-                            //ourHQ - > theirHQ
-                            destination = centerOfMap;
-                            path = "centerOfMap";
-                        }else if( pathTo ==2 ){
-                            destination = endCorner2;
-
-                            path = "endCorner";
-                        }else if( pathTo ==0 ){
-                            destination = endCorner1;
-                            path = "endCorner";
-                        }
-                        for( MapLocation criticalPathPoint: pathToMyHQ ){
-                            rc.broadcast(channel_PathReporting, criticalPathPoint.x);
-                            rc.broadcast(channel_PathReporting, criticalPathPoint.y);
-                            channel_PathReporting +=2;
-                        }
-                    };
-                    searchedPath = true;
-                    System.out.println("searched!" + Clock.getRoundNum());
+//            }else if( !searchedPath){
+//                ArrayList<MapLocation> pathToMyHQ = findShortestPathAstar( myHQ, 10000 );
+//                    if ( pathToMyHQ != null){
+//                        if( pathTo ==1 ){
+//                            //ourHQ - > theirHQ
+//                            destination = centerOfMap;
+//                            path = "centerOfMap";
+//                        }else if( pathTo ==2 ){
+//                            destination = endCorner2;
+//
+//                            path = "endCorner";
+//                        }else if( pathTo ==0 ){
+//                            destination = endCorner1;
+//                            path = "endCorner";
+//                        }
+//                        for( MapLocation criticalPathPoint: pathToMyHQ ){
+//                            rc.broadcast(channel_PathReporting, criticalPathPoint.x);
+//                            rc.broadcast(channel_PathReporting, criticalPathPoint.y);
+//                            channel_PathReporting +=2;
+//                        }
+//                    };
+//                    searchedPath = true;
+//                    System.out.println("searched!" + Clock.getRoundNum());
             }else{
                 //transfering supply
-//              provideSupply();
+              provideSupply();
             }
         }
-    }
-
-
-    public boolean blocked(){
-        int repetition = 0;
-        for (int i =0; i< recentPathRecord.size(); i++){
-            if (recentPathRecord.get(i).equals(rc.getLocation())){
-                repetition +=1;
-            }
-        }
-        if (repetition > 3){
-            System.out.println("locked!") ;return true;}
-        return false;
     }
 
     public void recordMovement(){
@@ -191,52 +180,88 @@ public class Drone extends Unit {
         }
         return numNormals;
     }
-
+    
+    
     public void provideSupply() throws GameActionException{
-        
-        if (rc.getSupplyLevel() < 100){
-            destination = myHQ;
-            moveToLocation(destination);
-            onDutyForSupply = false;
-        }else{
-            if (onDutyForSupply){
-                if (rc.getLocation().distanceSquaredTo(destination) < 10){
-                    //structures are always 0 then never call drones.
-                    RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
-                            GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
-                    double lowestSupply = rc.getSupplyLevel();
-                    double transferAmount = 0;
-                    MapLocation suppliesToThisLocation = null;
-                    for (RobotInfo ri : nearbyAllies) {
-                        if (ri.supplyLevel < lowestSupply) {
-                            lowestSupply = ri.supplyLevel;
-                            transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
-                            suppliesToThisLocation = ri.location;
-                        }
-                    }
-                    if (suppliesToThisLocation != null) {
-                        rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
-                    }
-                }
-                //after transfer
-                if (aroundAverageSupply() >500 || rc.getSupplyLevel() < 100 ){
-                    destination = myHQ;
-                    moveToLocation(destination);
-                    onDutyForSupply = false;
-                }
-            }else{
-                if (rc.readBroadcast(channel_callOfSupply) !=0 ){
-                    int x = rc.readBroadcast(channel_callOfSupplyX);
-                    int y = rc.readBroadcast(channel_callOfSupplyY);
-                    destination = new MapLocation(x,y);
-                    moveToLocation(destination);
-                    rc.broadcast(channel_callOfSupply, 0);
-                    onDutyForSupply = true;
-                }
-            }
-        }
-
+          RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+                  GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+          double lowestSupply = rc.getSupplyLevel();
+          double transferAmount = 0;
+          MapLocation suppliesToThisLocation = null;
+          for (RobotInfo ri : nearbyAllies) {
+              if (ri.supplyLevel < lowestSupply) {
+                  lowestSupply = ri.supplyLevel;
+                  transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                  suppliesToThisLocation = ri.location;
+              }
+          }
+          if (suppliesToThisLocation != null) {
+              rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
+          }else if (blocked()){
+            changeDestination(destination); 
+          }
+          
+          moveToLocation(destination);
+    
     }
+    
+    private void changeDestination(MapLocation destination) {
+        if (destination.equals(connectionDest)){
+            destination = aroundEnemyDest;
+        }else if(destination.equals(myHQ) ){
+            destination = connectionDest;
+        }else{
+            destination = myHQ;
+        }
+        recentPathRecord = new ArrayList<MapLocation>();
+    }
+
+//    public void provideSupply() throws GameActionException{
+//        
+//        if (rc.getSupplyLevel() < 100){
+//            destination = myHQ;
+//            moveToLocation(destination);
+//            onDutyForSupply = false;
+//        }else{
+//            if (onDutyForSupply){
+//                if (rc.getLocation().distanceSquaredTo(destination) < 10){
+//                    //structures are always 0 then never call drones.
+//                    RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+//                            GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+//                    double lowestSupply = rc.getSupplyLevel();
+//                    double transferAmount = 0;
+//                    MapLocation suppliesToThisLocation = null;
+//                    for (RobotInfo ri : nearbyAllies) {
+//                        if (ri.supplyLevel < lowestSupply) {
+//                            lowestSupply = ri.supplyLevel;
+//                            transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+//                            suppliesToThisLocation = ri.location;
+//                        }
+//                    }
+//                    if (suppliesToThisLocation != null) {
+//                        rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
+//                    }
+//                }
+//                //after transfer
+//                if (aroundAverageSupply() >500 || rc.getSupplyLevel() < 100 ){
+//                    destination = myHQ;
+//                    moveToLocation(destination);
+//                    onDutyForSupply = false;
+//                }
+//            }else{
+//                if (rc.readBroadcast(channel_callOfSupply) !=0 ){
+//                    int x = rc.readBroadcast(channel_callOfSupplyX);
+//                    int y = rc.readBroadcast(channel_callOfSupplyY);
+//                    destination = new MapLocation(x,y);
+//                    moveToLocation(destination);
+//                    rc.broadcast(channel_callOfSupply, 0);
+//                    onDutyForSupply = true;
+//                }
+//            }
+//        }
+//
+//    }
+
 
     // move to location (Safe!)
     public boolean moveToLocation(MapLocation location) throws GameActionException {
@@ -252,8 +277,6 @@ public class Drone extends Unit {
                     } else if (rc.canMove(newDir)) {
                         if( !blocked()){
                             rc.move(newDir);
-                            recordMovement();
-                            return true;
                         }
                     }
                 }
@@ -262,7 +285,6 @@ public class Drone extends Unit {
         }
         return false;
     }
-
 
 
     // move to destination, avoiding enemies ------ MODE 0, 1;
@@ -287,9 +309,11 @@ public class Drone extends Unit {
 
             if (currentLoc.distanceSquaredTo(destination) < 5 || blocked()){
                 if (destination.equals(theirHQ)){
+                    aroundEnemyDest = rc.getLocation(); //reachable point;
                     mode = 1; //stop this execution! 
                     recentPathRecord = new ArrayList<MapLocation>();
                 }else{
+                    connectionDest = rc.getLocation(); //reachable point;
                     destination = theirHQ;
                     recentPathRecord = new ArrayList<MapLocation>();
                 }
