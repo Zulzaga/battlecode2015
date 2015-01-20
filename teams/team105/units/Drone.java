@@ -190,11 +190,11 @@ public class Drone extends Unit {
                 moveToLocationExtandingRange();
                 System.out.println("Mode 0" + searchedPath);
             }else if( !searchedPath){
-                System.out.println("SearchPATH" + Clock.getRoundNum());
-                    findShortestPathAstar( myHQ, 10000 );
-                    searchedPath = true;
-                    System.out.println("searched!" + Clock.getRoundNum());
-                
+//                System.out.println("SearchPATH" + Clock.getRoundNum());
+//                    findShortestPathAstar( myHQ, 10000 );
+//                    searchedPath = true;
+//                    System.out.println("searched!" + Clock.getRoundNum());
+//                
                 //transfering supply
 //                provideSupply();
             }
@@ -300,11 +300,11 @@ public class Drone extends Unit {
                     } else if (rc.canMove(newDir)) {
                         if( !locked()){
                             rc.move(newDir);
-                            recordMovement();
                         }
                     }
                 }
             }
+            recordMovement();
         }
     }
 
@@ -333,10 +333,12 @@ public class Drone extends Unit {
             if (currentLoc.distanceSquaredTo(destination) < 5 || locked()){
                 if (destination.equals(theirHQ)){
                     mode = 1; //stop this execution! 
-//                    System.out.println("change mode to" + mode);
+                    System.out.println("change mode to" + mode );
+                    recentPathRecord = new ArrayList<MapLocation>();
                 }else{
                     destination = theirHQ;
-//                    System.out.println("to their HQ");
+                    System.out.println("to their HQ");
+                    recentPathRecord = new ArrayList<MapLocation>();
                 }
             }else{
                 if (forwardNormals == maxNormals || leftNormals == rightNormals ){
