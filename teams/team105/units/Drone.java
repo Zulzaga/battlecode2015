@@ -27,6 +27,7 @@ public class Drone extends Unit {
     //Path exploring variables
     public int mode = 0; //0= exploring destination on diagonal then theirHQ, 1 = spreading supply
     public boolean onDutyForSupply = false;
+    public boolean searchedPath = false; //try to find path to its current destination;
     public boolean freePath = false; //if it is true, it guarantees that there is a way to reach its destination.
     public int pathTo;
     public String path; //just for debugging!
@@ -187,8 +188,13 @@ public class Drone extends Unit {
             if (mode == 0){
                 //expanding map range and exploring path.
                 moveToLocationExtandingRange();
-                System.out.println("Mode 0");
-            }else{
+                System.out.println("Mode 0" + searchedPath);
+            }else if( !searchedPath){
+                System.out.println("SearchPATH" + Clock.getRoundNum());
+                    findShortestPathAstar( myHQ, 10000 );
+                    searchedPath = true;
+                    System.out.println("searched!" + Clock.getRoundNum());
+                
                 //transfering supply
 //                provideSupply();
             }
@@ -235,6 +241,7 @@ public class Drone extends Unit {
     }
 
     public void provideSupply() throws GameActionException{
+        
         if (rc.getSupplyLevel() < 100){
             destination = myHQ;
             moveToLocation(destination);
@@ -255,11 +262,10 @@ public class Drone extends Unit {
                             suppliesToThisLocation = ri.location;
                         }
                     }
-                    if (suppliesToThisLocation != null && Clock.getBytecodesLeft() > 500) {
+                    if (suppliesToThisLocation != null) {
                         rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
                     }
                 }
-
                 //after transfer
                 if (aroundAverageSupply() >500 || rc.getSupplyLevel() < 100 ){
                     destination = myHQ;
@@ -276,7 +282,6 @@ public class Drone extends Unit {
                     onDutyForSupply = true;
                 }
             }
-
         }
 
     }
@@ -326,10 +331,12 @@ public class Drone extends Unit {
             int maxNormals = Math.max(Math.max(leftNormals, rightNormals), forwardNormals);
 
             if (currentLoc.distanceSquaredTo(destination) < 5 || locked()){
-                if (destination == theirHQ){
+                if (destination.equals(theirHQ)){
                     mode = 1; //stop this execution! 
+//                    System.out.println("change mode to" + mode);
                 }else{
                     destination = theirHQ;
+//                    System.out.println("to their HQ");
                 }
             }else{
                 if (forwardNormals == maxNormals || leftNormals == rightNormals ){
@@ -348,11 +355,12 @@ public class Drone extends Unit {
                             continue;
                         } else if (rc.canMove(newDir)) {
                             rc.move(newDir);
-                            recordMovement();
                             return;
                         }
                     }
                 }
+                
+                recordMovement(); //record where it ends.
             }
         }
     }
@@ -474,6 +482,7 @@ public class Drone extends Unit {
     }
 
 
+    
     /**
      * Attack towers if it sees towers, otherwise attack enemy with lowest
      * health

@@ -476,10 +476,18 @@ public abstract class BaseBot {
      */
     public ArrayList<MapLocation> findShortestPathAstar(MapLocation dest,double searchWithinRadius ){
         //dest is not our sense range, it is likely we could not any path.
-        if (rc.canSenseLocation(dest)){
-            return null;
-        }
+//        if (rc.canSenseLocation(dest)){
+//            return null;
+//        }
+        
+//        emptyMatrix();
+
+     
+        
         MapLocation start = rc.getLocation(); 
+        markStartMatrix(start);
+        markDestMartrix(dest);
+        
         HashSet<MapLocation> closedSet = new HashSet<MapLocation>(); // The set of nodes already evaluated.
         HashSet<MapLocation> openSet = new HashSet<MapLocation>(); // The set of tentative nodes to be evaluated, initially containing the start node
         HashMap<MapLocation, Double> getHereCost = new HashMap<MapLocation, Double>();
@@ -522,9 +530,6 @@ public abstract class BaseBot {
             }
         }
         System.out.println("no path!");
-
-        markStartMatrix(start);
-        markDestMartrix(dest);
         MatrixtoString();
         //        System.out.println("start: " + start.x + "  " +  start.y);
         //        System.out.println("dest: " + dest.x + "  " +  dest.y);
