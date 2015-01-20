@@ -39,12 +39,11 @@ public class Miner extends Unit {
     public void findOreArea() throws GameActionException{
         if (Clock.getRoundNum() > 200){
         double maxOre = 0;
-//        double ore1 = rc.readBroadcast(Channel_OreAmount1 ) ;
+        double ore1 = rc.readBroadcast(Channel_OreAmount1 ) ;
         double ore2 = rc.readBroadcast(Channel_OreAmount2 ) ;
         double ore3 = rc.readBroadcast(Channel_OreAmount3 ) ;
-        double ore4 = rc.readBroadcast(Channel_OreAmount4 ) ;
-        double ore5 = rc.readBroadcast(Channel_OreAmount5 ) ;
-        ArrayList<Double> arrayList = new ArrayList<Double>(Arrays.asList(ore2,ore3,ore4,ore5));
+
+        ArrayList<Double> arrayList = new ArrayList<Double>(Arrays.asList(ore1, ore2,ore3));
         Collections.sort(arrayList); 
         double max = arrayList.get(arrayList.size() - 1);
         
@@ -59,16 +58,6 @@ public class Miner extends Unit {
             int coordX = rc.readBroadcast(Channel_OreAreaX3) ;
             int coordY = rc.readBroadcast(Channel_OreAreaY3);
             destination = new MapLocation(coordX , coordY);
-            
-        }else if (max == ore4){
-            int coordX = rc.readBroadcast(Channel_OreAreaX4) ;
-            int coordY = rc.readBroadcast(Channel_OreAreaY4);
-            destination = new MapLocation(coordX , coordY);
-            
-        }else if (max == ore5){
-            int coordX = rc.readBroadcast(Channel_OreAreaX5) ;
-            int coordY = rc.readBroadcast(Channel_OreAreaY5);
-            destination = new MapLocation(coordX , coordY);
         }
         //System.out.println( "DESTINATION for ore ----" + destination);
     }else if(Clock.getRoundNum() > 600){
@@ -76,9 +65,8 @@ public class Miner extends Unit {
       double ore1 = rc.readBroadcast(Channel_OreAmount1 ) ;
       double ore2 = rc.readBroadcast(Channel_OreAmount2 ) ;
       double ore3 = rc.readBroadcast(Channel_OreAmount3 ) ;
-      double ore4 = rc.readBroadcast(Channel_OreAmount4 ) ;
-      double ore5 = rc.readBroadcast(Channel_OreAmount5 ) ;
-      ArrayList<Double> arrayList = new ArrayList<Double>(Arrays.asList(ore1,ore2,ore3,ore4,ore5));
+
+      ArrayList<Double> arrayList = new ArrayList<Double>(Arrays.asList(ore1,ore2,ore3));
       Collections.sort(arrayList); 
       double max = arrayList.get(arrayList.size() - 1);
       
@@ -98,15 +86,6 @@ public class Miner extends Unit {
           int coordY = rc.readBroadcast(Channel_OreAreaY3);
           destination = new MapLocation(coordX , coordY);
           
-      }else if (max == ore4){
-          int coordX = rc.readBroadcast(Channel_OreAreaX4) ;
-          int coordY = rc.readBroadcast(Channel_OreAreaY4);
-          destination = new MapLocation(coordX , coordY);
-          
-      }else if (max == ore5){
-          int coordX = rc.readBroadcast(Channel_OreAreaX5) ;
-          int coordY = rc.readBroadcast(Channel_OreAreaY5);
-          destination = new MapLocation(coordX , coordY);
       }
             // System.out.println( "DESTINATION for ore ----" + destination);
     }
@@ -180,19 +159,23 @@ public class Miner extends Unit {
 
     
     public void execute() throws GameActionException {
-//        considerMovement();
-        improveOreDest();
-        destination = null; // temporary added by Hugo
-        if (destination == null){
+        
         attackEnemyZero();
         mineAndMove();
-        }else{
-//            avoid();
-            moveToLocation(destination);
-            if (rc.getLocation().distanceSquaredTo(destination) < 3){
-                destination = null;
-            }
-        }
+        
+//        considerMovement();
+//        improveOreDest();
+//        destination = null; // temporary added by Hugo
+//        if (destination == null){
+//        attackEnemyZero();
+//        mineAndMove();
+//        }else{
+////            avoid();
+//            moveToLocation(destination);
+//            if (rc.getLocation().distanceSquaredTo(destination) < 3){
+//                destination = null;
+//            }
+//        }
         
     }
 

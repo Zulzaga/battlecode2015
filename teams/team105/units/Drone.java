@@ -92,37 +92,6 @@ public class Drone extends Unit {
     }
 
 
-    /**
-     * Should be called only on explorer drones! If this drone has reached its
-     * final destination, it should become non explorer ??
-     * 
-     * @throws GameActionException
-     */
-
-
-
-    private void broadcastExporation(int status) throws GameActionException {
-        int type = (channelID /10) %5;
-        if( type ==1  ){
-            //ourHQ - > theirHQ
-            //            destination = theirHQ;
-            rc.broadcast(Channel_PathCenter, status);
-        }else if( type ==2 ){
-            //            destination = endCorner2;
-            rc.broadcast(Channel_PathCorner2, status);
-        }else if( type ==3 ){
-            //            destination = endCorner1;
-            rc.broadcast(Channel_PathCorner1, status);
-        }else if( type ==4 ){
-            //            destination = middle1;
-            rc.broadcast(Channel_PathMiddle1, status);
-        }else if( type == 0){
-            //            destination = middle2;
-            rc.broadcast(Channel_PathMiddle2, status);
-
-
-        }
-    }
 
     public void execute() throws GameActionException {
         int roundNum = Clock.getRoundNum();
@@ -270,7 +239,7 @@ public class Drone extends Unit {
     }
 
     // move to location (Safe!)
-    public void moveToLocation(MapLocation location) throws GameActionException {
+    public boolean moveToLocation(MapLocation location) throws GameActionException {
         if (rc.isCoreReady()) {
             Direction dirs[] = getDirectionsTowardAndNext(location);
 
@@ -283,12 +252,15 @@ public class Drone extends Unit {
                     } else if (rc.canMove(newDir)) {
                         if( !blocked()){
                             rc.move(newDir);
+                            recordMovement();
+                            return true;
                         }
                     }
                 }
             }
             recordMovement();
         }
+        return false;
     }
 
 

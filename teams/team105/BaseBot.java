@@ -185,7 +185,7 @@ public abstract class BaseBot {
     public static int Channel_PathToCorner1 = 1200;
     public static int Channel_PathToCorner2 = 1300;
 
-    //Reachable ore areas (first 5 explorer drones' channels)
+    //Reachable ore areas (first 3 explorer drones' channels)
     public static int Channel_OreAreaX1 = 40011; 
     public static int Channel_OreAreaY1 = 40012;
     public static int Channel_OreAmount1 = 40013;
@@ -197,14 +197,6 @@ public abstract class BaseBot {
     public static int Channel_OreAreaX3 = 40031;
     public static int Channel_OreAreaY3 = 40032;
     public static int Channel_OreAmount3 = 40033;
-
-    public static int Channel_OreAreaX4 = 40041;
-    public static int Channel_OreAreaY4 = 40042;
-    public static int Channel_OreAmount4 = 40043;
-
-    public static int Channel_OreAreaX5 = 40051;
-    public static int Channel_OreAreaY5 = 40052;
-    public static int Channel_OreAmount5 = 40053;
 
     //Call drones for supple support
     public static int Channel_CalledOn1 = 40015; //amount, if its drone has not been called, then it must be 0;
@@ -225,6 +217,7 @@ public abstract class BaseBot {
     public Direction[] allDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH,
             Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
 
+    public Direction[] mainFourDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH};
 
     // for channeling
     protected int channelID; // this channel would be used for this robot's

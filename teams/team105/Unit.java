@@ -3,6 +3,7 @@ package team105;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
@@ -27,10 +28,10 @@ public abstract class Unit extends BaseBot {
     protected int armyChannel;
     protected MapLocation destination = null;
 
-    
+
     public ArrayList<MapLocation> recentPathRecord = new ArrayList<MapLocation>();
 
-    
+
     protected Direction toEnemy;
     protected double distanceToCenter;
     protected MapLocation endCorner1, endCorner2, centerOfMap;
@@ -40,39 +41,39 @@ public abstract class Unit extends BaseBot {
         facing = getRandomDirection();
         rand = new Random(rc.getID());
 
-//        emptyMatrix();
+        //        emptyMatrix();
         // These directions are general and HQ is likely to order this unit to
         // go forward one of them.
         toEnemy = myHQ.directionTo(theirHQ);
         Direction toRight = toEnemy.rotateRight().rotateRight();
-        
-       
+
+
         centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
                 (myHQ.y + theirHQ.y) / 2);
         distanceToCenter = Math.pow(myHQ.distanceSquaredTo(centerOfMap), 0.5);
-        
+
         endCorner2 = centerOfMap.add(toRight, (int) distanceToCenter).add(toEnemy, 2);
         endCorner1 = centerOfMap.add(toRight.opposite(), (int) distanceToCenter).add(toEnemy, 2);
-//        System.out.println("enemy: " + theirHQ.x + " " + theirHQ.y);
-//        System.out.println("our: " + myHQ.x + " " + myHQ.y);
-//        
-//        System.out.println("corner: " + endCorner1.x + " " + endCorner1.y);
-//        System.out.println("corner: " + endCorner2.x + " " + endCorner2.y);
+        //        System.out.println("enemy: " + theirHQ.x + " " + theirHQ.y);
+        //        System.out.println("our: " + myHQ.x + " " + myHQ.y);
+        //        
+        //        System.out.println("corner: " + endCorner1.x + " " + endCorner1.y);
+        //        System.out.println("corner: " + endCorner2.x + " " + endCorner2.y);
 
 
-//        markPathMatrix(centerOfMap);
-//        markStartMatrix(myHQ);
-//        markDestMartrix(theirHQ);
-//        markPathMatrix(endCorner1);
-//        markPathMatrix(endCorner2);
-//        MatrixtoString();
-//        middle1 = new MapLocation((centerOfMap.x + endCorner1.x) / 2,
-//                (centerOfMap.y + endCorner1.y) / 2);
-//        middle2 = new MapLocation((centerOfMap.x + endCorner2.x) / 2,
-//                (centerOfMap.y + endCorner2.y) / 2);
+        //        markPathMatrix(centerOfMap);
+        //        markStartMatrix(myHQ);
+        //        markDestMartrix(theirHQ);
+        //        markPathMatrix(endCorner1);
+        //        markPathMatrix(endCorner2);
+        //        MatrixtoString();
+        //        middle1 = new MapLocation((centerOfMap.x + endCorner1.x) / 2,
+        //                (centerOfMap.y + endCorner1.y) / 2);
+        //        middle2 = new MapLocation((centerOfMap.x + endCorner2.x) / 2,
+        //                (centerOfMap.y + endCorner2.y) / 2);
 
     }
-    
+
     public void beginningOfTurn() {
         if (rc.senseEnemyHQLocation() != null) {
             theirHQ = rc.senseEnemyHQLocation();
@@ -159,6 +160,7 @@ public abstract class Unit extends BaseBot {
         return Direction.values()[(int) (rand.nextDouble() * 8)];
     }
 
+    //should mine and move to more ore area
     public void mineAndMove() throws GameActionException {
         double sensedOre = rc.senseOre(rc.getLocation());
         if (sensedOre > 1) {// there is ore, so try to mine
@@ -167,8 +169,59 @@ public abstract class Unit extends BaseBot {
                 recordMineAmount(sensedOre);
             }
         } else {// no ore, so look for ore
-            moveAround();
+            moveAroundLookingOre();
         }
+    }
+
+
+
+    //tend to move ore rich area
+    private void moveAroundLookingOre() throws GameActionException {
+
+        MapLocation forward = rc.getLocation().add(facing);
+        Direction toLeft =  facing.rotateLeft();
+        Direction toRight =  facing.rotateRight();
+        
+        MapLocation left =  rc.getLocation().add(toLeft);
+        MapLocation right =  rc.getLocation().add(toRight);
+
+
+        double oreToForward = rc.senseOre(forward) + rc.senseOre(forward.add(facing, 1)) + rc.senseOre(forward.add(facing, 2));
+        double oreToLeft = rc.senseOre(left)  + rc.senseOre(left.add(toLeft)) + rc.senseOre(left.add(toLeft, 2));
+        double oreToRight = rc.senseOre(right)  + rc.senseOre(right.add(toRight)) + rc.senseOre(left.add(toRight, 2));  
+        
+        double maxOre = Math.max(oreToLeft,  oreToRight);
+            if (maxOre > oreToForward) {
+                if (maxOre  == oreToLeft) {
+                    facing = facing.rotateLeft();
+                } else {
+                    facing = facing.rotateRight();
+                }
+            }
+            MapLocation tileInFront = rc.getLocation().add(facing);
+            // hehe. lol. Just writing something for the camera.
+
+            // check that the direction in front is not a tile that can be attacked
+            // by the enemy towers
+            MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
+            boolean tileInFrontSafe = true;
+            for (MapLocation m : enemyTowers) {
+                if (m.distanceSquaredTo(tileInFront) <= RobotType.TOWER.attackRadiusSquared) {
+                    tileInFrontSafe = false;
+                    break;
+                }
+            }
+
+            // check that we are not facing off the edge of the map
+            if (rc.senseTerrainTile(tileInFront) != TerrainTile.NORMAL
+                    || !tileInFrontSafe) {
+                facing = facing.rotateLeft();
+            } else {
+                // try to move in the facing direction
+                if (rc.isCoreReady() && rc.canMove(facing)) {
+                    rc.move(facing);
+                }
+            }
     }
 
     public void mineAndMoveToDest() throws GameActionException {
@@ -202,7 +255,7 @@ public abstract class Unit extends BaseBot {
         }
         MapLocation tileInFront = rc.getLocation().add(facing);
         // hehe. lol. Just writing something for the camera.
-        
+
         // check that the direction in front is not a tile that can be attacked
         // by the enemy towers
         MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
@@ -363,7 +416,7 @@ public abstract class Unit extends BaseBot {
         return null;
     }
 
-    
+
 
     public Direction getBuildingDirectionRetreat(RobotType type) {
         Direction[] dirs = getDirectionsToward(theirHQ);
@@ -484,13 +537,13 @@ public abstract class Unit extends BaseBot {
 
     // if the location is not in range of their HQ
     public boolean safeFromHQ(MapLocation location) {
-    	int numEnemyTowers = rc.senseEnemyTowerLocations().length;
-    	if(numEnemyTowers >= 5)
-    		return (location.add(location.directionTo(theirHQ))).distanceSquaredTo(theirHQ) > RobotType.HQ.sensorRadiusSquared;
-    	else if(numEnemyTowers >= 2)
-    		return location.distanceSquaredTo(theirHQ) > RobotType.HQ.sensorRadiusSquared;
-    	else 
-    		return location.distanceSquaredTo(theirHQ) > RobotType.HQ.attackRadiusSquared;   			
+        int numEnemyTowers = rc.senseEnemyTowerLocations().length;
+        if(numEnemyTowers >= 5)
+            return (location.add(location.directionTo(theirHQ))).distanceSquaredTo(theirHQ) > RobotType.HQ.sensorRadiusSquared;
+            else if(numEnemyTowers >= 2)
+                return location.distanceSquaredTo(theirHQ) > RobotType.HQ.sensorRadiusSquared;
+                else 
+                    return location.distanceSquaredTo(theirHQ) > RobotType.HQ.attackRadiusSquared;   			
     }
 
     // if the location is safe from other structures
@@ -502,7 +555,7 @@ public abstract class Unit extends BaseBot {
     }
 
     // move to location (Safe!)
-    public void moveToLocation(MapLocation location) throws GameActionException {
+    public boolean moveToLocation(MapLocation location) throws GameActionException {
         if (rc.isCoreReady()) {
             Direction dirs[] = getDirectionsToward(location);
 
@@ -514,11 +567,12 @@ public abstract class Unit extends BaseBot {
                         continue;
                     } else if (rc.canMove(newDir)) {
                         rc.move(newDir);
-                        return;
+                        return true;
                     }
                 }
             }
         }
+        return false;
     }
 
     public void moveToLocationNotSafe(MapLocation location)
@@ -746,7 +800,7 @@ public abstract class Unit extends BaseBot {
         return location.distanceSquaredTo(theirHQ) > 1;
 
     }
-    
+
     public boolean blocked(){
         int repetition = 0;
         for (int i =0; i< recentPathRecord.size(); i++){
@@ -755,7 +809,7 @@ public abstract class Unit extends BaseBot {
             }
         }
         if (repetition > 3){
-//            System.out.println("locked!") ;
+            //            System.out.println("locked!") ;
             return true;}
         return false;
     }
@@ -782,5 +836,15 @@ public abstract class Unit extends BaseBot {
             }
         }
         return numNormals;
+    }
+
+    public double oreAround(MapLocation ml){
+        double totalOre = rc.senseOre(ml);
+
+        for (Direction dir: mainFourDirs){
+            totalOre = rc.senseOre(ml.add(dir));
+
+        }
+        return totalOre;
     }
 }
