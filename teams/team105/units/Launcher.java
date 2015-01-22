@@ -1,12 +1,6 @@
 package team105.units;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
 import team105.Unit;
-import team105.Unit.RobotHealthComparator;
 import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
@@ -23,6 +17,15 @@ import battlecode.common.RobotType;
  * Generates a MISSILE every 6 turns and can store up to 6
  * Super cool
  * 
+ * 
+ * NORTH - 1;
+ * NORTH_EAST - 2
+ * EAST - 3
+ * SOUTH_EAST - 4
+ * SOUTH - 5
+ * SOUTH_WEST - 6
+ * WEST - 7
+ * NORTH_WEST - 8
  */
 public class Launcher extends Unit {
 
@@ -40,11 +43,15 @@ public class Launcher extends Unit {
     }
 
     public void execute() throws GameActionException {
-        if (Clock.getRoundNum() < 1000) {
-            swarmPotLauncher();
-        } else {
-            startAttackingTowersAndHQ();
+        MapLocation[] enemies = rc.senseEnemyTowerLocations();
+        if (enemies.length > 0 && Clock.getRoundNum() > 600) {
+            swarmLocation = enemies[0];
         }
+        // if (Clock.getRoundNum() < 1000) {
+        swarmPotLauncher();
+        // } else {
+        // launcherStartAttackingTowersAndHQ();
+        // }
         rc.yield();
     }
 
@@ -53,6 +60,11 @@ public class Launcher extends Unit {
      */
     public void swarmPotLauncher() throws GameActionException {
         launcherAttackUnit();
+        if (rc.getMissileCount() < 6) {
+            if (rc.isCoreReady() && rc.canSpawn(facing, RobotType.MISSILE)) {
+                rc.spawn(facing, RobotType.MISSILE);
+            }
+        }
         moveToLocation(swarmLocation);
     }
 
@@ -62,18 +74,19 @@ public class Launcher extends Unit {
         MapLocation attackLocation = null;
         if (enemies.length > 0) {
             attackLocation = enemies[0].location;
-            friends = rc.senseNearbyRobots(enemies[0].location, 1, myTeam);
+            friends = rc.senseNearbyRobots(attackLocation, 2, myTeam);
         }
         if (friends != null) {
-            Direction d = attackLocation.directionTo(attackLocation);
-            if (friends.length < 3 && rc.isWeaponReady() && rc.canLaunch(d)) {
+            Direction d = rc.getLocation().directionTo(attackLocation);
+            if (friends.length < 2 && rc.isWeaponReady() && rc.canLaunch(d)) {
                 rc.launchMissile(d);
+                // directionToIntBroadcast(d);
             }
         }
     }
 
     private void launcherAttackLoc(MapLocation loc) throws GameActionException {
-        Direction d = loc.directionTo(loc);
+        Direction d = rc.getLocation().directionTo(loc);
         if (rc.isWeaponReady() && rc.canLaunch(d)) {
             rc.launchMissile(d);
         }
@@ -106,7 +119,7 @@ public class Launcher extends Unit {
         }
     }
 
-    public void startAttackingTowersAndHQ() throws GameActionException {
+    public void launcherStartAttackingTowersAndHQ() throws GameActionException {
         MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
 
         MapLocation nearestAttackableTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(enemyTowers);
@@ -143,5 +156,34 @@ public class Launcher extends Unit {
     public boolean safelyAttackableFromHQ(MapLocation location) {
         return location.distanceSquaredTo(theirHQ) > 1;
 
+    }
+
+    private void directionToIntBroadcast(Direction dir) throws GameActionException {
+        switch (dir) {
+        case NORTH:
+            rc.broadcast(Channel_Launcher + 3, 1);
+            break;
+        case NORTH_EAST:
+            rc.broadcast(Channel_Launcher + 3, 2);
+            break;
+        case EAST:
+            rc.broadcast(Channel_Launcher + 3, 3);
+            break;
+        case SOUTH_EAST:
+            rc.broadcast(Channel_Launcher + 3, 4);
+            break;
+        case SOUTH:
+            rc.broadcast(Channel_Launcher + 3, 5);
+            break;
+        case SOUTH_WEST:
+            rc.broadcast(Channel_Launcher + 3, 6);
+            break;
+        case WEST:
+            rc.broadcast(Channel_Launcher + 3, 7);
+            break;
+        case NORTH_WEST:
+            rc.broadcast(Channel_Launcher + 3, 8);
+            break;
+        }
     }
 }

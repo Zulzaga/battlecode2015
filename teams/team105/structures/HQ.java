@@ -1,7 +1,9 @@
 package team105.structures;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import team105.Structure;
 import battlecode.common.Clock;
@@ -77,6 +79,8 @@ public class HQ extends Structure {
 
     public MapLocation centerOfMap;
     //     public HashMap
+    
+    private boolean gotLocation = false;
 
     public HQ(RobotController rc) throws GameActionException {
         super(rc);
@@ -103,6 +107,9 @@ public class HQ extends Structure {
     }
 
     public void execute() throws GameActionException {
+        if (gotLocation == false){
+            getMiddleTowerLocation();
+        }
     	/*
         attackLeastHealthEnemy();
         */
@@ -385,6 +392,24 @@ public class HQ extends Structure {
         else if(rc.isWeaponReady() && rc.canAttackLocation(toAttack.add(toAttack.directionTo(myHQ)))){
         	rc.attackLocation(toAttack.add(toAttack.directionTo(myHQ)));
         }
+    }
+    
+    private void getMiddleTowerLocation() throws GameActionException {
+        MapLocation[] towerLocations = rc.senseTowerLocations();
+        int middle = towerLocations.length / 2;
+        List<Integer> xLocations = new ArrayList<Integer>();
+        List<Integer> yLocations = new ArrayList<Integer>();
+        for (MapLocation loc : towerLocations) {
+            xLocations.add(loc.x);
+            yLocations.add(loc.y);
+        }
+        Collections.sort(xLocations);
+        Collections.sort(yLocations);
+        int middleX = xLocations.get(middle);
+        int middleY = yLocations.get(middle);
+        rc.broadcast(Channel_Launcher + 1, middleX);
+        rc.broadcast(Channel_Launcher, middleY);
+        gotLocation = true;
     }
 
 }

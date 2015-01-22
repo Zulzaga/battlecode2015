@@ -31,6 +31,7 @@ public class RobotPlayer {
     public static void run(RobotController rc) throws GameActionException {
         RobotType myType = rc.getType();
         BaseBot myself = null;
+        Missile ms = null;
 
         switch (myType) {
         // Structures (refer to all robots that cannot move) -11
@@ -97,14 +98,17 @@ public class RobotPlayer {
             myself = new Launcher(rc);
             break;
         case MISSILE:
-        	myself = new Missile(rc);
+            ms = new Missile(rc);
         }
-        
 
         while (true) {
             try {
-                myself.go();
-                rc.yield();
+                if (myself != null) {
+                    myself.go();
+                    rc.yield();
+                } else {
+                    ms.execute();
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }

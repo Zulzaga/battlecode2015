@@ -235,6 +235,7 @@ public abstract class BaseBot {
     private int halfMatrixSize = 50;
     protected int supplyUpkeep;
     protected String[][] matrix = new String[matrixSize][matrixSize];
+    
 
     public BaseBot(RobotController rc) {
         this.rc = rc;
@@ -244,7 +245,7 @@ public abstract class BaseBot {
         this.theirTeam = this.myTeam.opponent();
         this.rand = new Random(rc.getID());
         criticalDirection = myHQ.directionTo(theirHQ);
-        emptyMatrix();
+//        emptyMatrix();
     }
 
     public Boolean isNormalTerrain(MapLocation loc) {
@@ -277,27 +278,27 @@ public abstract class BaseBot {
     }
 
     public void markVoidMatrix(MapLocation loc) {
-        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "#";
+//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "#";
     }
 
     public void markPathMatrix(MapLocation loc) {
-        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "*";
+//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "*";
     }
 
     public void markNormalMartrix(MapLocation loc) {
-        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "-";
+//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "-";
     }
 
     public void markStartMatrix(MapLocation loc) {
-        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "S";
+//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "S";
     }
 
     public void markDestMatrix(MapLocation loc) {
-        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "D";
+//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "D";
     }
 
     public void markSpecMatrix(MapLocation loc) {
-        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "=";
+//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "=";
     }
 
     /**
@@ -616,7 +617,6 @@ public abstract class BaseBot {
     }
 
     public void beginningOfTurn() throws GameActionException {
-        getMiddleTowerLocation();
         if (rc.senseEnemyHQLocation() != null) {
             theirHQ = rc.senseEnemyHQLocation();
         }
@@ -676,23 +676,6 @@ public abstract class BaseBot {
 
     public static void main(String[] args) {
 
-    }
-
-    private void getMiddleTowerLocation() throws GameActionException {
-        MapLocation[] towerLocations = rc.senseTowerLocations();
-        int middle = towerLocations.length / 2;
-        List<Integer> xLocations = new ArrayList<Integer>();
-        List<Integer> yLocations = new ArrayList<Integer>();
-        for (MapLocation loc : towerLocations) {
-            xLocations.add(loc.x);
-            yLocations.add(loc.y);
-        }
-        Collections.sort(xLocations);
-        Collections.sort(yLocations);
-        int middleX = xLocations.get(middle);
-        int middleY = yLocations.get(middle);
-        rc.broadcast(Channel_Launcher + 1, middleX);
-        rc.broadcast(Channel_Launcher, middleY);
     }
 
 }
