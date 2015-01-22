@@ -111,7 +111,7 @@ public class HQ extends Structure {
     	attackLeastHealthEnemyHQ();
         swarmPot();
 
-        test();
+//        test();
     }
     
     public void test() throws GameActionException{
