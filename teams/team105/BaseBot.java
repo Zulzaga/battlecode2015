@@ -654,12 +654,7 @@ public abstract class BaseBot {
         }
         
         
-        if (suppliesToThisLocation != null && Clock.getBytecodesLeft() > 700) {
-//                System.out.println("transfer to" + suppliesToThisLocation.x + " "+ suppliesToThisLocation.y);
-//                System.out.println("transfer to "+ toThis.type + " " + toThis.location.x + " "+ toThis.location.y);
-//
-//            System.out.println("time" + startClock + " to " + Clock.getRoundNum()  );
-//            System.out.println("byte code " + Clock.getBytecodesLeft());
+        if (suppliesToThisLocation != null && startClock == Clock.getRoundNum() && Clock.getBytecodesLeft() >550) {
             rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
         }
     }
