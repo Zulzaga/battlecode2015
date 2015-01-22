@@ -637,19 +637,29 @@ public abstract class BaseBot {
     }
 
     public void transferSupplies() throws GameActionException {
+        int startClock = Clock.getRoundNum();
         RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
                 GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
         double lowestSupply = rc.getSupplyLevel();
         double transferAmount = 0;
         MapLocation suppliesToThisLocation = null;
+        RobotInfo toThis = null;
         for (RobotInfo ri : nearbyAllies) {
             if (ri.supplyLevel < lowestSupply) {
                 lowestSupply = ri.supplyLevel;
                 transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
                 suppliesToThisLocation = ri.location;
+                toThis = ri;
             }
         }
-        if (suppliesToThisLocation != null) {
+        
+        
+        if (suppliesToThisLocation != null && Clock.getBytecodesLeft() > 700) {
+//                System.out.println("transfer to" + suppliesToThisLocation.x + " "+ suppliesToThisLocation.y);
+//                System.out.println("transfer to "+ toThis.type + " " + toThis.location.x + " "+ toThis.location.y);
+//
+//            System.out.println("time" + startClock + " to " + Clock.getRoundNum()  );
+//            System.out.println("byte code " + Clock.getBytecodesLeft());
             rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
         }
     }
