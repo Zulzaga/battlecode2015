@@ -1,20 +1,24 @@
 package team105.units;
 
-import team105.Unit;
+import team105.BaseBot;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.RobotController;
 
-public class Missile extends Unit{
-	
-	public Missile(RobotController rc){
-        super(rc);
-    }
-	
-	public void execute() throws GameActionException{
-		if(rc.isCoreReady() && rc.canMove(Direction.NORTH))
-				rc.move(Direction.NORTH);
+public class Missile {
 
-		rc.yield();
-	}
+    private RobotController rc;
+
+    public Missile(RobotController rc) {
+        this.rc = rc;
+        // super(rc);
+    }
+
+    public void execute() throws GameActionException {
+         if (rc.isCoreReady() && rc.canMove(Direction.NORTH)) {
+        //System.out.println("missile is going to be executed");
+             rc.move(Direction.SOUTH_EAST);
+         }
+        rc.yield();
+    }
 }

@@ -55,8 +55,6 @@ public class Beaver extends Unit {
 	    		int turn = Clock.getRoundNum();
 	    		double teamOre = rc.getTeamOre();
 	    		
-	    		if (rc.readBroadcast(Channel_Helipad) < 1)
-                    buildUnit(RobotType.HELIPAD, Channel_Helipad);
 //	    		
 	    		if(rc.readBroadcast(Channel_MinerFactory) < 1){
 	    			buildUnit(RobotType.MINERFACTORY, Channel_MinerFactory);
@@ -67,15 +65,13 @@ public class Beaver extends Unit {
 	    		}
 	    		
 	    		//else if(rc.readBroadcast(Channel_Barracks) < 1 && rc.readBroadcast(Channel_Helipad) != 0){
-	    		else if(rc.readBroadcast(Channel_Barracks) < 1){
+	    		else if(rc.readBroadcast(Channel_Barracks) != 0){
 	    			buildUnit(RobotType.BARRACKS, Channel_Barracks);
 	    		}
-	    		else if(rc.readBroadcast(Channel_TankFactory) < 2){
+	    		else if(rc.readBroadcast(Channel_TankFactory) != 0){
 	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
-	    		} else if (rc.readBroadcast(Channel_Helipad) < 1){
-	    		    buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
-	    		} else if (rc.readBroadcast(Channel_AerospaceLab) < 2){
-	    		    buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+	    		} else if (rc.readBroadcast(Channel_AerospaceLab) < 2 && rc.readBroadcast(Channel_Helipad) > 0){
+	    		    buildUnit(RobotType.AEROSPACELAB, Channel_AerospaceLab);
 	    		}
 	    		else if(rc.readBroadcast(Channel_SupplyDepot) < 8){
 	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
@@ -84,7 +80,7 @@ public class Beaver extends Unit {
 	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
 	    		}
 	    		else if(rc.getTeamOre() > 500){
-	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_TankFactory);
+	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
 	    		}
 	    		
 	    		
