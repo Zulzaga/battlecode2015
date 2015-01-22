@@ -2,6 +2,7 @@ package team105;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -744,7 +745,7 @@ public abstract class Unit extends BaseBot {
      * Comparator for the hit points of health of two different robots
      * (Ascending order)
      */
-    static class RobotHealthComparator implements Comparator<RobotInfo> {
+    public static class RobotHealthComparator implements Comparator<RobotInfo> {
 
         // @Override
         public int compare(RobotInfo o1, RobotInfo o2) {
@@ -864,5 +865,22 @@ public abstract class Unit extends BaseBot {
             }
         }
         recordMovement();
+    }
+    
+    private void getMiddleTowerLocation() throws GameActionException {
+        MapLocation[] towerLocations = rc.senseTowerLocations();
+        int middle = towerLocations.length / 2;
+        List<Integer> xLocations = new ArrayList<Integer>();
+        List<Integer> yLocations = new ArrayList<Integer>();
+        for (MapLocation loc : towerLocations) {
+            xLocations.add(loc.x);
+            yLocations.add(loc.y);
+        }
+        Collections.sort(xLocations);
+        Collections.sort(yLocations);
+        int middleX = xLocations.get(middle);
+        int middleY = yLocations.get(middle);
+        rc.broadcast(Channel_Launcher + 1, middleX);
+        rc.broadcast(Channel_Launcher, middleY);
     }
 }

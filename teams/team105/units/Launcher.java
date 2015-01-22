@@ -1,9 +1,18 @@
 package team105.units;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import team105.Unit;
+import team105.Unit.RobotHealthComparator;
+import battlecode.common.Clock;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
+import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 
 /*
@@ -17,30 +26,122 @@ import battlecode.common.RobotType;
  */
 public class Launcher extends Unit {
 
+    private MapLocation swarmLocation;
+
     public Launcher(RobotController rc) throws GameActionException {
         super(rc);
 
-        //Initialize channelID and increment total number of this RobotType
+        // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Launcher;
-        initChannelNum(); 
+        initChannelNum();
+        int swarmX = rc.readBroadcast(Channel_Launcher + 1);
+        int swarmY = rc.readBroadcast(Channel_Launcher + 2);
+        swarmLocation = new MapLocation(swarmX, swarmY);
     }
-    
+
     public void execute() throws GameActionException {
-    	hugoStragtegyLauncher();
-    	rc.yield();
+        if (Clock.getRoundNum() < 1000) {
+            swarmPotLauncher();
+        } else {
+            startAttackingTowersAndHQ();
+        }
+        rc.yield();
     }
 
-	private void hugoStragtegyLauncher() {
-		launchMissile(Direction.NORTH);		
-	}
-    
-    private void launchMissile(Direction dir){
-    	try {
-    		if(rc.isWeaponReady() && rc.canLaunch(dir))
-    			rc.launchMissile(dir);;
-		} catch (GameActionException e) {
-			e.printStackTrace();
-		}
+    /**
+     * SwarmPot strategy for launcher
+     */
+    public void swarmPotLauncher() throws GameActionException {
+        launcherAttackUnit();
+        moveToLocation(swarmLocation);
     }
 
+    private void launcherAttackUnit() throws GameActionException {
+        RobotInfo[] enemies = rc.senseNearbyRobots(25, theirTeam);
+        RobotInfo[] friends = null;
+        MapLocation attackLocation = null;
+        if (enemies.length > 0) {
+            attackLocation = enemies[0].location;
+            friends = rc.senseNearbyRobots(enemies[0].location, 1, myTeam);
+        }
+        if (friends != null) {
+            Direction d = attackLocation.directionTo(attackLocation);
+            if (friends.length < 3 && rc.isWeaponReady() && rc.canLaunch(d)) {
+                rc.launchMissile(d);
+            }
+        }
+    }
+
+    private void launcherAttackLoc(MapLocation loc) throws GameActionException {
+        Direction d = loc.directionTo(loc);
+        if (rc.isWeaponReady() && rc.canLaunch(d)) {
+            rc.launchMissile(d);
+        }
+    }
+
+    /**
+     * Attack towers if it sees towers, otherwise attack enemy with lowest
+     * health
+     * 
+     * @throws GameActionException
+     */
+    private void attackTower() throws GameActionException {
+        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(rc.getLocation(), 25,
+                rc.getTeam().opponent());
+
+        int numberOfEnemies = nearbyEnemies.length;
+        if (numberOfEnemies > 0) {
+            MapLocation attackBuildingLocation = null;
+            for (RobotInfo enemy : nearbyEnemies) {
+                if (enemy.type == RobotType.TOWER) {
+                    attackBuildingLocation = enemy.location;
+                }
+            }
+
+            if (attackBuildingLocation != null) {
+                launcherAttackLoc(attackBuildingLocation);
+            } else {
+                launcherAttackUnit();
+            }
+        }
+    }
+
+    public void startAttackingTowersAndHQ() throws GameActionException {
+        MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
+
+        MapLocation nearestAttackableTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(enemyTowers);
+
+        if (nearestAttackableTowerSafeFromHQ != null) {
+            attackTower();
+            moveToLocationSafeFromHQ(nearestAttackableTowerSafeFromHQ);
+        } else if (enemyTowers.length > 0) {
+            attackTower();
+            moveToLocationNotSafe(enemyTowers[0]);
+        } else {
+            attackTower();
+            moveToLocationNotSafe(theirHQ);
+        }
+    }
+
+    public MapLocation nearestAttackableTowerSafeFromHQ(
+            MapLocation[] enemyTowers) {
+        MapLocation towerLocation = null;
+        int distance = Integer.MAX_VALUE;
+        MapLocation droneLocation = rc.getLocation();
+
+        for (MapLocation location : enemyTowers) {
+            int tempDistance = droneLocation.distanceSquaredTo(location);
+            if (tempDistance < distance && safelyAttackableFromHQ(location)) {
+                distance = tempDistance;
+                towerLocation = location;
+            }
+        }
+
+        return towerLocation;
+    }
+
+    public boolean safelyAttackableFromHQ(MapLocation location) {
+        return location.distanceSquaredTo(theirHQ) > 1;
+
+    }
 }
