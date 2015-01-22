@@ -2,8 +2,10 @@ package team105;
 
 import java.awt.GridLayout;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 
 import javax.swing.JOptionPane;
@@ -161,8 +163,7 @@ public abstract class BaseBot {
     public static int Channel_Soldier = 30000;
     public static int Channel_Miner = 60000;// no more than 550 miners
     public static int Channel_Tank = 50000;
-    public static int Channel_Drone = 40000; 
-
+    public static int Channel_Drone = 40000;
 
     public static int Channel_Basher = 6000;
     public static int Channel_Launcher = 7000;
@@ -170,23 +171,24 @@ public abstract class BaseBot {
     public static int Channel_Commander = 9000;
     public static int Channel_Army = 2000;
 
-    // ////////Specific channels for stragies and mode of the game///////////////
+    // ////////Specific channels for stragies and mode of the
+    // game///////////////
     public static int Channel_Strategy = 1000;
     public static int Channel_ArmyMode = 1001;
-    //explained above
-    public static int Channel_PathCenter= 1002;
-    public static int Channel_PathMiddle1= 1003;
-    public static int Channel_PathMiddle2= 1004;
-    public static int Channel_PathCorner1= 1005;
-    public static int Channel_PathCorner2= 1006;
-    
-    ///// Channels for path which 3 drones may find///////
+    // explained above
+    public static int Channel_PathCenter = 1002;
+    public static int Channel_PathMiddle1 = 1003;
+    public static int Channel_PathMiddle2 = 1004;
+    public static int Channel_PathCorner1 = 1005;
+    public static int Channel_PathCorner2 = 1006;
+
+    // /// Channels for path which 3 drones may find///////
     public static int Channel_PathToCenter = 1100;
     public static int Channel_PathToCorner1 = 1200;
     public static int Channel_PathToCorner2 = 1300;
 
-    //Reachable ore areas (first 3 explorer drones' channels)
-    public static int Channel_OreAreaX1 = 40011; 
+    // Reachable ore areas (first 3 explorer drones' channels)
+    public static int Channel_OreAreaX1 = 40011;
     public static int Channel_OreAreaY1 = 40012;
     public static int Channel_OreAmount1 = 40013;
 
@@ -198,8 +200,10 @@ public abstract class BaseBot {
     public static int Channel_OreAreaY3 = 40032;
     public static int Channel_OreAmount3 = 40033;
 
-    //Call drones for supple support
-    public static int Channel_CalledOn1 = 40015; //amount, if its drone has not been called, then it must be 0;
+    // Call drones for supple support
+    public static int Channel_CalledOn1 = 40015; // amount, if its drone has not
+                                                 // been called, then it must be
+                                                 // 0;
     public static int Channel_CallSupplyX1 = 40016;
     public static int Channel_CallSupplyY1 = 40017;
 
@@ -211,14 +215,6 @@ public abstract class BaseBot {
     public static int Channel_CallSupplyX3 = 40036;
     public static int Channel_CallSupplyY3 = 40037;
 
-
-    //90 degree relations between directions.
-    protected HashMap<Direction, Direction[]> degree90 = new HashMap<Direction, Direction[]>();
-    public Direction[] allDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH,
-            Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
-
-    public Direction[] mainFourDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH};
-
     // for channeling
     protected int channelID; // this channel would be used for this robot's
     // info; unique for each robot.
@@ -226,6 +222,10 @@ public abstract class BaseBot {
     protected ArrayList<MapLocation> criticalLocations = new ArrayList<MapLocation>();
     protected HashMap<MapLocation, MapLocation> criticalPath = new HashMap<MapLocation, MapLocation>();
     protected Direction criticalDirection;
+    public Direction[] allDirs = new Direction[] { Direction.EAST,
+            Direction.WEST, Direction.NORTH, Direction.SOUTH,
+            Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST,
+            Direction.SOUTH_WEST };
 
     protected RobotController rc;
     protected MapLocation myHQ, theirHQ;
@@ -245,66 +245,60 @@ public abstract class BaseBot {
         this.rand = new Random(rc.getID());
         criticalDirection = myHQ.directionTo(theirHQ);
         emptyMatrix();
-
-
-        for (Direction dir: allDirs){
-            degree90.put(dir,  new Direction[]{dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()});
-        }
     }
 
-    public Boolean isNormalTerrain(MapLocation loc){
+    public Boolean isNormalTerrain(MapLocation loc) {
         TerrainTile t = rc.senseTerrainTile(loc);
-        if ( t == TerrainTile.NORMAL){
+        if (t == TerrainTile.NORMAL) {
             return true;
         }
         return false;
     }
 
-
-    public void emptyMatrix(){
-        for (int i = 0; i<matrixSize; i++){
-            for (int j = 0; j<matrixSize; j++){
+    public void emptyMatrix() {
+        for (int i = 0; i < matrixSize; i++) {
+            for (int j = 0; j < matrixSize; j++) {
                 matrix[i][j] = ".";
             }
         }
     }
-    public void MatrixtoString(){
+
+    public void MatrixtoString() {
         String matrixString = "\n";
-        for (int r = 0; r < matrixSize; r++){
-            String line ="";
-            for(int c = 0; c < matrixSize; c++){
+        for (int r = 0; r < matrixSize; r++) {
+            String line = "";
+            for (int c = 0; c < matrixSize; c++) {
                 line += matrix[c][r];
             }
-            line +="\n";
+            line += "\n";
             matrixString += line;
         }
         System.out.println(matrixString);
     }
 
-    public void markVoidMatrix(MapLocation loc){
-        matrix[ loc.x - myHQ.x + halfMatrixSize][ loc.y  -myHQ.y  +halfMatrixSize] = "#";
+    public void markVoidMatrix(MapLocation loc) {
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "#";
     }
 
-    public void markPathMatrix(MapLocation loc){
-        matrix[ loc.x - myHQ.x + halfMatrixSize][loc.y  -myHQ.y  +halfMatrixSize ] = "*";
+    public void markPathMatrix(MapLocation loc) {
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "*";
     }
 
-    public void markNormalMartrix(MapLocation loc){
-        matrix[ loc.x - myHQ.x + halfMatrixSize][loc.y  -myHQ.y  +halfMatrixSize] = "-";
+    public void markNormalMartrix(MapLocation loc) {
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "-";
     }
 
-    public void markStartMatrix(MapLocation loc){
-        matrix[ loc.x - myHQ.x + halfMatrixSize][loc.y  -myHQ.y  +halfMatrixSize ] = "S";
+    public void markStartMatrix(MapLocation loc) {
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "S";
     }
 
-    public void markDestMatrix(MapLocation loc){
-        matrix[ loc.x - myHQ.x + halfMatrixSize][loc.y  -myHQ.y  + halfMatrixSize] = "D";
+    public void markDestMatrix(MapLocation loc) {
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "D";
     }
 
-    public void markSpecMartrix(MapLocation loc){
-        matrix[ loc.x - myHQ.x + halfMatrixSize][loc.y  -myHQ.y  + halfMatrixSize ] = "=";
+    public void markSpecMatrix(MapLocation loc) {
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "=";
     }
-
 
     /**
      * Initialize channelNum AA BBB
@@ -346,204 +340,213 @@ public abstract class BaseBot {
         return dirs;
     }
 
-    public Direction[] getDirectionsTowardAndNext(MapLocation dest){
-        Direction toDest = rc.getLocation().directionTo(dest);
-        Direction[] dirs = { toDest, toDest.rotateLeft(), toDest.rotateRight(),
-                toDest.rotateLeft().rotateLeft(),
-                toDest.rotateRight().rotateRight(),
-                toDest.rotateLeft().rotateLeft().rotateLeft(),
-                toDest.rotateRight().rotateRight().rotateRight()};
-
-        return dirs;
-    }
-
-
     /**
-     * Find a list of all PathUnits which are Normal TerrainTile, giving priority to given destination.
+     * Find a list of all PathUnits which are Normal TerrainTile, giving
+     * priority to given destination.
+     * 
      * @param dest
      * @return
      */
-    public ArrayList<MapLocation> getAllDirectionalLocations( MapLocation current) {
-        Direction[] dirs = {Direction.EAST,  Direction.WEST, Direction.NORTH, Direction.SOUTH, 
-                Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST, Direction.NORTH_EAST
-        };
+    public ArrayList<MapLocation> getAllDirectionalLocations(MapLocation current) {
+        Direction[] dirs = { Direction.EAST, Direction.WEST, Direction.NORTH,
+                Direction.SOUTH, Direction.NORTH_WEST, Direction.SOUTH_EAST,
+                Direction.SOUTH_WEST, Direction.NORTH_EAST };
 
         ArrayList<MapLocation> allNeighbors = new ArrayList<MapLocation>();
-        for (Direction dir: dirs){
+        for (Direction dir : dirs) {
             TerrainTile t = rc.senseTerrainTile(current.add(dir));
-            if ( t == TerrainTile.NORMAL){
-                allNeighbors.add( current.add(dir));
+            if (t == TerrainTile.NORMAL) {
+                allNeighbors.add(current.add(dir));
                 markNormalMartrix(current.add(dir));
-            }else{
+            } else {
                 markVoidMatrix(current.add(dir));
             }
         }
         return allNeighbors;
     }
 
-
     /**
-     * Find list of MapLocations, representing a path from starting tile to end tile.
+     * Find list of MapLocations, representing a path from starting tile to end
+     * tile.
+     * 
      * @param end
      * @return
      */
-    public ArrayList<MapLocation> getPath(PathUnit end){
+    public ArrayList<MapLocation> getPath(PathUnit end) {
         ArrayList<MapLocation> path = new ArrayList<MapLocation>();
         path.add(end.getCurrentLoc());
         PathUnit preUnit = end.getPreviosLoc();
-        while (preUnit != null ){
+        while (preUnit != null) {
             path.add(preUnit.getCurrentLoc());
             preUnit = preUnit.getPreviosLoc();
         }
         return path;
     }
 
-    //Using BFS, not visiting nodes which we already visited in our search algorithm.
+    // Using BFS, not visiting nodes which we already visited in our search
+    // algorithm.
 
     /**
-     * Finds shortest Normal TerrainTile path to given dest, exploring tiles within in specific radius.
+     * Finds shortest Normal TerrainTile path to given dest, exploring tiles
+     * within in specific radius.
+     * 
      * @param dest
      * @param searchWithinRadiusSquared
-     * @return empty list if current location is dest
-     *          null if there is no such path.
+     * @return empty list if current location is dest null if there is no such
+     *         path.
      */
-    public ArrayList<MapLocation> findShortestPath(MapLocation dest, double searchWithinRadiusSquared){
+    public ArrayList<MapLocation> findShortestPath(MapLocation dest,
+            double searchWithinRadiusSquared) {
         ArrayList<PathUnit> agenda = new ArrayList<PathUnit>();
-        ArrayList<MapLocation> visited = new ArrayList<MapLocation>();   
+        ArrayList<MapLocation> visited = new ArrayList<MapLocation>();
 
         MapLocation currentLoc = rc.getLocation();
         Direction toDest = currentLoc.directionTo(dest);
-        if (currentLoc.equals(dest)){
+        if (currentLoc.equals(dest)) {
             new ArrayList<MapLocation>();
         }
 
         PathUnit startUnit = new PathUnit(null, currentLoc);
-        for (MapLocation next: getAllDirectionalLocations( currentLoc) ){
+        for (MapLocation next : getAllDirectionalLocations(currentLoc)) {
             agenda.add(new PathUnit(startUnit, next));
         }
 
-        while (agenda.size() >0 ){
+        while (agenda.size() > 0) {
             PathUnit pathLoc = agenda.remove(0);
-            if (pathLoc.getCurrentLoc().equals(dest)){
+            if (pathLoc.getCurrentLoc().equals(dest)) {
                 return getPath(pathLoc);
             }
 
-            if (currentLoc.distanceSquaredTo(pathLoc.getCurrentLoc()) < searchWithinRadiusSquared){
-                //Add locations never have been visited before.
-                for (MapLocation nextMapLoc: getAllDirectionalLocations(pathLoc.getCurrentLoc())){
-                    if (!visited.contains(nextMapLoc)){
+            if (currentLoc.distanceSquaredTo(pathLoc.getCurrentLoc()) < searchWithinRadiusSquared) {
+                // Add locations never have been visited before.
+                for (MapLocation nextMapLoc : getAllDirectionalLocations(pathLoc
+                        .getCurrentLoc())) {
+                    if (!visited.contains(nextMapLoc)) {
                         agenda.add(new PathUnit(pathLoc, nextMapLoc));
                         visited.add(nextMapLoc);
                     }
                 }
             }
         }
-        //there is no path;
+        // there is no path;
         return null;
     }
-
 
     /*
      * 
      * Find shortest path using our sensed range area.
      */
-    public ArrayList<MapLocation> findShortestPathAstar(MapLocation dest,double searchWithinRadius ){
-        //dest is not our sense range, it is likely we could not any path.
-        //        if (rc.canSenseLocation(dest)){
-        //            return null;
-        //        }
+    public ArrayList<MapLocation> findShortestPathAstar(MapLocation dest,
+            double searchWithinRadius) {
+        // dest is not our sense range, it is likely we could not any path.
+        // if (rc.canSenseLocation(dest)){
+        // return null;
+        // }
 
-        MapLocation start = rc.getLocation(); 
+        MapLocation start = rc.getLocation();
         markStartMatrix(start);
         markDestMatrix(dest);
 
-        HashSet<MapLocation> closedSet = new HashSet<MapLocation>(); // The set of nodes already evaluated.
-        HashSet<MapLocation> openSet = new HashSet<MapLocation>(); // The set of tentative nodes to be evaluated, initially containing the start node
+        HashSet<MapLocation> closedSet = new HashSet<MapLocation>(); // The set
+                                                                     // of nodes
+                                                                     // already
+                                                                     // evaluated.
+        HashSet<MapLocation> openSet = new HashSet<MapLocation>(); // The set of
+                                                                   // tentative
+                                                                   // nodes to
+                                                                   // be
+                                                                   // evaluated,
+                                                                   // initially
+                                                                   // containing
+                                                                   // the start
+                                                                   // node
         HashMap<MapLocation, Double> getHereCost = new HashMap<MapLocation, Double>();
 
         openSet.add(start);
         getHereCost.put(start, (double) 0);
         HashMap<MapLocation, MapLocation> cameFrom = new HashMap<MapLocation, MapLocation>();
-        cameFrom.put(start, null); 
+        cameFrom.put(start, null);
 
         HashMap<MapLocation, Double> estimatedCost = new HashMap<MapLocation, Double>();
-        estimatedCost.put(dest, (double) Math.pow(dest.distanceSquaredTo(start), 0.5));
+        estimatedCost.put(dest,
+                (double) Math.pow(dest.distanceSquaredTo(start), 0.5));
 
-        while (!openSet.isEmpty()){
-            MapLocation current = findLowestCostLocation(openSet, getHereCost, dest);
-            markSpecMartrix(current);
-            if ( current.equals(dest)){
-                //                return constructPath( cameFrom, dest);
-                return constructCriticalPathPoints( cameFrom, dest);
+        while (!openSet.isEmpty()) {
+            MapLocation current = findLowestCostLocation(openSet, getHereCost,
+                    dest);
+            markSpecMatrix(current);
+            if (current.equals(dest)) {
+                // return constructPath( cameFrom, dest);
+                return constructCriticalPathPoints(cameFrom, dest);
             }
 
             openSet.remove(current);
             closedSet.add(current);
-            for (MapLocation neighbor: getAllDirectionalLocations(current)){
-                if (closedSet.contains(neighbor)){
+            for (MapLocation neighbor : getAllDirectionalLocations(current)) {
+                if (closedSet.contains(neighbor)) {
                     continue;
                 }
 
-                Double toHereScore = getHereCost.get(current) + Math.pow(current.distanceSquaredTo(neighbor), 0.5);
-                if (toHereScore < searchWithinRadius){
-                    if ( !openSet.contains(neighbor)) {
+                Double toHereScore = getHereCost.get(current)
+                        + Math.pow(current.distanceSquaredTo(neighbor), 0.5);
+                if (toHereScore < searchWithinRadius) {
+                    if (!openSet.contains(neighbor)) {
                         cameFrom.put(neighbor, current);
                         getHereCost.put(neighbor, toHereScore);
-                        estimatedCost.put(neighbor, toHereScore + Math.pow(dest.distanceSquaredTo(neighbor), 0.5));
+                        estimatedCost.put(
+                                neighbor,
+                                toHereScore
+                                        + Math.pow(dest
+                                                .distanceSquaredTo(neighbor),
+                                                0.5));
                         openSet.add(neighbor);
-                    }else if( getHereCost.get(neighbor) > toHereScore){
+                    } else if (getHereCost.get(neighbor) > toHereScore) {
                         cameFrom.put(neighbor, current);
                         getHereCost.put(neighbor, toHereScore);
-                        estimatedCost.put(neighbor, toHereScore + Math.pow(dest.distanceSquaredTo(neighbor), 0.5));
-                    } 
+                        estimatedCost.put(
+                                neighbor,
+                                toHereScore
+                                        + Math.pow(dest
+                                                .distanceSquaredTo(neighbor),
+                                                0.5));
+                    }
                 }
             }
         }
         System.out.println("no path!");
         MatrixtoString();
-        //        System.out.println("start: " + start.x + "  " +  start.y);
-        //        System.out.println("dest: " + dest.x + "  " +  dest.y);
+        // System.out.println("start: " + start.x + "  " + start.y);
+        // System.out.println("dest: " + dest.x + "  " + dest.y);
 
         return null;
 
     }
 
-    public ArrayList<MapLocation> constructPath( HashMap<MapLocation, MapLocation> came_from, MapLocation goal){
-        ArrayList<MapLocation> path = new ArrayList<MapLocation>();
-        MapLocation start = goal;
-        while( start != null){
-            markPathMatrix(start);
-            path.add(start);
-            start = came_from.get(start);
-        }
-        MatrixtoString();
-        return path;
-
-    }
-
-    public ArrayList<MapLocation> constructCriticalPathPoints( HashMap<MapLocation, MapLocation> came_from, MapLocation goal){
+    public ArrayList<MapLocation> constructCriticalPathPoints(
+            HashMap<MapLocation, MapLocation> came_from, MapLocation goal) {
         ArrayList<MapLocation> path = new ArrayList<MapLocation>();
 
         MapLocation start = goal;
         markDestMatrix(start);
-//        path.add(start);  //it is our HQ
+        // path.add(start); //it is our HQ
         MapLocation end = null;
         Direction pre = null;
         Direction after = null;
-        while( start != null){
-            if (after != null){
-                if (after == pre.rotateLeft().rotateLeft() || after == pre.rotateRight().rotateRight() ){
-                    if (end != null){
+        while (start != null) {
+            if (after != null) {
+                if (after == pre.rotateLeft().rotateLeft()
+                        || after == pre.rotateRight().rotateRight()) {
+                    if (end != null) {
                         path.add(end);
                         markDestMatrix(end);
                     }
-                } 
+                }
             }
 
             after = pre;
             end = start;
             start = came_from.get(start);
-            if (start != null){
+            if (start != null) {
                 pre = start.directionTo(end);
             }
         }
@@ -553,24 +556,20 @@ public abstract class BaseBot {
 
     }
 
-
-
-    public MapLocation findLowestCostLocation( HashSet<MapLocation> openSet, HashMap<MapLocation, Double> getHereCost, MapLocation dest){
+    public MapLocation findLowestCostLocation(HashSet<MapLocation> openSet,
+            HashMap<MapLocation, Double> getHereCost, MapLocation dest) {
         MapLocation minCostly = null;
         double minValue = Double.MAX_VALUE;
-        for ( MapLocation node: openSet){
-            double temp = getHereCost.get(node) + Math.pow(dest.distanceSquaredTo(node), 0.5);
-            if ( minValue > temp){
+        for (MapLocation node : openSet) {
+            double temp = getHereCost.get(node)
+                    + Math.pow(dest.distanceSquaredTo(node), 0.5);
+            if (minValue > temp) {
                 minValue = temp;
                 minCostly = node;
             }
         }
         return minCostly;
     }
-
-
-
-
 
     public RobotInfo[] getAllies() {
         RobotInfo[] allies = rc.senseNearbyRobots(Integer.MAX_VALUE, myTeam);
@@ -616,73 +615,79 @@ public abstract class BaseBot {
         }
     }
 
-    //This method should be written in sturctures and units.
+    public void beginningOfTurn() throws GameActionException {
+        getMiddleTowerLocation();
+        if (rc.senseEnemyHQLocation() != null) {
+            theirHQ = rc.senseEnemyHQLocation();
+        }
+    }
+
+    public void endOfTurn() throws GameActionException {
+        transferSupplies();
+    }
+
     public void go() throws GameActionException {
+        beginningOfTurn();
+        execute();
+        endOfTurn();
     }
 
+    public void execute() throws GameActionException {
 
-    //Drones should not use this!!!
+    }
+
     public void transferSupplies() throws GameActionException {
-        //have enough supply to share
-        if ( rc.getSupplyLevel() > this.supplyUpkeep*3){
-            //structures always 0 then never calls drone.
-            RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
-                    GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
-            double lowestSupply = rc.getSupplyLevel();
-            double transferAmount = 0;
-            MapLocation suppliesToThisLocation = null;
-            for (RobotInfo ri : nearbyAllies) {
-                if (ri.supplyLevel < lowestSupply) {
-                    lowestSupply = ri.supplyLevel;
-                    transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
-                    suppliesToThisLocation = ri.location;
-                }
+        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+                GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+        double lowestSupply = rc.getSupplyLevel();
+        double transferAmount = 0;
+        MapLocation suppliesToThisLocation = null;
+        for (RobotInfo ri : nearbyAllies) {
+            if (ri.supplyLevel < lowestSupply) {
+                lowestSupply = ri.supplyLevel;
+                transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                suppliesToThisLocation = ri.location;
             }
-            if (suppliesToThisLocation != null) {
-                rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
-            }
-
-            //need to call drones for supple
-        }else {
-            int aveSupply = (int) Math.ceil(aroundAverageSupply()) +1 ;  //should never broadcast 0
-            if (aveSupply < 50 || rc.senseNearbyRobots(20, myTeam).length > 4 );
-            if (rc.readBroadcast(Channel_CalledOn1) == 0){
-                rc.broadcast(Channel_CalledOn1, aveSupply +1);
-                rc.broadcast(Channel_CallSupplyX1, rc.getLocation().x);
-                rc.broadcast(Channel_CallSupplyY1, rc.getLocation().y);
-            }else if(rc.readBroadcast(Channel_CalledOn2) == 0){
-                rc.broadcast(Channel_CalledOn2, aveSupply +1);
-                rc.broadcast(Channel_CallSupplyX2, rc.getLocation().x);
-                rc.broadcast(Channel_CallSupplyY2, rc.getLocation().y);
-            }else if( rc.readBroadcast(Channel_CalledOn3) == 0){
-                rc.broadcast(Channel_CalledOn3, aveSupply +1);
-                rc.broadcast(Channel_CallSupplyX3, rc.getLocation().x);
-                rc.broadcast(Channel_CallSupplyY3, rc.getLocation().y);
-            }
-
         }
-    }
-
-
-
-    public double aroundAverageSupply(){
-        RobotInfo[] mySide = rc.senseNearbyRobots(15, myTeam);
-        double totalSupply = rc.getSupplyLevel();
-        for(RobotInfo fellow: mySide){
-            totalSupply = fellow.supplyLevel;
+        if (suppliesToThisLocation != null) {
+            rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
         }
-        return totalSupply/mySide.length+1; 
     }
 
     protected Direction getRandomDirection() {
         return Direction.values()[(int) (rand.nextDouble() * 8)];
     }
 
+    public Direction[] getDirectionsTowardAndNext(MapLocation dest) {
+        Direction toDest = rc.getLocation().directionTo(dest);
+        Direction[] dirs = { toDest, toDest.rotateLeft(), toDest.rotateRight(),
+                toDest.rotateLeft().rotateLeft(),
+                toDest.rotateRight().rotateRight(),
+                toDest.rotateLeft().rotateLeft().rotateLeft(),
+                toDest.rotateRight().rotateRight().rotateRight() };
+
+        return dirs;
+    }
+
     public static void main(String[] args) {
 
     }
 
-
-
+    private void getMiddleTowerLocation() throws GameActionException {
+        MapLocation[] towerLocations = rc.senseTowerLocations();
+        int middle = towerLocations.length / 2;
+        List<Integer> xLocations = new ArrayList<Integer>();
+        List<Integer> yLocations = new ArrayList<Integer>();
+        for (MapLocation loc : towerLocations) {
+            xLocations.add(loc.x);
+            yLocations.add(loc.y);
+        }
+        Collections.sort(xLocations);
+        Collections.sort(yLocations);
+        int middleX = xLocations.get(middle);
+        int middleY = yLocations.get(middle);
+        rc.broadcast(Channel_Launcher + 1, middleX);
+        rc.broadcast(Channel_Launcher, middleY);
+    }
 
 }

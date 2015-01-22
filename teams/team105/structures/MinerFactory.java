@@ -16,8 +16,6 @@ public class MinerFactory extends Structure {
         if (rc.readBroadcast(Channel_Miner) < 41) {
             spawnUnit(RobotType.MINER);
         }
-        
-        transferSupplies();
 
     }
 
