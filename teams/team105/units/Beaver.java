@@ -72,6 +72,10 @@ public class Beaver extends Unit {
 	    		}
 	    		else if(rc.readBroadcast(Channel_TankFactory) < 2){
 	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+	    		} else if (rc.readBroadcast(Channel_Helipad) < 1){
+	    		    buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+	    		} else if (rc.readBroadcast(Channel_AerospaceLab) < 2){
+	    		    buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
 	    		}
 	    		else if(rc.readBroadcast(Channel_SupplyDepot) < 8){
 	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
