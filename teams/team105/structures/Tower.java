@@ -21,8 +21,6 @@ public class Tower extends Structure {
 
     public void execute() throws GameActionException {
         attackEnemyZero();
-
-        transferSupplies();
         rc.yield();
     }
 

@@ -110,8 +110,6 @@ public class HQ extends Structure {
         setAttackableEnemies();
     	attackLeastHealthEnemyHQ();
         swarmPot();
-        
-        transferSupplies();
 
         test();
     }
@@ -208,8 +206,6 @@ public class HQ extends Structure {
     public void player6() throws GameActionException {
         attackEnemyZero();
         spawnUnit(RobotType.BEAVER);
-
-        transferSupplies();
 
     }
 

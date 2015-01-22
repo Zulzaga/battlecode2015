@@ -211,14 +211,6 @@ public abstract class BaseBot {
     public static int Channel_CallSupplyX3 = 40036;
     public static int Channel_CallSupplyY3 = 40037;
 
-
-    //90 degree relations between directions.
-    protected HashMap<Direction, Direction[]> degree90 = new HashMap<Direction, Direction[]>();
-    public Direction[] allDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH,
-            Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
-
-    public Direction[] mainFourDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH};
-
     // for channeling
     protected int channelID; // this channel would be used for this robot's
     // info; unique for each robot.
@@ -226,6 +218,8 @@ public abstract class BaseBot {
     protected ArrayList<MapLocation> criticalLocations = new ArrayList<MapLocation>();
     protected HashMap<MapLocation, MapLocation> criticalPath = new HashMap<MapLocation, MapLocation>();
     protected Direction criticalDirection;
+    public Direction[] allDirs = new Direction[]{Direction.EAST, Direction.WEST, Direction.NORTH, Direction.SOUTH,
+            Direction.NORTH_EAST, Direction.NORTH_WEST, Direction.SOUTH_EAST, Direction.SOUTH_WEST};
 
     protected RobotController rc;
     protected MapLocation myHQ, theirHQ;
@@ -245,11 +239,6 @@ public abstract class BaseBot {
         this.rand = new Random(rc.getID());
         criticalDirection = myHQ.directionTo(theirHQ);
         emptyMatrix();
-
-
-        for (Direction dir: allDirs){
-            degree90.put(dir,  new Direction[]{dir.rotateLeft().rotateLeft(), dir.rotateRight().rotateRight()});
-        }
     }
 
     public Boolean isNormalTerrain(MapLocation loc){
@@ -260,6 +249,7 @@ public abstract class BaseBot {
         return false;
     }
 
+    
 
     public void emptyMatrix(){
         for (int i = 0; i<matrixSize; i++){
@@ -301,7 +291,7 @@ public abstract class BaseBot {
         matrix[ loc.x - myHQ.x + halfMatrixSize][loc.y  -myHQ.y  + halfMatrixSize] = "D";
     }
 
-    public void markSpecMartrix(MapLocation loc){
+    public void markSpecMatrix(MapLocation loc){
         matrix[ loc.x - myHQ.x + halfMatrixSize][loc.y  -myHQ.y  + halfMatrixSize ] = "=";
     }
 
@@ -342,17 +332,6 @@ public abstract class BaseBot {
         Direction[] dirs = { toDest, toDest.rotateLeft(), toDest.rotateRight(),
                 toDest.rotateLeft().rotateLeft(),
                 toDest.rotateRight().rotateRight() };
-
-        return dirs;
-    }
-
-    public Direction[] getDirectionsTowardAndNext(MapLocation dest){
-        Direction toDest = rc.getLocation().directionTo(dest);
-        Direction[] dirs = { toDest, toDest.rotateLeft(), toDest.rotateRight(),
-                toDest.rotateLeft().rotateLeft(),
-                toDest.rotateRight().rotateRight(),
-                toDest.rotateLeft().rotateLeft().rotateLeft(),
-                toDest.rotateRight().rotateRight().rotateRight()};
 
         return dirs;
     }
@@ -441,8 +420,8 @@ public abstract class BaseBot {
         //there is no path;
         return null;
     }
-
-
+    
+    
     /*
      * 
      * Find shortest path using our sensed range area.
@@ -471,7 +450,7 @@ public abstract class BaseBot {
 
         while (!openSet.isEmpty()){
             MapLocation current = findLowestCostLocation(openSet, getHereCost, dest);
-            markSpecMartrix(current);
+            markSpecMatrix(current);
             if ( current.equals(dest)){
                 //                return constructPath( cameFrom, dest);
                 return constructCriticalPathPoints( cameFrom, dest);
@@ -507,20 +486,7 @@ public abstract class BaseBot {
         return null;
 
     }
-
-    public ArrayList<MapLocation> constructPath( HashMap<MapLocation, MapLocation> came_from, MapLocation goal){
-        ArrayList<MapLocation> path = new ArrayList<MapLocation>();
-        MapLocation start = goal;
-        while( start != null){
-            markPathMatrix(start);
-            path.add(start);
-            start = came_from.get(start);
-        }
-        MatrixtoString();
-        return path;
-
-    }
-
+    
     public ArrayList<MapLocation> constructCriticalPathPoints( HashMap<MapLocation, MapLocation> came_from, MapLocation goal){
         ArrayList<MapLocation> path = new ArrayList<MapLocation>();
 
@@ -616,66 +582,57 @@ public abstract class BaseBot {
         }
     }
 
-    //This method should be written in sturctures and units.
+    public void beginningOfTurn() {
+        if (rc.senseEnemyHQLocation() != null) {
+            theirHQ = rc.senseEnemyHQLocation();
+        }
+    }
+
+    public void endOfTurn() throws GameActionException {
+        transferSupplies();
+    }
+
     public void go() throws GameActionException {
+        beginningOfTurn();
+        execute();
+        endOfTurn();
     }
 
+    public void execute() throws GameActionException {
 
-    //Drones should not use this!!!
+    }
+
     public void transferSupplies() throws GameActionException {
-        //have enough supply to share
-        if ( rc.getSupplyLevel() > this.supplyUpkeep*3){
-            //structures always 0 then never calls drone.
-            RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
-                    GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
-            double lowestSupply = rc.getSupplyLevel();
-            double transferAmount = 0;
-            MapLocation suppliesToThisLocation = null;
-            for (RobotInfo ri : nearbyAllies) {
-                if (ri.supplyLevel < lowestSupply) {
-                    lowestSupply = ri.supplyLevel;
-                    transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
-                    suppliesToThisLocation = ri.location;
-                }
+        RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+                GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
+        double lowestSupply = rc.getSupplyLevel();
+        double transferAmount = 0;
+        MapLocation suppliesToThisLocation = null;
+        for (RobotInfo ri : nearbyAllies) {
+            if (ri.supplyLevel < lowestSupply) {
+                lowestSupply = ri.supplyLevel;
+                transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                suppliesToThisLocation = ri.location;
             }
-            if (suppliesToThisLocation != null) {
-                rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
-            }
-
-            //need to call drones for supple
-        }else {
-            int aveSupply = (int) Math.ceil(aroundAverageSupply()) +1 ;  //should never broadcast 0
-            if (aveSupply < 50 || rc.senseNearbyRobots(20, myTeam).length > 4 );
-            if (rc.readBroadcast(Channel_CalledOn1) == 0){
-                rc.broadcast(Channel_CalledOn1, aveSupply +1);
-                rc.broadcast(Channel_CallSupplyX1, rc.getLocation().x);
-                rc.broadcast(Channel_CallSupplyY1, rc.getLocation().y);
-            }else if(rc.readBroadcast(Channel_CalledOn2) == 0){
-                rc.broadcast(Channel_CalledOn2, aveSupply +1);
-                rc.broadcast(Channel_CallSupplyX2, rc.getLocation().x);
-                rc.broadcast(Channel_CallSupplyY2, rc.getLocation().y);
-            }else if( rc.readBroadcast(Channel_CalledOn3) == 0){
-                rc.broadcast(Channel_CalledOn3, aveSupply +1);
-                rc.broadcast(Channel_CallSupplyX3, rc.getLocation().x);
-                rc.broadcast(Channel_CallSupplyY3, rc.getLocation().y);
-            }
-
         }
-    }
-
-
-
-    public double aroundAverageSupply(){
-        RobotInfo[] mySide = rc.senseNearbyRobots(15, myTeam);
-        double totalSupply = rc.getSupplyLevel();
-        for(RobotInfo fellow: mySide){
-            totalSupply = fellow.supplyLevel;
+        if (suppliesToThisLocation != null ) {
+            rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
         }
-        return totalSupply/mySide.length+1; 
     }
 
     protected Direction getRandomDirection() {
         return Direction.values()[(int) (rand.nextDouble() * 8)];
+    }
+    
+    public Direction[] getDirectionsTowardAndNext(MapLocation dest){
+        Direction toDest = rc.getLocation().directionTo(dest);
+        Direction[] dirs = { toDest, toDest.rotateLeft(), toDest.rotateRight(),
+                toDest.rotateLeft().rotateLeft(),
+                toDest.rotateRight().rotateRight(),
+                toDest.rotateLeft().rotateLeft().rotateLeft(),
+                toDest.rotateRight().rotateRight().rotateRight()};
+
+        return dirs;
     }
 
     public static void main(String[] args) {
