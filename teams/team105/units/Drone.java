@@ -269,14 +269,17 @@ public class Drone extends Unit {
             Direction dirs[] = getDirectionsTowardAndNext(location);
 
             for (Direction newDir : dirs) {
+//                System.out.println("Turn before " + Clock.getRoundNum());
                 if (rc.canMove(newDir)) {
                     if (!safeToMove2(rc.getLocation().add(newDir))
                             || !safeFromShortShooters(rc.getLocation().add(
                                     newDir))) {
                         continue;
                     } else if (rc.canMove(newDir)) {
-                        if( !blocked()){
+                        if( !blocked() ){
+//                            System.out.println("Turn after " + Clock.getRoundNum());
                             rc.move(newDir);
+                            return true;
                         }
                     }
                 }
