@@ -36,7 +36,7 @@ public class Miner extends Unit {
     }
 
 
-    //tend to move ore rich area
+    //tend to move ore rich area (preferring toward direction)
     private void moveAroundLookingOre() throws GameActionException {
         double maxOre = 0;
         Direction[] directions = new Direction[]{facing.rotateLeft().rotateLeft(), facing.rotateRight().rotateRight(), facing.rotateLeft(), facing.rotateRight(), facing};
@@ -71,7 +71,6 @@ public class Miner extends Unit {
         }
 
         MapLocation tileInFront = rc.getLocation().add(facing);
-        
         MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
         boolean tileInFrontSafe = true;
         for (MapLocation m : enemyTowers) {
@@ -82,17 +81,14 @@ public class Miner extends Unit {
         }
 
         // check that we are not facing off the edge of the map
-        if (rc.senseTerrainTile(tileInFront) != TerrainTile.NORMAL
-                || !tileInFrontSafe) {
-           
-        } else {
+        if (tileInFrontSafe) {
             // try to move in the facing direction
             if (rc.isCoreReady() && rc.canMove(facing)) {
                 rc.move(facing);
-//                System.out.println("moving!");
             }
+        }else{
+            facing = getRandomDirection();
         }
-//        System.out.println("end turn " + Clock.getRoundNum());
 
     }
 
