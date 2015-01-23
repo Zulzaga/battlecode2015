@@ -20,7 +20,6 @@ public class Soldier extends Unit {
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Soldier;
         initChannelNum();
-        tryArmyUnit();
 
     }
 

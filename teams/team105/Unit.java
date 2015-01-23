@@ -29,9 +29,7 @@ public abstract class Unit extends BaseBot {
 
     public ArrayList<MapLocation> recentPathRecord = new ArrayList<MapLocation>();
 
-    protected Direction toEnemy;
-    protected double distanceToCenter;
-    protected MapLocation endCorner1, endCorner2, centerOfMap;
+
 
     public Unit(RobotController rc) {
         super(rc);
@@ -41,82 +39,10 @@ public abstract class Unit extends BaseBot {
         // emptyMatrix();
         // These directions are general and HQ is likely to order this unit to
         // go forward one of them.
-        toEnemy = myHQ.directionTo(theirHQ);
-        Direction toRight = toEnemy.rotateRight().rotateRight();
 
-        centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
-                (myHQ.y + theirHQ.y) / 2);
-        distanceToCenter = Math.pow(myHQ.distanceSquaredTo(centerOfMap), 0.5);
-
-        endCorner2 = centerOfMap.add(toRight, (int) distanceToCenter).add(
-                toEnemy, 2);
-        endCorner1 = centerOfMap
-                .add(toRight.opposite(), (int) distanceToCenter)
-                .add(toEnemy, 2);
 
     }
 
-    /**
-     * If game mode is armyMode, then make it armyUnit.
-     * 
-     * Each armyUnit goes listens the it's army channel for destination.
-     * 
-     * @param armyChannel
-     * @throws GameActionException
-     */
-    public void tryArmyUnit() throws GameActionException {
-        int newArmyChannel = rc.readBroadcast(Channel_ArmyMode);
-        if (newArmyChannel > 0) {
-            // Army unit!
-            this.armyUnit = true;
-            this.armyChannel = newArmyChannel;
-        }
-    }
-
-    /**
-     * Should listen army order from HQ.
-     * 
-     * @throws GameActionException
-     */
-    public void playWithArmyUnit() throws GameActionException {
-        if (armyUnit) {
-            if (workAsArmyUnit()) {
-                swarmArmy();
-                return;
-            }
-        }
-        swarmPot();
-    }
-
-    /**
-     * This unit must be armyUnit.
-     * 
-     * Check HQ order and know if this unit should work on own or as army unit,
-     * going specified destination.
-     * 
-     * @return true if this unit should work as an army unit.
-     * @throws GameActionException
-     */
-    public boolean workAsArmyUnit() throws GameActionException {
-        if (rc.readBroadcast(armyChannel + 5) == 0) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * This unit must be armyUnit
-     * 
-     * @return its army destination
-     * @throws GameActionException
-     */
-    public MapLocation getArmyDestination() throws GameActionException {
-        assert (!this.armyUnit);
-        // System.out.println("armyChannel is  " + this.armyChannel);
-        int x = rc.readBroadcast(this.armyChannel + 1);
-        int y = rc.readBroadcast(this.armyChannel + 2);
-        return new MapLocation(x, y);
-    }
 
     public Direction getRandomDirection() {
         return Direction.values()[(int) (rand.nextDouble() * 8)];
@@ -128,19 +54,6 @@ public abstract class Unit extends BaseBot {
             if (rc.isCoreReady() && rc.canMine()) {
                 rc.mine();
                 recordMineAmount(sensedOre);
-            }
-        } else {// no ore, so look for ore
-            moveAround();
-        }
-    }
-
-    public void mineAndMoveToDest() throws GameActionException {
-        double sensedOre = rc.senseOre(rc.getLocation());
-        if (sensedOre > 1) {// there is ore, so try to mine
-            if (rc.isCoreReady() && rc.canMine()) {
-                rc.mine();
-                recordMineAmount(sensedOre);
-
             }
         } else {// no ore, so look for ore
             moveAround();
@@ -299,20 +212,6 @@ public abstract class Unit extends BaseBot {
         return tileInFrontSafe;
     }
 
-    public void swarmArmy() throws GameActionException {
-        attackLeastHealthEnemy();
-
-        if (rc.isCoreReady()) {
-            MapLocation dest = getArmyDestination();
-            Direction newDir = getMoveDir(dest);
-            // System.out.println("Army destination x: " + dest.x);
-            // System.out.println("Army destination y: " + dest.y);
-
-            if (newDir != null) {
-                rc.move(newDir);
-            }
-        }
-    }
 
     public Direction getMoveDir(MapLocation dest) {
         Direction[] dirs = getDirectionsToward(dest);

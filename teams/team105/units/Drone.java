@@ -42,6 +42,11 @@ public class Drone extends Unit {
     public int channel_callOfSupply;
     public int channel_callOfSupplyX;
     public int channel_callOfSupplyY;
+    public Direction toEnemy;
+    public MapLocation centerOfMap, endCorner2, endCorner1;
+    public double distanceToCenter;
+    public MapLocation destination;
+    
 
 
     public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
@@ -51,8 +56,22 @@ public class Drone extends Unit {
 
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Drone;
-        initChannelNum(); 
         supplyUpkeep = 10;
+        
+        toEnemy = myHQ.directionTo(theirHQ);
+        Direction toRight = toEnemy.rotateRight().rotateRight();
+
+        centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
+                (myHQ.y + theirHQ.y) / 2);
+        distanceToCenter = Math.pow(myHQ.distanceSquaredTo(centerOfMap), 0.5);
+
+        endCorner2 = centerOfMap.add(toRight, (int) distanceToCenter).add(
+                toEnemy, 2);
+        endCorner1 = centerOfMap
+                .add(toRight.opposite(), (int) distanceToCenter)
+                .add(toEnemy, 2);
+        
+        initChannelNum(); 
     }
 
     /**
