@@ -19,6 +19,8 @@ import battlecode.common.TerrainTile;
  * One of two units that can mine ore [0.2, 3].
  */
 public class Miner extends Unit {
+    
+    private MapLocation comesFrom = myHQ;
 
 
     /**
@@ -61,6 +63,7 @@ public class Miner extends Unit {
                     double amount = rc.senseOre(loc) + rc.senseOre(loc.add(dir));
                     if ( maxOre <= amount){
                         toGo = dir;
+                        maxOre = amount;
                     }
                 }
             }
@@ -69,6 +72,8 @@ public class Miner extends Unit {
         if (toGo != null){
             facing = toGo;
         }
+        
+        
 
         MapLocation tileInFront = rc.getLocation().add(facing);
         MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
@@ -84,6 +89,7 @@ public class Miner extends Unit {
         if (tileInFrontSafe) {
             // try to move in the facing direction
             if (rc.isCoreReady() && rc.canMove(facing)) {
+                comesFrom = rc.getLocation();
                 rc.move(facing);
             }
         }else{
@@ -150,8 +156,11 @@ public class Miner extends Unit {
         double sensedOre = rc.senseOre(rc.getLocation());
         if (sensedOre > 1) {// there is ore, so try to mine
             if (rc.isCoreReady() && rc.canMine()) {
-                rc.mine();
-                recordMineAmount(sensedOre);
+                if (rc.senseNearbyRobots(comesFrom, 1, myTeam).length <= 2){
+                    rc.mine(); //leave for next robot
+                }else{
+                    moveAroundLookingOre();
+                }
             }
         } else {// no ore, so look for ore
             moveAroundLookingOre();

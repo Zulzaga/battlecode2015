@@ -21,8 +21,7 @@ import battlecode.common.TerrainTile;
 
 public class Drone extends Unit {
 
-    //Few drones would be used for exploring the map. Essential variables for those. 
-    //destination  null if it is not an explorer drone!
+    //3 drones would be used for exploring the map. Essential variables for those. 
 
     //Path exploring variables
     public int mode = 0; //0= exploring destination on diagonal then theirHQ, 1 = spreading supply
@@ -46,7 +45,7 @@ public class Drone extends Unit {
     public MapLocation centerOfMap, endCorner2, endCorner1;
     public double distanceToCenter;
     public MapLocation destination;
-    
+
 
 
     public HashSet<MapLocation> reachableSpots = new HashSet<MapLocation>();
@@ -57,7 +56,7 @@ public class Drone extends Unit {
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Drone;
         supplyUpkeep = 10;
-        
+
         toEnemy = myHQ.directionTo(theirHQ);
         Direction toRight = toEnemy.rotateRight().rotateRight();
 
@@ -70,7 +69,7 @@ public class Drone extends Unit {
         endCorner1 = centerOfMap
                 .add(toRight.opposite(), (int) distanceToCenter)
                 .add(toEnemy, 2);
-        
+
         initChannelNum(); 
     }
 
@@ -106,10 +105,6 @@ public class Drone extends Unit {
             destination = endCorner1;
             channel_PathReporting = Channel_PathToCorner2;
         }
-        
-
-//        System.out.println("Destination: " + destination.x + " " + destination.y);
-
     }
 
 
@@ -128,7 +123,7 @@ public class Drone extends Unit {
                     nearestEnemy.location);
             if (distanceToEnemy <= rc.getType().attackRadiusSquared) {
                 attack();
-                // attackRobot(nearestEnemy.location);
+                //attackRobot(nearestEnemy.location);
                 avoid(nearestEnemy);
             } else {
                 if (nearestEnemy.type == RobotType.DRONE) {
@@ -146,32 +141,9 @@ public class Drone extends Unit {
             if (mode == 0){
                 //expanding map range and exploring path.
                 moveToLocationExtandingRange();
-//            }else if( !searchedPath){
-//                ArrayList<MapLocation> pathToMyHQ = findShortestPathAstar( myHQ, 10000 );
-//                    if ( pathToMyHQ != null){
-//                        if( pathTo ==1 ){
-//                            //ourHQ - > theirHQ
-//                            destination = centerOfMap;
-//                            path = "centerOfMap";
-//                        }else if( pathTo ==2 ){
-//                            destination = endCorner2;
-//
-//                            path = "endCorner";
-//                        }else if( pathTo ==0 ){
-//                            destination = endCorner1;
-//                            path = "endCorner";
-//                        }
-//                        for( MapLocation criticalPathPoint: pathToMyHQ ){
-//                            rc.broadcast(channel_PathReporting, criticalPathPoint.x);
-//                            rc.broadcast(channel_PathReporting, criticalPathPoint.y);
-//                            channel_PathReporting +=2;
-//                        }
-//                    };
-//                    searchedPath = true;
-//                    System.out.println("searched!" + Clock.getRoundNum());
             }else{
                 //transfering supply
-              provideSupply();
+                provideSupply();
             }
         }
     }
@@ -199,88 +171,78 @@ public class Drone extends Unit {
         }
         return numNormals;
     }
-    
-    
-    public void provideSupply() throws GameActionException{
-          RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
-                  GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
-          double lowestSupply = rc.getSupplyLevel();
-          double transferAmount = 0;
-          MapLocation suppliesToThisLocation = null;
-          for (RobotInfo ri : nearbyAllies) {
-              if (ri.supplyLevel < lowestSupply) {
-                  lowestSupply = ri.supplyLevel;
-                  transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
-                  suppliesToThisLocation = ri.location;
-              }
-          }
-          if (suppliesToThisLocation != null) {
-              rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
-          }else if (blocked()){
-            changeDestination(destination); 
-          }
-          
-          moveToLocation(destination);
-    
-    }
-    
-    private void changeDestination(MapLocation destination) {
-        if (destination.equals(connectionDest)){
-            destination = aroundEnemyDest;
-        }else if(destination.equals(myHQ) ){
-            destination = connectionDest;
-        }else{
-            destination = myHQ;
+
+
+    public boolean needSupply(RobotInfo[] myRobots){
+        if ( myRobots.length >= 3 ){
+            boolean needSupply = false;
+            double totalSupply = 0;
+            for (RobotInfo rob: myRobots){
+                totalSupply += rob.supplyLevel;
+            }
+            return (totalSupply/myRobots.length < 500); //ave supply level
         }
-        recentPathRecord = new ArrayList<MapLocation>();
+        return false;
     }
 
-//    public void provideSupply() throws GameActionException{
-//        
-//        if (rc.getSupplyLevel() < 100){
-//            destination = myHQ;
-//            moveToLocation(destination);
-//            onDutyForSupply = false;
-//        }else{
-//            if (onDutyForSupply){
-//                if (rc.getLocation().distanceSquaredTo(destination) < 10){
-//                    //structures are always 0 then never call drones.
-//                    RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
-//                            GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, rc.getTeam());
-//                    double lowestSupply = rc.getSupplyLevel();
-//                    double transferAmount = 0;
-//                    MapLocation suppliesToThisLocation = null;
-//                    for (RobotInfo ri : nearbyAllies) {
-//                        if (ri.supplyLevel < lowestSupply) {
-//                            lowestSupply = ri.supplyLevel;
-//                            transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
-//                            suppliesToThisLocation = ri.location;
-//                        }
-//                    }
-//                    if (suppliesToThisLocation != null) {
-//                        rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
-//                    }
-//                }
-//                //after transfer
-//                if (aroundAverageSupply() >500 || rc.getSupplyLevel() < 100 ){
-//                    destination = myHQ;
-//                    moveToLocation(destination);
-//                    onDutyForSupply = false;
-//                }
-//            }else{
-//                if (rc.readBroadcast(channel_callOfSupply) !=0 ){
-//                    int x = rc.readBroadcast(channel_callOfSupplyX);
-//                    int y = rc.readBroadcast(channel_callOfSupplyY);
-//                    destination = new MapLocation(x,y);
-//                    moveToLocation(destination);
-//                    rc.broadcast(channel_callOfSupply, 0);
-//                    onDutyForSupply = true;
-//                }
-//            }
-//        }
-//
-//    }
 
+    /**
+     * If its supply is low, goes back to myHQ for getting supply.
+     * Otherwise,
+     * 
+     * if its transfer supply radius, our robor needs supply. Transfer supply and go its destination.
+     * If it is blocked then change its destination.
+     * 
+     * 
+     * 
+     */
+    public void provideSupply() throws GameActionException{
+//        System.out.println("transfer supply " + Clock.getRoundNum());
+        double lowestSupply = rc.getSupplyLevel();
+        if (lowestSupply < 200 || blocked()){
+            changeDestination();
+        }else{
+            //transfer supply if our robot needs it.
+            RobotInfo[] nearbyAllies = rc.senseNearbyRobots(rc.getLocation(),
+                    GameConstants.SUPPLY_TRANSFER_RADIUS_SQUARED, myTeam);
+            double transferAmount = 0;
+            MapLocation suppliesToThisLocation = null;
+            for (RobotInfo ri : nearbyAllies) {
+                if (ri.supplyLevel < lowestSupply) {
+                    lowestSupply = ri.supplyLevel;
+                    transferAmount = (rc.getSupplyLevel() - ri.supplyLevel) / 2;
+                    suppliesToThisLocation = ri.location;
+                }
+            }
+            if (suppliesToThisLocation != null && lowestSupply < 700) {
+                rc.transferSupplies((int) transferAmount, suppliesToThisLocation);
+
+            }
+            //if this is blocked, then change its destination.
+
+        }
+        moveToLocation(destination);
+//        System.out.println("transfer supply " + Clock.getRoundNum());
+    }
+
+    private void changeDestination() throws GameActionException {
+        if (rc.getSupplyLevel() < 200 ){
+            if (destination.equals(myHQ)){
+                destination = theirHQ;
+            }
+            else destination = myHQ;
+        }else{
+        MapLocation[] towers = rc.senseEnemyTowerLocations();
+        for (MapLocation tower: towers){
+            RobotInfo[] myRobots = rc.senseNearbyRobots(tower, 30, myTeam);
+            if (needSupply(myRobots)){
+                destination = tower;
+                return;
+            }
+        }   
+        destination = theirHQ;
+        }
+    }
 
     // move to location (Safe!)
     public boolean moveToLocation(MapLocation location) throws GameActionException {
@@ -288,7 +250,7 @@ public class Drone extends Unit {
             Direction dirs[] = getDirectionsTowardAndNext(location);
 
             for (Direction newDir : dirs) {
-//                System.out.println("Turn before " + Clock.getRoundNum());
+                //                System.out.println("Turn before " + Clock.getRoundNum());
                 if (rc.canMove(newDir)) {
                     if (!safeToMove2(rc.getLocation().add(newDir))
                             || !safeFromShortShooters(rc.getLocation().add(
@@ -296,7 +258,7 @@ public class Drone extends Unit {
                         continue;
                     } else if (rc.canMove(newDir)) {
                         if( !blocked() ){
-//                            System.out.println("Turn after " + Clock.getRoundNum());
+                            //                            System.out.println("Turn after " + Clock.getRoundNum());
                             rc.move(newDir);
                             return true;
                         }
@@ -356,11 +318,11 @@ public class Drone extends Unit {
                             continue;
                         } else if (rc.canMove(newDir)) {
                             rc.move(newDir);
+                            recordMovement();
                             return;
                         }
                     }
                 }
-                
                 recordMovement(); //record where it ends.
             }
         }
@@ -483,7 +445,7 @@ public class Drone extends Unit {
     }
 
 
-    
+
     /**
      * Attack towers if it sees towers, otherwise attack enemy with lowest
      * health
