@@ -21,7 +21,7 @@ public class Missile {
     }
 
     public void execute() throws GameActionException {
-        RobotInfo[] enemies = rc.senseNearbyRobots(25, theirTeam);
+        RobotInfo[] enemies = rc.senseNearbyRobots(110, theirTeam);
         RobotInfo[] friends = null;
         MapLocation attackLocation = null;
         if (enemies.length > 0) {

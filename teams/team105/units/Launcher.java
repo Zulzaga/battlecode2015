@@ -47,6 +47,10 @@ public class Launcher extends Unit {
         if (enemies.length > 0 && Clock.getRoundNum() > 600) {
             swarmLocation = enemies[0];
         }
+        
+        if (Clock.getRoundNum() > 1000){
+            swarmLocation = theirHQ;
+        }
         // if (Clock.getRoundNum() < 1000) {
         swarmPotLauncher();
         // } else {
@@ -69,7 +73,7 @@ public class Launcher extends Unit {
     }
 
     private void launcherAttackUnit() throws GameActionException {
-        RobotInfo[] enemies = rc.senseNearbyRobots(25, theirTeam);
+        RobotInfo[] enemies = rc.senseNearbyRobots(100, theirTeam);
         RobotInfo[] friends = null;
         MapLocation attackLocation = null;
         if (enemies.length > 0) {

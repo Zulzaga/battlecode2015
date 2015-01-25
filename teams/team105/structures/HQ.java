@@ -395,18 +395,10 @@ public class HQ extends Structure {
     }
     
     private void getMiddleTowerLocation() throws GameActionException {
-        MapLocation[] towerLocations = rc.senseTowerLocations();
-        int middle = towerLocations.length / 2;
-        List<Integer> xLocations = new ArrayList<Integer>();
-        List<Integer> yLocations = new ArrayList<Integer>();
-        for (MapLocation loc : towerLocations) {
-            xLocations.add(loc.x);
-            yLocations.add(loc.y);
-        }
-        Collections.sort(xLocations);
-        Collections.sort(yLocations);
-        int middleX = xLocations.get(middle);
-        int middleY = yLocations.get(middle);
+        MapLocation rallyPoint = new MapLocation( (this.myHQ.x + this.theirHQ.x) / 2,
+                (this.myHQ.y + this.theirHQ.y) / 2);
+        int middleX = rallyPoint.x;
+        int middleY = rallyPoint.y;
         rc.broadcast(Channel_Launcher + 1, middleX);
         rc.broadcast(Channel_Launcher, middleY);
         gotLocation = true;
