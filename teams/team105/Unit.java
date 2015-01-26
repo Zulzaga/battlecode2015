@@ -176,7 +176,7 @@ public abstract class Unit extends BaseBot {
      * direction that does not have any obstacle in front of it, and the
      * position cannot be attacked by the tower of the enemy.
      */
-    private void faceNormalRight() {
+    public void faceNormalRight() {
         MapLocation tileInFront = rc.getLocation().add(facing);
 
         if (rc.senseTerrainTile(tileInFront) != TerrainTile.NORMAL
@@ -372,7 +372,7 @@ public abstract class Unit extends BaseBot {
                             || !safeFromShortShooters(rc.getLocation().add(
                                     newDir))) {
                         continue;
-                    } else if (rc.canMove(newDir)) {
+                    } else if (rc.canMove(newDir)) { //sometimes it happens in next turn
                         rc.move(newDir);
                         return true;
                     }
