@@ -36,7 +36,8 @@ public class Beaver extends Unit {
 
     public void execute() throws GameActionException {
         // basicDistributedConstruction();
-    	improvedStrategy1();
+    	tankStrategy();
+    	//improvedStrategy1();
     	/*
         hugoDroneStrategySmallMap();
         // kairatCombinedStrategyPart1();
@@ -77,6 +78,44 @@ public class Beaver extends Unit {
 	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
 	    		}
 	    		else if(rc.readBroadcast(Channel_TankFactory) < 3 || rc.getTeamOre() > 1500){
+	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+	    		}
+	    		else if(rc.getTeamOre() > 500){
+	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
+	    		}
+	    		
+	    		
+    		}
+    		
+	    } catch (GameActionException e) {
+	        e.printStackTrace();
+	    }
+    }
+    
+    public void tankStrategy(){
+    	try{
+    		attackLeastHealthEnemy();
+    		
+    		if (rc.isCoreReady()) {
+	    		int turn = Clock.getRoundNum();
+	    		double teamOre = rc.getTeamOre();
+	    		
+//	    		
+	    		if(rc.readBroadcast(Channel_MinerFactory) < 1){
+	    			buildUnit(RobotType.MINERFACTORY, Channel_MinerFactory);
+	    		}
+	    		
+	    		//else if(rc.readBroadcast(Channel_Barracks) < 1 && rc.readBroadcast(Channel_Helipad) != 0){
+	    		else if(rc.readBroadcast(Channel_Barracks) < 1){
+	    			buildUnit(RobotType.BARRACKS, Channel_Barracks);
+	    		}
+	    		else if(rc.readBroadcast(Channel_TankFactory) < 2){
+	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+	    		}
+	    		else if(rc.readBroadcast(Channel_SupplyDepot) < 8 && (Clock.getRoundNum() > 600 || rc.getTeamOre() > 300)){
+	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
+	    		}
+	    		else if(rc.readBroadcast(Channel_TankFactory) < 3 || rc.getTeamOre() > 800){
 	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
 	    		}
 	    		else if(rc.getTeamOre() > 500){
