@@ -21,7 +21,7 @@ public class Missile {
     }
 
     public void execute() throws GameActionException {
-        RobotInfo[] enemies = rc.senseNearbyRobots(25, theirTeam);
+        RobotInfo[] enemies = rc.senseNearbyRobots(110, theirTeam);
         RobotInfo[] friends = null;
         MapLocation attackLocation = null;
         if (enemies.length > 0) {
@@ -29,9 +29,13 @@ public class Missile {
             friends = rc.senseNearbyRobots(attackLocation, 2, myTeam);
         }
         if (friends != null) {
-            Direction d = rc.getLocation().directionTo(attackLocation);
-            if (rc.isCoreReady() && rc.canMove(d)) {
-                rc.move(d);
+            if (rc.getLocation() != attackLocation) {
+                Direction d = rc.getLocation().directionTo(attackLocation);
+                if (rc.isCoreReady() && rc.canMove(d)) {
+                    rc.move(d);
+                }
+            } else {
+                rc.explode();
             }
         }
         rc.yield();

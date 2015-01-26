@@ -15,7 +15,6 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.TerrainTile;
 
-
 /*BaseBot represents Unit and Structure.
  * General:
  * 
@@ -56,18 +55,18 @@ import battlecode.common.TerrainTile;
  * 
  */
 public class HQ extends Structure {
-	
-	// hugo. enemies in sight range + 1
-	public RobotInfo[] attackableEnemiesFromHQ;
-	public int numOfTowers;
-	
-    //Keep track all info about armies and their last dest.
-    //Each army unit listens its army channel which is unique.
+
+    // hugo. enemies in sight range + 1
+    public RobotInfo[] attackableEnemiesFromHQ;
+    public int numOfTowers;
+
+    // Keep track all info about armies and their last dest.
+    // Each army unit listens its army channel which is unique.
     public int MAX_NUM_ARMIES = 99;
     public HashMap<Integer, MapLocation> armies = new HashMap<Integer, MapLocation>();
     public int timeLimetBuildingArmy = 0;
 
-    //Analyzing map and choosing strategy
+    // Analyzing map and choosing strategy
     public static int xMin, xMax, yMin, yMax;
     public static int xpos, ypos;
     public static int totalNormal, totalVoid, totalProcessed;
@@ -75,11 +74,12 @@ public class HQ extends Structure {
 
     public static double ratio;
     public static boolean isFinished;
-    public static Integer strategy = 0; //0 - play defensive; 1 - build drones; 2- build soldiers
+    public static Integer strategy = 0; // 0 - play defensive; 1 - build drones;
+                                        // 2- build soldiers
 
     public MapLocation centerOfMap;
-    //     public HashMap
-    
+    // public HashMap
+
     private boolean gotLocation = false;
 
     public HQ(RobotController rc) throws GameActionException {
@@ -87,7 +87,6 @@ public class HQ extends Structure {
 
         centerOfMap = new MapLocation((this.myHQ.x + this.theirHQ.x) / 2,
                 (this.myHQ.y + this.theirHQ.y) / 2);
-
 
         xMin = Math.min(this.myHQ.x, this.theirHQ.x);
         xMax = Math.max(this.myHQ.x, this.theirHQ.x);
@@ -100,48 +99,47 @@ public class HQ extends Structure {
         totalNormal = totalVoid = totalProcessed = 0;
         towerThreat = 0;
         isFinished = false;
-        
-        setNumOfTowers();        
+
+        setNumOfTowers();
         setAttackableEnemies();
 
     }
 
     public void execute() throws GameActionException {
-        if (gotLocation == false){
+        if (gotLocation == false) {
             getMiddleTowerLocation();
         }
-    	/*
+        /*
         attackLeastHealthEnemy();
         */
-    	setNumOfTowers();        
+        setNumOfTowers();
         setAttackableEnemies();
-    	attackLeastHealthEnemyHQ();
+        attackLeastHealthEnemyHQ();
         swarmPot();
 
-//        test();
-    }
-    
-    public void test() throws GameActionException{
-        int startTurn = Clock.getRoundNum();
-        
-        if (Clock.getRoundNum() == 800){
-            ArrayList<MapLocation> path = findShortestPathAstar(centerOfMap, 50 );
-            int spend = Clock.getRoundNum()- startTurn;
-            System.out.println("for shortest path " + spend );
-        }
-        
+        // test();
     }
 
-    
+    public void test() throws GameActionException {
+        int startTurn = Clock.getRoundNum();
+
+        if (Clock.getRoundNum() == 800) {
+            ArrayList<MapLocation> path = findShortestPathAstar(centerOfMap, 50);
+            int spend = Clock.getRoundNum() - startTurn;
+            System.out.println("for shortest path " + spend);
+        }
+
+    }
 
     /**
-     * Order building armies and broadcast it.
-     * To stop building that particular army, one should call stopBuildArmy()
+     * Order building armies and broadcast it. To stop building that particular
+     * army, one should call stopBuildArmy()
+     * 
      * @param dest
      * @throws GameActionException
      */
-    public void startBuildArmy(MapLocation dest) throws GameActionException{
-        if (armies.size() <  MAX_NUM_ARMIES){
+    public void startBuildArmy(MapLocation dest) throws GameActionException {
+        if (armies.size() < MAX_NUM_ARMIES) {
             int armyChannel = newArmyGetChannelID();
             armies.put(armyChannel, dest);
             rc.broadcast(Channel_ArmyMode, armyChannel);
@@ -149,34 +147,38 @@ public class HQ extends Structure {
         }
     }
 
-    public void giveDestinationToArmy(int armyChannel, MapLocation dest) throws GameActionException{
-        rc.broadcast(armyChannel +1 , dest.x); 
-        rc.broadcast(armyChannel +2, dest.y); 
+    public void giveDestinationToArmy(int armyChannel, MapLocation dest)
+            throws GameActionException {
+        rc.broadcast(armyChannel + 1, dest.x);
+        rc.broadcast(armyChannel + 2, dest.y);
 
     }
 
-
     /**
      * If building any army, stops that process.
+     * 
      * @throws GameActionException
      */
-    public void stopBuildArmy() throws GameActionException{
+    public void stopBuildArmy() throws GameActionException {
         rc.broadcast(Channel_ArmyMode, 0);
     }
 
     /**
-     * If the game is army mode, then HQ stops any kind of army building 
-     * if specified time or quantity of specified army units is exceeded. 
+     * If the game is army mode, then HQ stops any kind of army building if
+     * specified time or quantity of specified army units is exceeded.
+     * 
      * @param untilTurn
      * @param quantityLimit
-     * @throws GameActionException 
-     * @return true if stopBuildArmy is called.(Does not necessarily mean there was army building).
+     * @throws GameActionException
+     * @return true if stopBuildArmy is called.(Does not necessarily mean there
+     *         was army building).
      */
-    public boolean stopArmyBuildingRestrictedTo(int armyChannel, int untilTurn, int quantityLimit) throws GameActionException{
-        if (Clock.getRoundNum() > untilTurn){
+    public boolean stopArmyBuildingRestrictedTo(int armyChannel, int untilTurn,
+            int quantityLimit) throws GameActionException {
+        if (Clock.getRoundNum() > untilTurn) {
             stopBuildArmy();
             return true;
-        }else if (rc.readBroadcast(armyChannel) > quantityLimit){
+        } else if (rc.readBroadcast(armyChannel) > quantityLimit) {
             stopBuildArmy();
             return true;
         }
@@ -186,22 +188,23 @@ public class HQ extends Structure {
 
     /**
      * Send all armies to a targeted destination.
+     * 
      * @param dest
-     * @throws GameActionException 
+     * @throws GameActionException
      */
-    public void sendAllArmiesToDest(MapLocation dest) throws GameActionException{
-        for( int armyChannel: armies.keySet()){
-            rc.broadcast(armyChannel +1, dest.x);
-            rc.broadcast(armyChannel +2, dest.y);
+    public void sendAllArmiesToDest(MapLocation dest)
+            throws GameActionException {
+        for (int armyChannel : armies.keySet()) {
+            rc.broadcast(armyChannel + 1, dest.x);
+            rc.broadcast(armyChannel + 2, dest.y);
         }
     }
 
-
-    public void freeArmyUnits(int armyChannel){
+    public void freeArmyUnits(int armyChannel) {
 
     }
 
-    public void formBackArmyUnits( int armyChannel){
+    public void formBackArmyUnits(int armyChannel) {
 
     }
 
@@ -243,6 +246,7 @@ public class HQ extends Structure {
 
     /**
      * Example of building 3 swarmPot armies!!
+     * 
      * @throws GameActionException
      */
     public void armyMode() throws GameActionException {
@@ -256,39 +260,38 @@ public class HQ extends Structure {
             }
         }
 
-        //        stopBuildArmy();
-        //        if(Clock.getRoundNum() == 100){startBuildArmy(centerOfMap);}
+        // stopBuildArmy();
+        // if(Clock.getRoundNum() == 100){startBuildArmy(centerOfMap);}
 
         int currentTurn = Clock.getRoundNum();
-        if(currentTurn == 100 || currentTurn == 900 ){
+        if (currentTurn == 100 || currentTurn == 900) {
             stopBuildArmy();
             startBuildArmy(centerOfMap);
 
-        }else if (currentTurn == 700 ){
+        } else if (currentTurn == 700) {
             stopBuildArmy();
             int x = centerOfMap.x - 10;
             int y = centerOfMap.y + 10;
 
-            MapLocation dest = new MapLocation(x,y);
+            MapLocation dest = new MapLocation(x, y);
             startBuildArmy(dest);
 
-            //        }else if (currentTurn == 700  ){
-            //            stopBuildArmy();
-            //            int x = centerOfMap.x + 10 ;
-            //            int y = centerOfMap.y - 10;  
-            //            MapLocation dest = new MapLocation(x,y);
-            //            startBuildArmy(dest);
-        }else if (currentTurn == 1100){
+            // }else if (currentTurn == 700 ){
+            // stopBuildArmy();
+            // int x = centerOfMap.x + 10 ;
+            // int y = centerOfMap.y - 10;
+            // MapLocation dest = new MapLocation(x,y);
+            // startBuildArmy(dest);
+        } else if (currentTurn == 1100) {
             stopBuildArmy();
             startBuildArmy(centerOfMap);
             sendAllArmiesToDest(theirHQ);
         }
 
-
     }
 
-    
-    //if we call it at least after 200 turns, it is going to worth. By 350; we would have explored most part of the map.
+    // if we call it at least after 200 turns, it is going to worth. By 350; we
+    // would have explored most part of the map.
     public void analyzeMap() {
         while (ypos < yMax + 1) {
             TerrainTile t = rc.senseTerrainTile(new MapLocation(xpos, ypos));
@@ -296,8 +299,7 @@ public class HQ extends Structure {
             if (t == TerrainTile.NORMAL) {
                 totalNormal++;
                 totalProcessed++;
-            }
-            else if (t == TerrainTile.VOID) {
+            } else if (t == TerrainTile.VOID) {
                 totalVoid++;
                 totalProcessed++;
             }
@@ -311,18 +313,20 @@ public class HQ extends Structure {
                 return;
             }
         }
-        ratio = (double)totalNormal / totalProcessed;
+        ratio = (double) totalNormal / totalProcessed;
         isFinished = true;
     }
+
     public void analyzeTowers() {
         MapLocation[] towers = rc.senseEnemyTowerLocations();
         towerThreat = 0;
 
-        for (int i=0; i<towers.length; ++i) {
+        for (int i = 0; i < towers.length; ++i) {
             MapLocation towerLoc = towers[i];
 
-            if ((xMin <= towerLoc.x && towerLoc.x <= xMax && yMin <= towerLoc.y && towerLoc.y <= yMax) || towerLoc.distanceSquaredTo(this.theirHQ) <= 50) {
-                for (int j=0; j<towers.length; ++j) {
+            if ((xMin <= towerLoc.x && towerLoc.x <= xMax && yMin <= towerLoc.y && towerLoc.y <= yMax)
+                    || towerLoc.distanceSquaredTo(this.theirHQ) <= 50) {
+                for (int j = 0; j < towers.length; ++j) {
                     if (towers[j].distanceSquaredTo(towerLoc) <= 50) {
                         towerThreat++;
                     }
@@ -333,50 +337,50 @@ public class HQ extends Structure {
 
     public void chooseStrategy() throws GameActionException {
         if (towerThreat >= 10) {
-            //play defensive
+            // play defensive
             strategy = 0;
-        }
-        else {
+        } else {
             if (ratio <= 0.85) {
-                //build drones
+                // build drones
                 strategy = 1;
-            }
-            else {
-                //build soldiers
+            } else {
+                // build soldiers
                 strategy = 2;
             }
         }
         rc.broadcast(1000, strategy);
     }
-    
+
     /**
      * Hugo's code starts here
      */
-    
-    public int setNumOfTowers(){
-    	numOfTowers = rc.senseTowerLocations().length;
-    	return numOfTowers;
-    }
-    
-    public RobotInfo[] setAttackableEnemies(){
-    	int attackableRange = RobotType.HQ.attackRadiusSquared;
-    	
-    	if(this.numOfTowers >= 5)
-    		attackableRange = 48; // hardcoded?
-    	else if(this.numOfTowers >= 2)
-    		attackableRange = RobotType.HQ.sensorRadiusSquared;
 
-    	this.attackableEnemiesFromHQ = rc.senseNearbyRobots(attackableRange, theirTeam);
-    	return this.attackableEnemiesFromHQ;
+    public int setNumOfTowers() {
+        numOfTowers = rc.senseTowerLocations().length;
+        return numOfTowers;
     }
-    
-    public void attackLeastHealthEnemyHQ() throws GameActionException{
-    	MapLocation toAttack = null;
+
+    public RobotInfo[] setAttackableEnemies() {
+        int attackableRange = RobotType.HQ.attackRadiusSquared;
+
+        if (this.numOfTowers >= 5)
+            attackableRange = 48; // hardcoded?
+        else if (this.numOfTowers >= 2)
+            attackableRange = RobotType.HQ.sensorRadiusSquared;
+
+        this.attackableEnemiesFromHQ = rc.senseNearbyRobots(attackableRange,
+                theirTeam);
+        return this.attackableEnemiesFromHQ;
+    }
+
+    public void attackLeastHealthEnemyHQ() throws GameActionException {
+        MapLocation toAttack = null;
         if (this.attackableEnemiesFromHQ.length == 0) {
-            toAttack = rc.getLocation().add(Direction.NORTH_EAST).add(Direction.NORTH_EAST).add(Direction.NORTH_EAST).add(Direction.NORTH_EAST);
-        }
-        else{
-        	double minEnergon = Double.MAX_VALUE;
+            toAttack = rc.getLocation().add(Direction.NORTH_EAST)
+                    .add(Direction.NORTH_EAST).add(Direction.NORTH_EAST)
+                    .add(Direction.NORTH_EAST);
+        } else {
+            double minEnergon = Double.MAX_VALUE;
 
             for (RobotInfo info : this.attackableEnemiesFromHQ) {
                 if (info.health < minEnergon) {
@@ -384,32 +388,60 @@ public class HQ extends Structure {
                     minEnergon = info.health;
                 }
             }
-        }       
+        }
 
         if (rc.isWeaponReady() && rc.canAttackLocation(toAttack)) {
             rc.attackLocation(toAttack);
+        } else if (rc.isWeaponReady()
+                && rc.canAttackLocation(toAttack.add(toAttack.directionTo(myHQ)))) {
+            rc.attackLocation(toAttack.add(toAttack.directionTo(myHQ)));
         }
-        else if(rc.isWeaponReady() && rc.canAttackLocation(toAttack.add(toAttack.directionTo(myHQ)))){
-        	rc.attackLocation(toAttack.add(toAttack.directionTo(myHQ)));
-        }
-    }
-    
-    private void getMiddleTowerLocation() throws GameActionException {
-        MapLocation[] towerLocations = rc.senseTowerLocations();
-        int middle = towerLocations.length / 2;
-        List<Integer> xLocations = new ArrayList<Integer>();
-        List<Integer> yLocations = new ArrayList<Integer>();
-        for (MapLocation loc : towerLocations) {
-            xLocations.add(loc.x);
-            yLocations.add(loc.y);
-        }
-        Collections.sort(xLocations);
-        Collections.sort(yLocations);
-        int middleX = xLocations.get(middle);
-        int middleY = yLocations.get(middle);
-        rc.broadcast(Channel_Launcher + 1, middleX);
-        rc.broadcast(Channel_Launcher, middleY);
-        gotLocation = true;
     }
 
+    private void getMiddleTowerLocation() throws GameActionException {
+        MapLocation rallyPoint = new MapLocation(
+                (this.myHQ.x + this.theirHQ.x) / 2,
+                (this.myHQ.y + this.theirHQ.y) / 2);
+        int deviationX = Math.abs(this.myHQ.x - this.theirHQ.x);
+        int deviationY = Math.abs(this.myHQ.y - this.theirHQ.y);
+        if (this.myHQ.x > this.theirHQ.x && this.myHQ.y > this.theirHQ.y) {
+            int newX = rallyPoint.x + (int) ((deviationX / 2) * 0.3);
+            int newY = rallyPoint.y + (int) ((deviationY / 2) * 0.3);
+            rallyPoint = new MapLocation(newX, newY);
+        } else if (this.myHQ.x > this.theirHQ.x && this.myHQ.y < this.theirHQ.y) {
+            int newX = rallyPoint.x + (int) ((deviationX / 2) * 0.3);
+            int newY = rallyPoint.y - (int) ((deviationY / 2) * 0.3);
+            rallyPoint = new MapLocation(newX, newY);
+        } else if (this.myHQ.x < this.theirHQ.x && this.myHQ.y > this.theirHQ.y) {
+            int newX = rallyPoint.x - (int) ((deviationX / 2) * 0.3);
+            int newY = rallyPoint.y + (int) ((deviationY / 2) * 0.3);
+            rallyPoint = new MapLocation(newX, newY);
+        } else if (this.myHQ.x < this.theirHQ.x && this.myHQ.y < this.theirHQ.y) {
+            int newX = rallyPoint.x - (int) ((deviationX / 2) * 0.3);
+            int newY = rallyPoint.y - (int) ((deviationY / 2) * 0.3);
+            rallyPoint = new MapLocation(newX, newY);
+        } else if (this.myHQ.x == this.theirHQ.x
+                && this.myHQ.y < this.theirHQ.y) {
+            int newY = rallyPoint.y - (int) ((deviationY / 2) * 0.3);
+            rallyPoint = new MapLocation(rallyPoint.x, newY);
+        } else if (this.myHQ.x == this.theirHQ.x
+                && this.myHQ.y > this.theirHQ.y) {
+            int newY = rallyPoint.y + (int) ((deviationY / 2) * 0.3);
+            rallyPoint = new MapLocation(rallyPoint.x, newY);
+        } else if (this.myHQ.x > this.theirHQ.x
+                && this.myHQ.y == this.theirHQ.y) {
+            int newX = rallyPoint.x + (int) ((deviationX / 2) * 0.3);
+            rallyPoint = new MapLocation(newX, rallyPoint.y);
+        } else if (this.myHQ.x < this.theirHQ.x
+                && this.myHQ.y == this.theirHQ.y) {
+            int newX = rallyPoint.x - (int) ((deviationX / 2) * 0.3);
+            rallyPoint = new MapLocation(newX, rallyPoint.y);
+        }
+
+        int rallyX = rallyPoint.x;
+        int rallyY = rallyPoint.y;
+        rc.broadcast(Channel_Launcher + 1, rallyX);
+        rc.broadcast(Channel_Launcher + 2, rallyY);
+        gotLocation = true;
+    }
 }
