@@ -65,10 +65,10 @@ public class Beaver extends Unit {
 	    		}
 	    		
 	    		//else if(rc.readBroadcast(Channel_Barracks) < 1 && rc.readBroadcast(Channel_Helipad) != 0){
-	    		else if(rc.readBroadcast(Channel_Barracks) != 0){
+	    		else if(rc.readBroadcast(Channel_Barracks) != 1){
 	    			buildUnit(RobotType.BARRACKS, Channel_Barracks);
 	    		}
-	    		else if(rc.readBroadcast(Channel_TankFactory) != 0){
+	    		else if(rc.readBroadcast(Channel_TankFactory) < 2){
 	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
 	    		} else if (rc.readBroadcast(Channel_AerospaceLab) < 2 && rc.readBroadcast(Channel_Helipad) > 0){
 	    		    buildUnit(RobotType.AEROSPACELAB, Channel_AerospaceLab);
@@ -76,7 +76,7 @@ public class Beaver extends Unit {
 	    		else if(rc.readBroadcast(Channel_SupplyDepot) < 8){
 	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
 	    		}
-	    		else if(rc.readBroadcast(Channel_TankFactory) < 3 || rc.getTeamOre() > 1500){
+	    		else if(rc.readBroadcast(Channel_TankFactory) < 5 || rc.getTeamOre() > 1500){
 	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
 	    		}
 	    		else if(rc.getTeamOre() > 500){
