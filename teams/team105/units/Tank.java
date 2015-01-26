@@ -3,6 +3,8 @@ package team105.units;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import team105.Unit;
 import battlecode.common.Clock;
@@ -26,10 +28,14 @@ public class Tank extends Unit {
      * Channel 50
      */
 
+    private boolean rightHand = true;
+    private boolean headTheirHQ = false;
+    private boolean haveSeenEnemy = false;
     private MapLocation movingLocation;
     private boolean triedExploredPath = false;
     private boolean followingCriticalPath = false;
     private ArrayList<MapLocation> criticalPathPoints = new ArrayList<MapLocation>();
+    private HashSet<MapLocation> movementHistory = new HashSet<MapLocation>();
 
     public Tank(RobotController rc) throws GameActionException {
         super(rc);
@@ -39,6 +45,48 @@ public class Tank extends Unit {
         initChannelNum();
         supplyUpkeep = 15;
     }
+
+    //    public void execute() throws GameActionException {
+    //        int numOfTowers = rc.senseTowerLocations().length;
+    //
+    //        if (Clock.getRoundNum() < 1200) {
+    //            harassToLocationTank(theirHQ);
+    //            /*
+    //            if (rc.readBroadcast(this.channelID) != 1) {
+    //                for (int i = 1; i <= numOfTowers; i++) {
+    //                    int towerChannel = Channel_Tower + i * 10;
+    //                    int numOfTanks = rc.readBroadcast(towerChannel + 2);
+    //                    if (numOfTanks < 5) {
+    //                        int posX = rc.readBroadcast(towerChannel);
+    //                        int posY = rc.readBroadcast(towerChannel + 1);
+    //                        movingLocation = new MapLocation(posX + 1, posY);
+    //                        Direction movingDirection = getMoveDir(movingLocation);
+    //                        if (rc.isCoreReady() && rc.canMove(movingDirection)) {
+    //                            rc.move(movingDirection);
+    //                            rc.broadcast(towerChannel + 2, numOfTanks + 1);
+    //                            rc.broadcast(this.channelID, 1);
+    //                        }
+    //                    } else {
+    //                        swarmPotTank();
+    //                    }
+    //                }
+    //            } else {
+    //                attackLeastHealthEnemy();
+    //                Direction movingDirection = getMoveDir(movingLocation);
+    //                if (rc.isCoreReady() && rc.canMove(movingDirection)) {
+    //                    rc.move(movingDirection);
+    //                }
+    //            }
+    //             */
+    //        } else if (Clock.getRoundNum() < 1700) {
+    //            MapLocation nearestTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(
+    //                    rc.senseEnemyTowerLocations());
+    //            harassToLocationTank(nearestTowerSafeFromHQ);
+    //        } else {
+    //            startAttackingTowersAndHQ();
+    //        }
+    //    }
+
 
     public void execute() throws GameActionException {
         int numOfTowers = rc.senseTowerLocations().length;
@@ -74,6 +122,7 @@ public class Tank extends Unit {
             */
         } else if (Clock.getRoundNum() < 1400) {
         	MapLocation nearestTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(
+
                     rc.senseEnemyTowerLocations());
         	if(nearestTowerSafeFromHQ != null)
         		harassToLocationTank(nearestTowerSafeFromHQ);
@@ -226,7 +275,7 @@ public class Tank extends Unit {
             }
         }
     }
-    
+
     public void harassToLocationTank(MapLocation ml) throws GameActionException {
         RobotInfo nearestEnemy = senseNearestEnemyTank(rc.getType());
         
@@ -255,25 +304,27 @@ public class Tank extends Unit {
             } else if (nearestEnemy.type != RobotType.MISSILE && nearestEnemy.type != RobotType.TANK && 
             		nearestEnemy.type != RobotType.LAUNCHER && nearestEnemy.type != RobotType.TOWER) {
             	moveToLocation(nearestEnemy.location);
+
             } else if(nearestEnemy.type == RobotType.TANK && distanceToEnemy > rc.getType().sensorRadiusSquared){
-            	moveToLocation(nearestEnemy.location);
+                moveToLocation(nearestEnemy.location);
             } else if(nearestEnemy.type == RobotType.TANK){ // distanceToEnemy < rc.getType().sensorRadiusSquared
-            	int numAlliesAroundTank = rc.senseNearbyRobots(nearestEnemy.location, rc.getType().sensorRadiusSquared, myTeam).length;
-            	numAlliesAroundTank -= rc.senseNearbyRobots(nearestEnemy.location, rc.getType().sensorRadiusSquared, theirTeam).length;
-            	//System.out.println("polidood");
-//            	if(numAlliesAroundTank > 2)
-//            		moveToLocation(nearestEnemy.location);
-            	if(numAlliesAroundTank > 1 || rc.senseNearbyRobots(nearestEnemy.location, nearestEnemy.type.attackRadiusSquared, myTeam).length > 0)
-            		moveToLocation(nearestEnemy.location);
+                int numAlliesAroundTank = rc.senseNearbyRobots(nearestEnemy.location, rc.getType().sensorRadiusSquared, myTeam).length;
+                numAlliesAroundTank -= rc.senseNearbyRobots(nearestEnemy.location, rc.getType().sensorRadiusSquared, theirTeam).length;
+                //System.out.println("polidood");
+                //            	if(numAlliesAroundTank > 2)
+                //            		moveToLocation(nearestEnemy.location);
+                if(numAlliesAroundTank > 1 || rc.senseNearbyRobots(nearestEnemy.location, nearestEnemy.type.attackRadiusSquared, myTeam).length > 0)
+                    moveToLocation(nearestEnemy.location);
             }
-            
+
             else if(nearestEnemy.type == RobotType.LAUNCHER && distanceToEnemy > rc.getType().sensorRadiusSquared){
             	moveToLocation(ml);
         	} 
             else if(nearestEnemy.type == RobotType.LAUNCHER || nearestEnemy.type == RobotType.MISSILE){ // distanceToEnemy <= rc.getType().sensorRadiusSquared
             	avoid(nearestEnemy);
+
             }
-            
+
             else if(nearestEnemy.type == RobotType.TOWER){
         		int numAlliesAroundTower = rc.senseNearbyRobots(nearestEnemy.location, 50, myTeam).length;
         		numAlliesAroundTower -= rc.senseNearbyRobots(nearestEnemy.location, 50, theirTeam).length;
@@ -282,57 +333,130 @@ public class Tank extends Unit {
         	}
             
         } else {
-            moveToLocation(ml);
+            if (haveSeenEnemy){
+                moveToLocation(ml);
+            }else{
+                //should try to reach enemy side
+                moveToLocationWithMovementRecords(ml);
+
+            }
+
         }
     }
-    
+
+
+
+    public boolean moveToLocationWithMovementRecords(MapLocation ml) throws GameActionException{
+
+        if (rc.isCoreReady()) {
+            recordMovement();
+            if (blocked()){
+                clearMovementRecords();
+            }
+            Direction toDest = rc.getLocation().directionTo(ml);
+            Direction[] dirs = new Direction[] { toDest, toDest.rotateLeft(), toDest.rotateRight(),
+                    toDest.rotateLeft().rotateLeft(),
+                    toDest.rotateRight().rotateRight(),
+            };
+
+            for (Direction newDir : dirs) {
+                MapLocation newLoc = rc.getLocation().add(newDir);
+                if (!movementHistory.contains(newLoc)){
+                    if (rc.canMove(newDir)) {
+                        if (!safeToMove2(newLoc)
+                                || !safeFromShortShooters(newLoc)) {
+                            continue;
+                        } else if (rc.canMove(newDir)) { //sometimes it happens in next turn
+                            rc.move(newDir);
+                            movementHistory.add(newLoc);
+                            recordMovement();
+                            return true;
+                        }
+                    }
+                }
+            }
+
+
+            dirs = new Direction[] { 
+                    toDest.opposite().rotateRight(),
+                    toDest.opposite().rotateLeft(),
+                    toDest.opposite()
+            };
+
+            for (Direction newDir : dirs) {
+                MapLocation newLoc = rc.getLocation().add(newDir);
+                if (rc.canMove(newDir)) {
+                    if (!safeToMove2(newLoc)
+                            || !safeFromShortShooters(newLoc)) {
+                        continue;
+                    } else if (rc.canMove(newDir)) { //sometimes it happens in next turn
+                        rc.move(newDir);
+                        movementHistory.add(newLoc);
+                        recordMovement();
+                        return true;
+                    }
+                }
+            }
+
+        }
+
+        return false;
+    }
+
+    public void clearMovementRecords(){
+        lastSteps = new ArrayList<MapLocation>();
+        movementHistory = new HashSet<MapLocation>();
+    }
+
+
+
     public void moveToLocationWithoutBeingBlocked(MapLocation location) throws GameActionException{
         if (rc.isCoreReady()) {
-            
-                //try to use explored path
-                if (!triedExploredPath){
-                    int xCenter = rc.readBroadcast(Channel_PathCenter);
-                    int yCenter = rc.readBroadcast(Channel_PathCenter +1 );
-                    int xCorner1 = rc.readBroadcast(Channel_PathCorner1);
-                    int yCorner1 = rc.readBroadcast(Channel_PathCorner1 +1 );
-                    int xCorner2 = rc.readBroadcast(Channel_PathCenter);
-                    int yCorner2 = rc.readBroadcast(Channel_PathCorner1 +1 );
-                    
-                    MapLocation locCenter = new MapLocation(xCenter, yCenter);
-                    MapLocation locCorner1 = new MapLocation(xCorner1, yCorner1);
-                    MapLocation locCorner2 = new MapLocation(xCorner2, yCorner2);
-                    double distToCenter = rc.getLocation().distanceSquaredTo(locCenter);
-                    double distToCorner1 = rc.getLocation().distanceSquaredTo(locCorner1);
-                    double distToCorner2 = rc.getLocation().distanceSquaredTo(locCorner2);
-                    double nullDest = rc.getLocation().distanceSquaredTo(new MapLocation(0,0));
-                    
-                    double closestPath = Math.min(distToCorner2, Math.min(distToCenter, distToCorner1));
-                    
-                    if (closestPath == nullDest){
-                        
-                    }else if (closestPath == distToCenter ){
-                        setCriticalPathPoints(Channel_PathCenter);
-                        triedExploredPath = true;
-                        followingCriticalPath = true;
-                        destination = criticalPathPoints.remove(0);
-                        recentPathRecord= new ArrayList<MapLocation>();
-                    }else if ( closestPath == distToCorner1 ){
-                        setCriticalPathPoints(Channel_PathCorner1);
-                        triedExploredPath = true;
-                        followingCriticalPath = true;
-                        destination = criticalPathPoints.remove(0);
-                        recentPathRecord= new ArrayList<MapLocation>();
-                    }else if (closestPath == distToCorner2){
-                        setCriticalPathPoints(Channel_PathCorner2);
-                        triedExploredPath = true;
-                        followingCriticalPath = true;
-                        destination = criticalPathPoints.remove(0);
-                        recentPathRecord= new ArrayList<MapLocation>();
-                    }
-                 
-                    
+
+            //try to use explored path
+            if (!triedExploredPath){
+                int xCenter = rc.readBroadcast(Channel_PathCenter);
+                int yCenter = rc.readBroadcast(Channel_PathCenter +1 );
+                int xCorner1 = rc.readBroadcast(Channel_PathCorner1);
+                int yCorner1 = rc.readBroadcast(Channel_PathCorner1 +1 );
+                int xCorner2 = rc.readBroadcast(Channel_PathCenter);
+                int yCorner2 = rc.readBroadcast(Channel_PathCorner1 +1 );
+
+                MapLocation locCenter = new MapLocation(xCenter, yCenter);
+                MapLocation locCorner1 = new MapLocation(xCorner1, yCorner1);
+                MapLocation locCorner2 = new MapLocation(xCorner2, yCorner2);
+                double distToCenter = rc.getLocation().distanceSquaredTo(locCenter);
+                double distToCorner1 = rc.getLocation().distanceSquaredTo(locCorner1);
+                double distToCorner2 = rc.getLocation().distanceSquaredTo(locCorner2);
+                double nullDest = rc.getLocation().distanceSquaredTo(new MapLocation(0,0));
+
+                double closestPath = Math.min(distToCorner2, Math.min(distToCenter, distToCorner1));
+
+                if (closestPath == nullDest){
+
+                }else if (closestPath == distToCenter ){
+                    setCriticalPathPoints(Channel_PathCenter);
+                    triedExploredPath = true;
+                    followingCriticalPath = true;
+                    destination = criticalPathPoints.remove(0);
+                    recentPathRecord= new ArrayList<MapLocation>();
+                }else if ( closestPath == distToCorner1 ){
+                    setCriticalPathPoints(Channel_PathCorner1);
+                    triedExploredPath = true;
+                    followingCriticalPath = true;
+                    destination = criticalPathPoints.remove(0);
+                    recentPathRecord= new ArrayList<MapLocation>();
+                }else if (closestPath == distToCorner2){
+                    setCriticalPathPoints(Channel_PathCorner2);
+                    triedExploredPath = true;
+                    followingCriticalPath = true;
+                    destination = criticalPathPoints.remove(0);
+                    recentPathRecord= new ArrayList<MapLocation>();
+                }
+
+
             }
-            
+
             if (followingCriticalPath){
                 if (blocked()){
                     if (criticalPathPoints.size() > 0){
@@ -346,9 +470,9 @@ public class Tank extends Unit {
                     //destination is normal and turning point so it is necessary to get there)
                     if (rc.getLocation().equals((destination))){
                         if (criticalPathPoints.size() > 0){
-                        destination = criticalPathPoints.remove(0);
-                        recentPathRecord= new ArrayList<MapLocation>();
-                        moveAndRecordLocation(destination);
+                            destination = criticalPathPoints.remove(0);
+                            recentPathRecord= new ArrayList<MapLocation>();
+                            moveAndRecordLocation(destination);
                         }else{
                             //we reached destination
                             followingCriticalPath = false;
@@ -360,12 +484,12 @@ public class Tank extends Unit {
                 }
             }else{
                 moveAndRecordLocation(location);
-          
+
+            }
         }
-        }
-        
+
     }
-    
+
     private void setCriticalPathPoints(int channelPath) throws GameActionException {
         int x = rc.readBroadcast(channelPath);
         int y = rc.readBroadcast(channelPath + 1);
@@ -387,8 +511,8 @@ public class Tank extends Unit {
                 int distance = rc.getLocation().distanceSquaredTo(
                         robot.location);
                 if (distance < nearestDistance && 
-                		robot.type != RobotType.HQ &&
-                		robot.location.distanceSquaredTo(theirHQ) > 10) {
+                        robot.type != RobotType.HQ &&
+                        robot.location.distanceSquaredTo(theirHQ) > 10) {
                     nearestDistance = distance;
                     nearestRobot = robot;
                 }

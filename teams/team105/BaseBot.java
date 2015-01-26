@@ -181,6 +181,14 @@ public abstract class BaseBot {
     public static int Channel_PathMiddle2 = 1004;
     public static int Channel_PathCorner1 = 1005;
     public static int Channel_PathCorner2 = 1006;
+    
+    public static int Channel_PathDiscoveryToClosestTower = 1007;
+    public static int Channel_PathDiscoveryToTheirHQ = 1008;
+
+    //0 - nothing has been reported
+    //1 - right hand preference works
+    //2 - left hand preference works
+    //3 - both hand preference work. directly myHQ -> theirHQ
 
     // /// Channels for path which 3 drones may find///////
     public static int Channel_PathToCenter = 1100;
@@ -245,7 +253,7 @@ public abstract class BaseBot {
         this.theirTeam = this.myTeam.opponent();
         this.rand = new Random(rc.getID());
         criticalDirection = myHQ.directionTo(theirHQ);
-//        emptyMatrix();
+        emptyMatrix();
     }
 
     public Boolean isNormalTerrain(MapLocation loc) {
@@ -278,27 +286,27 @@ public abstract class BaseBot {
     }
 
     public void markVoidMatrix(MapLocation loc) {
-//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "#";
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "#";
     }
 
     public void markPathMatrix(MapLocation loc) {
-//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "*";
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "*";
     }
 
     public void markNormalMartrix(MapLocation loc) {
-//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "-";
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "-";
     }
 
     public void markStartMatrix(MapLocation loc) {
-//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "S";
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "S";
     }
 
     public void markDestMatrix(MapLocation loc) {
-//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "D";
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "D";
     }
 
     public void markSpecMatrix(MapLocation loc) {
-//        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "=";
+        matrix[loc.x - myHQ.x + halfMatrixSize][loc.y - myHQ.y + halfMatrixSize] = "=";
     }
 
     /**
@@ -515,7 +523,6 @@ public abstract class BaseBot {
             }
         }
         System.out.println("no path!");
-        MatrixtoString();
         // System.out.println("start: " + start.x + "  " + start.y);
         // System.out.println("dest: " + dest.x + "  " + dest.y);
 
@@ -551,8 +558,7 @@ public abstract class BaseBot {
                 pre = start.directionTo(end);
             }
         }
-        MatrixtoString();
-        System.out.println("/n CRITICAL POINTS");
+//        System.out.println("/n CRITICAL POINTS");
         return path;
 
     }

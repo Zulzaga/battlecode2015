@@ -13,7 +13,7 @@ public class Barracks extends Structure {
     }
 
     public void execute() throws GameActionException {
-        // swarmPot();
+//        spawnUnit(RobotType.SOLDIER);
     }
     
 

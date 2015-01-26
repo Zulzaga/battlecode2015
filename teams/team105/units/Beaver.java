@@ -25,7 +25,7 @@ import battlecode.common.TerrainTile;
  * 
  */
 public class Beaver extends Unit {
-    
+
     public Beaver(RobotController rc) throws GameActionException {
         super(rc);
         // Initialize channelID and increment total number of this RobotType
@@ -36,61 +36,64 @@ public class Beaver extends Unit {
 
     public void execute() throws GameActionException {
         // basicDistributedConstruction();
+
     	tankStrategy();
     	//improvedStrategy1();
     	/*
+=======
+        improvedStrategyIveel();
+        /*
         hugoDroneStrategySmallMap();
         // kairatCombinedStrategyPart1();
         kairatCombinedStrategyPart2();
         transferSupplies();
-		*/
-    	
+         */
+
         rc.yield();
     }
-    
-    public void improvedStrategy1(){
-    	try{
-    		attackLeastHealthEnemy();
-    		
-    		if (rc.isCoreReady()) {
-	    		int turn = Clock.getRoundNum();
-	    		double teamOre = rc.getTeamOre();
-	    		
-//	    		
-	    		if(rc.readBroadcast(Channel_MinerFactory) < 1){
-	    			buildUnit(RobotType.MINERFACTORY, Channel_MinerFactory);
-	    		}
-	    		
-	    		else if (rc.readBroadcast(Channel_Helipad) < 1){
-	    			buildUnit(RobotType.HELIPAD, Channel_Helipad);
-	    		}
-	    		
-	    		//else if(rc.readBroadcast(Channel_Barracks) < 1 && rc.readBroadcast(Channel_Helipad) != 0){
-	    		else if(rc.readBroadcast(Channel_Barracks) != 0){
-	    			buildUnit(RobotType.BARRACKS, Channel_Barracks);
-	    		}
-	    		else if(rc.readBroadcast(Channel_TankFactory) != 0){
-	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
-	    		} else if (rc.readBroadcast(Channel_AerospaceLab) < 2 && rc.readBroadcast(Channel_Helipad) > 0){
-	    		    buildUnit(RobotType.AEROSPACELAB, Channel_AerospaceLab);
-	    		}
-	    		else if(rc.readBroadcast(Channel_SupplyDepot) < 8){
-	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
-	    		}
-	    		else if(rc.readBroadcast(Channel_TankFactory) < 3 || rc.getTeamOre() > 1500){
-	    			buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
-	    		}
-	    		else if(rc.getTeamOre() > 500){
-	    			buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
-	    		}
-	    		
-	    		
-    		}
-    		
-	    } catch (GameActionException e) {
-	        e.printStackTrace();
-	    }
+
+    public void improvedStrategy1() {
+        try {
+            attackLeastHealthEnemy();
+
+            if (rc.isCoreReady()) {
+                int turn = Clock.getRoundNum();
+                double teamOre = rc.getTeamOre();
+
+                //
+                if (rc.readBroadcast(Channel_MinerFactory) < 1) {
+                    buildUnit(RobotType.MINERFACTORY, Channel_MinerFactory);
+                }
+
+                else if (rc.readBroadcast(Channel_Helipad) < 1) {
+                    buildUnit(RobotType.HELIPAD, Channel_Helipad);
+                }
+
+                // else if(rc.readBroadcast(Channel_Barracks) < 1 &&
+                // rc.readBroadcast(Channel_Helipad) != 0){
+                else if (rc.readBroadcast(Channel_Barracks) != 1) {
+                    buildUnit(RobotType.BARRACKS, Channel_Barracks);
+                } else if (rc.readBroadcast(Channel_TankFactory) < 2) {
+                    buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+                } else if (rc.readBroadcast(Channel_AerospaceLab) < 2
+                        && rc.readBroadcast(Channel_Helipad) > 0) {
+                    buildUnit(RobotType.AEROSPACELAB, Channel_AerospaceLab);
+                } else if (rc.readBroadcast(Channel_SupplyDepot) < 8) {
+                    buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
+                } else if (rc.readBroadcast(Channel_TankFactory) < 5
+                        || rc.getTeamOre() > 1500) {
+                    buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+                } else if (rc.getTeamOre() > 500) {
+                    buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
+                }
+
+            }
+
+        } catch (GameActionException e) {
+            e.printStackTrace();
+        }
     }
+
     
     public void tankStrategy(){
     	try{
@@ -130,7 +133,47 @@ public class Beaver extends Unit {
 	    }
     }
     
-    public synchronized static void incrementNumStructure(RobotController rc, int channel) throws GameActionException{
+
+
+    public void improvedStrategyIveel() {
+        try {
+            attackLeastHealthEnemy();
+
+            if (rc.isCoreReady()) {
+                int turn = Clock.getRoundNum();
+                double teamOre = rc.getTeamOre();
+
+                //
+                if (rc.readBroadcast(Channel_MinerFactory) < 1) {
+                    buildUnit(RobotType.MINERFACTORY, Channel_MinerFactory);
+                } else if (rc.readBroadcast(Channel_Barracks) < 1) {
+                    buildUnit(RobotType.BARRACKS, Channel_Barracks);
+                } else if (rc.readBroadcast(Channel_TankFactory) < 2) {
+                    buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+
+                } else if (rc.readBroadcast(Channel_Tank) < 10) {
+
+                    if (rc.readBroadcast(Channel_AerospaceLab) < 2
+                            && rc.readBroadcast(Channel_Helipad) > 0) {
+                        buildUnit(RobotType.AEROSPACELAB, Channel_AerospaceLab);
+                    } else if (rc.readBroadcast(Channel_SupplyDepot) < 8) {
+                        buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
+                    } else if (rc.readBroadcast(Channel_TankFactory) < 3
+                            || rc.getTeamOre() > 1500) {
+                        buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+                    } else if (rc.getTeamOre() > 500) {
+                        buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
+                    }
+                }
+            }
+
+        } catch (GameActionException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public synchronized static void incrementNumStructure(RobotController rc,
+            int channel) throws GameActionException {
         int spawnedOrder = rc.readBroadcast(channel) + 1;
         rc.broadcast(channel, spawnedOrder);
     }
@@ -197,58 +240,57 @@ public class Beaver extends Unit {
 
     }
 
-
     /**
-     * if this can, start building a given particular structure and increment its number.
-     * Otherwise, move. 
+     * if this can, start building a given particular structure and increment
+     * its number. Otherwise, move.
+     * 
      * @param type
      * @param channelForNumStructure
      * @throws GameActionException
      */
-    public void buildUnit(RobotType type, int channelForNumStructure) throws GameActionException {
+    public void buildUnit(RobotType type, int channelForNumStructure)
+            throws GameActionException {
         if (rc.getTeamOre() > type.oreCost) {
             MapLocation buildLoc = getBuildLocationChess();
-            
-            if(buildLoc == null){
-            	moveAround();
+
+            if (buildLoc == null) {
+                moveAround();
+            } else {
+                Direction buildDir = rc.getLocation().directionTo(buildLoc);
+
+                // can build at the location now
+                if (rc.getLocation().distanceSquaredTo(buildLoc) <= 2) {
+                    if (rc.isCoreReady() && rc.canBuild(buildDir, type)) {
+                        incrementNumStructure(rc, channelForNumStructure);
+                        rc.build(buildDir, type);
+                    }
+                } else { // cannot build, have to move there
+                    moveToLocation(buildLoc);
+                }
             }
-            else{
-	        	Direction buildDir = rc.getLocation().directionTo(buildLoc);
-	        	
-	        	// can build at the location now
-	            if(rc.getLocation().distanceSquaredTo(buildLoc) <= 2){
-		            if (rc.isCoreReady() && rc.canBuild(buildDir, type)) {
-		                incrementNumStructure(rc,channelForNumStructure );
-		                rc.build(buildDir, type);
-		            }
-	        	}
-		        else{ // cannot build, have to move there
-		        	moveToLocation(buildLoc);
-		        }
-            }
-            
+
         }
     }
 
-	private MapLocation getBuildLocationChess() throws GameActionException {
-		MapLocation curLocation = rc.getLocation();
-		MapLocation[] locations = MapLocation.getAllMapLocationsWithinRadiusSq(curLocation, rc.getType().sensorRadiusSquared);
-		
-		MapLocation nearestChess = null;
-		int minDist = Integer.MAX_VALUE;
-		
-		for(MapLocation loc : locations){
-			if(loc.distanceSquaredTo(curLocation) < minDist && 
-					(loc.x + loc.y - myHQ.x - myHQ.y) % 2 == 0 &&
-					rc.senseTerrainTile(loc) == TerrainTile.NORMAL &&
-					!rc.isLocationOccupied(loc)) {
-				minDist = loc.distanceSquaredTo(curLocation);
-				nearestChess = loc;
-			}
-		}
-		
-		return nearestChess;
-	}
-    
-    
+    private MapLocation getBuildLocationChess() throws GameActionException {
+        MapLocation curLocation = rc.getLocation();
+        MapLocation[] locations = MapLocation.getAllMapLocationsWithinRadiusSq(
+                curLocation, rc.getType().sensorRadiusSquared);
+
+        MapLocation nearestChess = null;
+        int minDist = Integer.MAX_VALUE;
+
+        for (MapLocation loc : locations) {
+            if (loc.distanceSquaredTo(curLocation) < minDist
+                    && (loc.x + loc.y - myHQ.x - myHQ.y) % 2 == 0
+                    && rc.senseTerrainTile(loc) == TerrainTile.NORMAL
+                    && !rc.isLocationOccupied(loc)) {
+                minDist = loc.distanceSquaredTo(curLocation);
+                nearestChess = loc;
+            }
+        }
+
+        return nearestChess;
+    }
+
 }

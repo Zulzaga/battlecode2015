@@ -7,6 +7,9 @@ import battlecode.common.*;
 import iveel.Unit;
 
 public class Soldier extends Unit {
+    
+    
+    MapLocation initDest;
 
     public Soldier(RobotController rc) throws GameActionException {
         super(rc);
@@ -15,7 +18,28 @@ public class Soldier extends Unit {
         channelStartWith = Channel_Soldier;
         initChannelNum(); 
         tryArmyUnit();
+
+    }
+    
+    
+    /**
+     * Initialize channelNum AA BBB 
+     * 
+     * Increment total number of this robot type.
+     * @throws GameActionException
+     */
+    public void initChannelNum() throws GameActionException{
+        int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
+        rc.broadcast(channelStartWith, spawnedOrder);
+        channelID = channelStartWith + spawnedOrder*10;
         
+        
+        MapLocation[] towers = rc.senseEnemyTowerLocations();
+        if( spawnedOrder%3 == 1 || towers.length == 0){
+            initDest = theirHQ;
+        }else{
+            initDest = towers[spawnedOrder%towers.length];
+        }
     }
     
     public void execute() throws GameActionException {
@@ -81,6 +105,7 @@ public class Soldier extends Unit {
             }
         }
     }
+    
 
     /**
      * Comparator for the hit points of health of two different robots

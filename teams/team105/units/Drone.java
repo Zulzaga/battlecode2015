@@ -142,8 +142,13 @@ public class Drone extends Unit {
                 //expanding map range and exploring path.
                 moveToLocationExtandingRange();
             }else{
+//                if (!searchedPath){
+//                    findShortestPathAstar(rc.getLocation(), 36);
+////                    MatrixtoString();
+//                    searchedPath = true;
+//                }
                 //transfering supply
-                provideSupply();
+//                provideSupply();
             }
         }
     }
@@ -353,24 +358,7 @@ public class Drone extends Unit {
         return null;
     }
 
-    public void startAttackingTowersAndHQ() throws GameActionException{
-        MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
 
-        MapLocation nearestAttackableTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(enemyTowers);
-
-        if(nearestAttackableTowerSafeFromHQ != null){
-            attackTower();
-            moveToLocationSafeFromHQ(nearestAttackableTowerSafeFromHQ);
-        }
-        else if(enemyTowers.length > 0){
-            attackTower();
-            moveToLocationNotSafe(enemyTowers[0]);
-        }
-        else{
-            attackTower();
-            moveToLocationNotSafe(theirHQ);
-        }
-    }
 
     public MapLocation nearestAttackableTowerSafeFromHQ(MapLocation[] enemyTowers){
         MapLocation towerLocation = null;
@@ -396,89 +384,10 @@ public class Drone extends Unit {
         harassToLocation(ml);
     }
 
-    public void player6() throws GameActionException {
-        attackTower();
-        moveAround();
-    }
-
-    public void swarmPot() throws GameActionException {
-        //        attackLeastHealthEnemy();
-
-        if (rc.isCoreReady()) {
-            int rallyX = rc.readBroadcast(0);
-            int rallyY = rc.readBroadcast(1);
-            MapLocation rallyPoint = new MapLocation(rallyX, rallyY);
-
-            Direction newDir = getMoveDir(rallyPoint);
-
-            if (newDir != null) {
-                rc.move(newDir);
-            }
-        }
-    }
-
-
-    /**
-     * Check if it has found greater ore area than it had found before.
-     * If so , broadcast it. (since that spot is reachable).
-     * @throws GameActionException
-     */
-    public void checkOreArea() throws GameActionException{ 
-        double tempMax = 0;
-        Integer coordX = null;
-        Integer coordY = null;
-        for (MapLocation loc: reachableSpots){
-            double sensedOre = rc.senseOre(loc);
-            if (sensedOre > tempMax){
-                tempMax = sensedOre;
-                coordX = loc.x;
-                coordY = loc.y;
-            }
-        }
-
-        if (maxOreArea < tempMax){
-            maxOreArea = tempMax;
-            rc.broadcast(channel_maxOreAmount, (int) Math.ceil(maxOreArea));
-            rc.broadcast(channel_maxOreX, coordX);
-            rc.broadcast(channel_maxOreY, coordY);
-        }
-    }
 
 
 
-    /**
-     * Attack towers if it sees towers, otherwise attack enemy with lowest
-     * health
-     * 
-     * @throws GameActionException
-     */
-    private void attackTower() throws GameActionException {
-        RobotInfo[] nearbyEnemies = rc.senseNearbyRobots(rc.getLocation(),
-                rc.getType().attackRadiusSquared, rc.getTeam().opponent());
 
-        int numberOfEnemies = nearbyEnemies.length;
-        if (numberOfEnemies > 0) {
-            MapLocation attackBuildingLocation = null;
-            for (RobotInfo enemy : nearbyEnemies) {
-                if (enemy.type == RobotType.TOWER) {
-                    attackBuildingLocation = enemy.location;
-                }
-            }
-
-            if (attackBuildingLocation != null) {
-                if (rc.isWeaponReady()
-                        && rc.canAttackLocation(attackBuildingLocation)) {
-                    rc.attackLocation(attackBuildingLocation);
-                }
-            } else {
-                Arrays.sort(nearbyEnemies, new RobotHealthComparator());
-                if (rc.isWeaponReady()
-                        && rc.canAttackLocation(nearbyEnemies[numberOfEnemies - 1].location)) {
-                    rc.attackLocation(nearbyEnemies[numberOfEnemies - 1].location);
-                }
-            }
-        }
-    }
 
     /**
      * Comparator for the hit points of health of two different robots
