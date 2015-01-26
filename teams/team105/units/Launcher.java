@@ -43,16 +43,12 @@ public class Launcher extends Unit {
     }
 
     public void execute() throws GameActionException {
-        MapLocation[] enemies = rc.senseEnemyTowerLocations();
-        if (enemies.length > 0 && Clock.getRoundNum() > 600) {
-            swarmLocation = enemies[0];
-        }
-        
-        if (Clock.getRoundNum() > 1000){
+        // System.out.println(swarmLocation);
+        if (Clock.getRoundNum() > 1800) {
             swarmLocation = theirHQ;
         }
         // if (Clock.getRoundNum() < 1000) {
-        swarmPotLauncher();
+        harassToLocationLauncher(swarmLocation);
         // } else {
         // launcherStartAttackingTowersAndHQ();
         // }
@@ -162,7 +158,8 @@ public class Launcher extends Unit {
 
     }
 
-    private void directionToIntBroadcast(Direction dir) throws GameActionException {
+    private void directionToIntBroadcast(Direction dir)
+            throws GameActionException {
         switch (dir) {
         case NORTH:
             rc.broadcast(Channel_Launcher + 3, 1);
@@ -189,5 +186,99 @@ public class Launcher extends Unit {
             rc.broadcast(Channel_Launcher + 3, 8);
             break;
         }
+    }
+
+    public void harassToLocationLauncher(MapLocation ml)
+            throws GameActionException {
+        RobotInfo nearestEnemy = senseNearestEnemyTank();
+
+        if (nearestEnemy != null) {
+            int distanceToEnemy = rc.getLocation().distanceSquaredTo(
+                    nearestEnemy.location);
+            if (distanceToEnemy <= 50) { // hard coded distance
+                int numOfFriends = rc.senseNearbyRobots(nearestEnemy.location,
+                        2, myTeam).length;
+                Direction d = rc.getLocation().directionTo(
+                        nearestEnemy.location);
+                if (numOfFriends < 2 && rc.isWeaponReady() && rc.canLaunch(d)) {
+                    rc.launchMissile(d);
+                }
+            } else if (nearestEnemy.type != RobotType.TANK
+                    && nearestEnemy.type != RobotType.LAUNCHER) {
+                moveToLocation(nearestEnemy.location);
+            } else if (nearestEnemy.type == RobotType.TANK
+                    && distanceToEnemy > rc.getType().sensorRadiusSquared) {
+                moveToLocation(nearestEnemy.location);
+            } else if (nearestEnemy.type == RobotType.TANK) { // distanceToEnemy
+                                                              // <
+                                                              // rc.getType().sensorRadiusSquared
+                int numAlliesAroundTank = rc.senseNearbyRobots(
+                        nearestEnemy.location,
+                        rc.getType().sensorRadiusSquared, myTeam).length;
+                numAlliesAroundTank -= rc.senseNearbyRobots(
+                        nearestEnemy.location,
+                        rc.getType().sensorRadiusSquared, theirTeam).length;
+                // System.out.println("polidood");
+                // if(numAlliesAroundTank > 2)
+                // moveToLocation(nearestEnemy.location);
+                if (numAlliesAroundTank > 1
+                        || rc.senseNearbyRobots(nearestEnemy.location,
+                                nearestEnemy.type.attackRadiusSquared, myTeam).length > 0)
+                    moveToLocation(nearestEnemy.location);
+            }
+
+            else if (nearestEnemy.type == RobotType.LAUNCHER
+                    && distanceToEnemy > rc.getType().sensorRadiusSquared) {
+                moveToLocation(nearestEnemy.location);
+            } else if (nearestEnemy.type == RobotType.LAUNCHER) { // distanceToEnemy
+                                                                  // <=
+                                                                  // rc.getType().sensorRadiusSquared
+                int numAlliesAroundTank = rc.senseNearbyRobots(
+                        nearestEnemy.location,
+                        rc.getType().sensorRadiusSquared, myTeam).length;
+                numAlliesAroundTank -= rc.senseNearbyRobots(
+                        nearestEnemy.location,
+                        rc.getType().sensorRadiusSquared, theirTeam).length;
+                // System.out.println("polidood");
+                if (numAlliesAroundTank > 4)
+                    startAttackingTowersAndHQ();
+            }
+
+            else if (nearestEnemy.type == RobotType.TOWER) {
+                int numAlliesAroundTower = rc.senseNearbyRobots(
+                        nearestEnemy.location, 50, myTeam).length;
+                numAlliesAroundTower -= rc.senseNearbyRobots(
+                        nearestEnemy.location, 50, theirTeam).length;
+                if (numAlliesAroundTower > 5)
+                    startAttackingTowersAndHQ();
+            }
+        } else {
+            moveToLocation(ml);
+        }
+    }
+
+    public RobotInfo senseNearestEnemyTank() {
+        RobotInfo[] enemies = senseNearbyEnemiesTank();
+
+        if (enemies.length > 0) {
+            RobotInfo nearestRobot = null;
+            int nearestDistance = Integer.MAX_VALUE;
+            for (RobotInfo robot : enemies) {
+                int distance = rc.getLocation().distanceSquaredTo(
+                        robot.location);
+                if (distance < nearestDistance && robot.type != RobotType.HQ
+                        && robot.location.distanceSquaredTo(theirHQ) > 10) {
+                    nearestDistance = distance;
+                    nearestRobot = robot;
+                }
+            }
+            return nearestRobot;
+        }
+        return null;
+    }
+
+    // return all the sensible enemies
+    public RobotInfo[] senseNearbyEnemiesTank() {
+        return rc.senseNearbyRobots(1000, theirTeam);
     }
 }

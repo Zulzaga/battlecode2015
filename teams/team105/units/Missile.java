@@ -29,9 +29,13 @@ public class Missile {
             friends = rc.senseNearbyRobots(attackLocation, 2, myTeam);
         }
         if (friends != null) {
-            Direction d = rc.getLocation().directionTo(attackLocation);
-            if (rc.isCoreReady() && rc.canMove(d)) {
-                rc.move(d);
+            if (rc.getLocation() != attackLocation) {
+                Direction d = rc.getLocation().directionTo(attackLocation);
+                if (rc.isCoreReady() && rc.canMove(d)) {
+                    rc.move(d);
+                }
+            } else {
+                rc.explode();
             }
         }
         rc.yield();
