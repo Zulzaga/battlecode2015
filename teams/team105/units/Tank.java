@@ -31,17 +31,35 @@ public class Tank extends Unit {
     private boolean rightHand = true;
     private boolean headTheirHQ = false;
     private boolean haveSeenEnemy = false;
+    private boolean reachedInitialDest = false;
     private MapLocation movingLocation;
     private boolean triedExploredPath = false;
     private boolean followingCriticalPath = false;
     private ArrayList<MapLocation> criticalPathPoints = new ArrayList<MapLocation>();
     private HashSet<MapLocation> movementHistory = new HashSet<MapLocation>();
+    private Direction toEnemy;
+    private double distanceToCenter;
+
+    public MapLocation centerOfMap, endCorner2, endCorner1;
 
     public Tank(RobotController rc) throws GameActionException {
         super(rc);
 
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Tank;
+        toEnemy = myHQ.directionTo(theirHQ);
+        Direction toRight = toEnemy.rotateRight().rotateRight();
+
+        centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
+                (myHQ.y + theirHQ.y) / 2);
+        distanceToCenter = Math.pow(myHQ.distanceSquaredTo(centerOfMap), 0.5);
+
+        endCorner2 = centerOfMap.add(toRight, (int) distanceToCenter).add(
+                toEnemy, 2);
+        endCorner1 = centerOfMap
+                .add(toRight.opposite(), (int) distanceToCenter)
+                .add(toEnemy, 2);
+
         initChannelNum();
         supplyUpkeep = 15;
     }
@@ -247,11 +265,11 @@ public class Tank extends Unit {
         RobotInfo nearestEnemy = senseNearestEnemyTank(rc.getType());
 
         if (nearestEnemy != null) {
-//            if (!haveSeenEnemy){
-                haveSeenEnemy = true;
-//                rc.broadcast(, arg1);
-//            }
-            
+            //            if (!haveSeenEnemy){
+            haveSeenEnemy = true;
+            //                rc.broadcast(, arg1);
+            //            }
+
             int distanceToEnemy = rc.getLocation().distanceSquaredTo(
                     nearestEnemy.location);
             if (distanceToEnemy <= rc.getType().attackRadiusSquared) {
@@ -295,8 +313,7 @@ public class Tank extends Unit {
                 moveToLocation(ml);
             }else{
                 //should try to reach enemy side
-                moveToLocationWithMovementRecords(ml);
-
+                moveToLocationWithMovementRecords(destination);
             }
 
         }
@@ -311,6 +328,7 @@ public class Tank extends Unit {
             if (blocked()){
                 clearMovementRecords();
             }
+
             Direction toDest = rc.getLocation().directionTo(ml);
             Direction[] dirs = new Direction[] { toDest, toDest.rotateLeft(), toDest.rotateRight(),
                     toDest.rotateLeft().rotateLeft(),
@@ -360,6 +378,41 @@ public class Tank extends Unit {
 
         return false;
     }
+
+
+    /**
+     * Initialize channelNum AA BBB
+     * 
+     * Increment total number of this robot type.
+     * 
+     * @throws GameActionException
+     */
+    public void initChannelNum() throws GameActionException {
+        int spawnedOrder = rc.readBroadcast(channelStartWith) + 1;
+        rc.broadcast(channelStartWith, spawnedOrder);
+        channelID = channelStartWith + spawnedOrder * 10;
+
+        MapLocation[] towers = rc.senseEnemyTowerLocations();
+        if( spawnedOrder <= 5){ 
+            destination = theirHQ;
+        }else if ( spawnedOrder <= 15){
+            if (spawnedOrder%2 == 1){
+                destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner1);
+            }else{
+                destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner2);
+            }
+        }else if( spawnedOrder % 20 >15){
+            destination = theirHQ;
+        }else if(spawnedOrder % 20 < 5){
+            destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner1);
+        }else if(spawnedOrder % 20 < 10){
+            destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner2);
+        }else{// 10-15
+            destination = theirHQ;
+        }
+    }
+
+
 
     public void clearMovementRecords(){
         lastSteps = new ArrayList<MapLocation>();
@@ -483,6 +536,22 @@ public class Tank extends Unit {
     // return all the sensible enemies
     public RobotInfo[] senseNearbyEnemiesTank(RobotType type) {
         return rc.senseNearbyRobots(1000, theirTeam);
+    }
+    
+    public MapLocation nearestAttackableTowerSafeFromHQ(
+            MapLocation[] enemyTowers, MapLocation fromHere) {
+        MapLocation towerLocation = null;
+        int distance = Integer.MAX_VALUE;
+
+        for (MapLocation location : enemyTowers) {
+            int tempDistance = fromHere.distanceSquaredTo(location);
+            if (tempDistance < distance && safelyAttackableFromHQ(location)) {
+                distance = tempDistance;
+                towerLocation = location;
+            }
+        }
+
+        return towerLocation;
     }
 
 }
