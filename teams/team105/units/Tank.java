@@ -107,11 +107,13 @@ public class Tank extends Unit {
 
 
     public void execute() throws GameActionException {
+        
+//        System.out.println(Clock.getRoundNum());
         int numOfTowers = rc.senseTowerLocations().length;
 
         if (Clock.getRoundNum() < 1000) {
-        	harassToLocationTank(theirHQ);
-        	/*
+            combinedHarassingAndSearching(theirHQ);
+            /*
             if (rc.readBroadcast(this.channelID) != 1) {
                 for (int i = 1; i <= numOfTowers; i++) {
                     int towerChannel = Channel_Tower + i * 10;
@@ -137,18 +139,20 @@ public class Tank extends Unit {
                     rc.move(movingDirection);
                 }
             }
-            */
+             */
         } else if (Clock.getRoundNum() < 1400) {
-        	MapLocation nearestTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(
+            MapLocation nearestTowerSafeFromHQ = nearestAttackableTowerSafeFromHQ(
 
                     rc.senseEnemyTowerLocations());
-        	if(nearestTowerSafeFromHQ != null)
-        		harassToLocationTank(nearestTowerSafeFromHQ);
-        	else
-        		startAttackingTowersAndHQ();
+            if(nearestTowerSafeFromHQ != null)
+                combinedHarassingAndSearching(nearestTowerSafeFromHQ);
+            else
+                startAttackingTowersAndHQ();
         } else {
             startAttackingTowersAndHQ();
         }
+        
+//        System.out.println(Clock.getRoundNum());
     }
 
     /**
@@ -294,36 +298,53 @@ public class Tank extends Unit {
         }
     }
 
-    public void harassToLocationTank(MapLocation ml) throws GameActionException {
-        RobotInfo nearestEnemy = senseNearestEnemyTank(rc.getType());
+    public void combinedHarassingAndSearching(MapLocation ml) throws GameActionException{
+        if (!haveSeenEnemy){
+            RobotInfo nearestEnemy = senseNearestButMayFarEnemyTank(rc.getType());
+            if (nearestEnemy != null){
+                if (nearestEnemy.type != RobotType.DRONE){
+                    haveSeenEnemy = true;
+                }
+                harassToLocationTank(ml, nearestEnemy);
+                clearMovementRecords();
+            }else{
+                moveToLocationWithMovementRecords(destination);
+            }
+        }else{
+            RobotInfo nearestEnemy = senseNearestEnemyTank(rc.getType());
+            harassToLocationTank(ml, nearestEnemy);
+        }
+    }
 
-        
+    public void harassToLocationTank(MapLocation ml, RobotInfo nearestEnemy) throws GameActionException {
+
         MapLocation[] enemyTowers = rc.senseEnemyTowerLocations();
         MapLocation theirTower = nearestAttackableTowerSafeFromHQ(enemyTowers);
-        
-        
-        
+
+
+
         int alliesAroundTower = 0;
-        
+
         if(rc.getLocation().distanceSquaredTo(theirTower) < 51){
-	        alliesAroundTower = rc.senseNearbyRobots(theirTower, 50, myTeam).length;
-			alliesAroundTower -= rc.senseNearbyRobots(theirTower, 50, theirTeam).length;
+            alliesAroundTower = rc.senseNearbyRobots(theirTower, 50, myTeam).length;
+            alliesAroundTower -= rc.senseNearbyRobots(theirTower, 50, theirTeam).length;
         }
-        
-		if(alliesAroundTower > 5){
-			startAttackingTowersAndHQ();
-		}
+
+        if(alliesAroundTower > 5){
+            startAttackingTowersAndHQ();
+        }
         else if (nearestEnemy != null) {
-            haveSeenEnemy = true;
+
+
             int distanceToEnemy = rc.getLocation().distanceSquaredTo(
                     nearestEnemy.location);
             if (distanceToEnemy <= rc.getType().attackRadiusSquared) {
-            	if(rc.isWeaponReady() && rc.canAttackLocation(nearestEnemy.location))
-            		rc.attackLocation(nearestEnemy.location);
-            	//attackLeastHealthEnemy();
+                if(rc.isWeaponReady() && rc.canAttackLocation(nearestEnemy.location))
+                    rc.attackLocation(nearestEnemy.location);
+                //attackLeastHealthEnemy();
             } else if (nearestEnemy.type != RobotType.MISSILE && nearestEnemy.type != RobotType.TANK && 
-            		nearestEnemy.type != RobotType.LAUNCHER && nearestEnemy.type != RobotType.TOWER) {
-            	moveToLocation(nearestEnemy.location);
+                    nearestEnemy.type != RobotType.LAUNCHER && nearestEnemy.type != RobotType.TOWER) {
+                moveToLocation(nearestEnemy.location);
 
             } else if(nearestEnemy.type == RobotType.TANK && distanceToEnemy > rc.getType().sensorRadiusSquared){
                 moveToLocation(nearestEnemy.location);
@@ -338,30 +359,48 @@ public class Tank extends Unit {
             }
 
             else if(nearestEnemy.type == RobotType.LAUNCHER && distanceToEnemy > rc.getType().sensorRadiusSquared){
-            	moveToLocation(ml);
-        	} 
+                moveToLocation(ml);
+            } 
             else if(nearestEnemy.type == RobotType.LAUNCHER || nearestEnemy.type == RobotType.MISSILE){ // distanceToEnemy <= rc.getType().sensorRadiusSquared
-            	avoid(nearestEnemy);
+                avoid(nearestEnemy);
 
             }
 
             else if(nearestEnemy.type == RobotType.TOWER){
-        		int numAlliesAroundTower = rc.senseNearbyRobots(nearestEnemy.location, 50, myTeam).length;
-        		numAlliesAroundTower -= rc.senseNearbyRobots(nearestEnemy.location, 50, theirTeam).length;
-        		if(numAlliesAroundTower > 5)
-        			startAttackingTowersAndHQ();
-        	}
-            
-        } else {
-            if (haveSeenEnemy){
-                moveToLocation(ml);
-            }else{
-                //should try to reach enemy side
-                moveToLocationWithMovementRecords(destination);
+                int numAlliesAroundTower = rc.senseNearbyRobots(nearestEnemy.location, 50, myTeam).length;
+                numAlliesAroundTower -= rc.senseNearbyRobots(nearestEnemy.location, 50, theirTeam).length;
+                if(numAlliesAroundTower > 5)
+                    startAttackingTowersAndHQ();
             }
 
+        } else {
+            moveToLocation(ml);
         }
     }
+
+    // move to location
+    public boolean moveToLocation(MapLocation ml)
+            throws GameActionException {
+            if (rc.isCoreReady()) {
+                Direction dirs[] = getDirectionsToward(ml);
+
+                for (Direction newDir : dirs) {
+                    if (rc.canMove(newDir)) {
+                        if (!safeToMove2(rc.getLocation().add(newDir))
+                                || !safeFromShortShooters(rc.getLocation().add(
+                                        newDir))) {
+                            continue;
+                        } else if (rc.canMove(newDir)) { //sometimes it happens in next turn
+                            rc.move(newDir);
+                            return true;
+                        }
+                    }
+                }
+            }
+        return false;
+    }
+    
+
 
 
 
@@ -437,23 +476,24 @@ public class Tank extends Unit {
         channelID = channelStartWith + spawnedOrder * 10;
 
         MapLocation[] towers = rc.senseEnemyTowerLocations();
-        if( spawnedOrder <= 5){ 
-            destination = theirHQ;
-        }else if ( spawnedOrder <= 15){
-            if (spawnedOrder%2 == 1){
-                destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner1);
-            }else{
-                destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner2);
-            }
-        }else if( spawnedOrder % 20 >15){
-            destination = theirHQ;
-        }else if(spawnedOrder % 20 < 5){
-            destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner1);
-        }else if(spawnedOrder % 20 < 10){
-            destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner2);
-        }else{// 10-15
-            destination = theirHQ;
-        }
+//        destination = theirHQ;
+                if( spawnedOrder <= 5){ 
+                    destination = theirHQ;
+                }else if ( spawnedOrder <= 15){
+                    if (spawnedOrder%2 == 1){
+                        destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner1);
+                    }else{
+                        destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner2);
+                    }
+                }else if( spawnedOrder % 20 >15){
+                    destination = theirHQ;
+                }else if(spawnedOrder % 20 < 5){
+                    destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner1);
+                }else if(spawnedOrder % 20 < 10){
+                    destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations(), endCorner2);
+                }else{// 10-15
+                    destination = theirHQ;
+                }
     }
 
 
@@ -572,7 +612,30 @@ public class Tank extends Unit {
                     nearestRobot = robot;
                 }
             }
-            return nearestRobot;
+        }
+        return null;
+    }
+
+
+    public RobotInfo senseNearestButMayFarEnemyTank(RobotType type){
+        RobotInfo[] enemies = senseNearbyEnemiesTank(type);
+
+        if (enemies.length > 0) {
+            RobotInfo nearestRobot = null;
+            int nearestDistance = Integer.MAX_VALUE;
+            for (RobotInfo robot : enemies) {
+                int distance = rc.getLocation().distanceSquaredTo(
+                        robot.location);
+                if (distance < nearestDistance && 
+                        robot.type != RobotType.HQ &&
+                        robot.location.distanceSquaredTo(theirHQ) > 10) {
+                    nearestDistance = distance;
+                    nearestRobot = robot;
+                }
+            }
+            if (nearestDistance < 24){
+                return nearestRobot;
+            }
         }
         return null;
     }
@@ -581,7 +644,7 @@ public class Tank extends Unit {
     public RobotInfo[] senseNearbyEnemiesTank(RobotType type) {
         return rc.senseNearbyRobots(1000, theirTeam);
     }
-    
+
     public MapLocation nearestAttackableTowerSafeFromHQ(
             MapLocation[] enemyTowers, MapLocation fromHere) {
         MapLocation towerLocation = null;
