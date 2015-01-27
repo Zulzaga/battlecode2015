@@ -12,7 +12,9 @@ public class AerospaceLab extends Structure {
     }
 
     public void execute() throws GameActionException {
-        spawnUnit(RobotType.LAUNCHER);
+        if (rc.readBroadcast(Channel_Launcher) < 10){
+            spawnUnit(RobotType.LAUNCHER);
+        }
     }
 
 }

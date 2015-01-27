@@ -460,6 +460,9 @@ public class Tank extends Unit {
         //                }
 
         destination = nearestAttackableTowerSafeFromHQ(rc.senseEnemyTowerLocations());
+        if (destination == null){
+            destination = theirHQ;
+        }
 //
 //        if( spawnedOrder%12 <= 6){ 
 //            destination = theirHQ;

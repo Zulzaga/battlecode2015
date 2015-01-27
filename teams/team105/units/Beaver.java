@@ -37,7 +37,8 @@ public class Beaver extends Unit {
     public void execute() throws GameActionException {
         // basicDistributedConstruction();
 
-    	tankStrategy();
+//    	tankStrategy();
+    	 improvedStrategyIveel();
     	//improvedStrategy1();
     	/*
 =======
@@ -136,40 +137,56 @@ public class Beaver extends Unit {
 
 
     public void improvedStrategyIveel() {
-        try {
-            attackLeastHealthEnemy();
+                try{
+                    attackLeastHealthEnemy();
+                    if (rc.isCoreReady()) {
+                        int turn = Clock.getRoundNum();
+                        double teamOre = rc.getTeamOre();             
+                        if(rc.readBroadcast(Channel_MinerFactory) < 1){
+                            buildUnit(RobotType.MINERFACTORY, Channel_MinerFactory);
+//                            System.out.println("minerFactory" + Clock.getRoundNum());
+                        }
+                        else if(rc.readBroadcast(Channel_Barracks) < 1){
+                            buildUnit(RobotType.BARRACKS, Channel_Barracks);
+//                            System.out.println("Barracks" + Clock.getRoundNum());
+                        }
+                        else if(rc.readBroadcast(Channel_TankFactory) < 1){
+                            buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+//                            System.out.println("tank Factory" + Clock.getRoundNum());
+                        }
+                        else if (rc.readBroadcast(Channel_Tank) > 2){
+                            if(rc.readBroadcast(Channel_TankFactory) < 2){
+                                buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+//                                System.out.println("tank -- Factory" + Clock.getRoundNum());
+                            }
+                            else if(rc.readBroadcast(Channel_SupplyDepot) < 1 && (Clock.getRoundNum() > 600 || rc.getTeamOre() > 300)){
+                                buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
+//                                System.out.println("supply depot" + Clock.getRoundNum());
+                            }
+                            
+                            else if (rc.readBroadcast(Channel_Helipad) < 1) {
+                                buildUnit(RobotType.HELIPAD, Channel_Helipad);
+//                                System.out.println("helipad" + Clock.getRoundNum());
+                            }
+                            
+                            else if(rc.readBroadcast(Channel_TankFactory) < 3 || rc.getTeamOre() > 800){
+                                buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
+//                                System.out.println("tank Factory" + Clock.getRoundNum());
+                            }
+                            else if(rc.readBroadcast(Channel_AerospaceLab) < 1)
+                                buildUnit(RobotType.AEROSPACELAB, Channel_AerospaceLab);
+//                            System.out.println("aeroSpace lab" + Clock.getRoundNum());
+                            }
+                            else if(rc.getTeamOre() > 500){
+                                buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
+                            }
+                        }
 
-            if (rc.isCoreReady()) {
-                int turn = Clock.getRoundNum();
-                double teamOre = rc.getTeamOre();
+                } catch (GameActionException e) {
+                    e.printStackTrace();
 
-                //
-                if (rc.readBroadcast(Channel_MinerFactory) < 1) {
-                    buildUnit(RobotType.MINERFACTORY, Channel_MinerFactory);
-                } else if (rc.readBroadcast(Channel_Barracks) < 1) {
-                    buildUnit(RobotType.BARRACKS, Channel_Barracks);
-                } else if (rc.readBroadcast(Channel_TankFactory) < 2) {
-                    buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
-
-                } else if (rc.readBroadcast(Channel_Tank) < 10) {
-
-                    if (rc.readBroadcast(Channel_AerospaceLab) < 2
-                            && rc.readBroadcast(Channel_Helipad) > 0) {
-                        buildUnit(RobotType.AEROSPACELAB, Channel_AerospaceLab);
-                    } else if (rc.readBroadcast(Channel_SupplyDepot) < 8) {
-                        buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
-                    } else if (rc.readBroadcast(Channel_TankFactory) < 3
-                            || rc.getTeamOre() > 1500) {
-                        buildUnit(RobotType.TANKFACTORY, Channel_TankFactory);
-                    } else if (rc.getTeamOre() > 500) {
-                        buildUnit(RobotType.SUPPLYDEPOT, Channel_SupplyDepot);
-                    }
                 }
-            }
 
-        } catch (GameActionException e) {
-            e.printStackTrace();
-        }
     }
 
     public synchronized static void incrementNumStructure(RobotController rc,

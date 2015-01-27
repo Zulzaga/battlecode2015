@@ -17,21 +17,21 @@ public class Helipad extends Structure {
 
     public void execute() throws GameActionException {
 
-        if (numDrones < 3){
-
-            try {
-                int roundNum = Clock.getRoundNum();
-                if(rc.isCoreReady() && rc.readBroadcast(Channel_Drone) < 5) {
-                    Direction spawnDir = getSpawnDirection(RobotType.DRONE);
-                    if (spawnDir != null) {
-                        numDrones +=1;
-                        rc.spawn(spawnDir, RobotType.DRONE);
-                    }
-                }
-            } catch (GameActionException e) {
-                e.printStackTrace();
-            }
-        }
+//        if (numDrones < 3){
+//
+//            try {
+//                int roundNum = Clock.getRoundNum();
+//                if(rc.isCoreReady() && rc.readBroadcast(Channel_Drone) < 5) {
+//                    Direction spawnDir = getSpawnDirection(RobotType.DRONE);
+//                    if (spawnDir != null) {
+//                        numDrones +=1;
+//                        rc.spawn(spawnDir, RobotType.DRONE);
+//                    }
+//                }
+//            } catch (GameActionException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
         rc.yield();
     }

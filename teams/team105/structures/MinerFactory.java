@@ -13,7 +13,11 @@ public class MinerFactory extends Structure {
     }
 
     public void execute() throws GameActionException {
-        if (rc.readBroadcast(Channel_Miner) < 30) {
+        if (rc.readBroadcast(Channel_Miner) < 15) {
+            spawnUnit(RobotType.MINER);
+        }else if(rc.readBroadcast(Channel_Tank) > 2 ){
+            spawnUnit(RobotType.MINER);
+        }else if(rc.readBroadcast(Channel_Miner) < 30){
             spawnUnit(RobotType.MINER);
         }
 

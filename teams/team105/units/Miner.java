@@ -10,6 +10,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.TerrainTile;
 
@@ -97,60 +98,6 @@ public class Miner extends Unit {
         }
 
     }
-
-    public void findOreArea() throws GameActionException{
-        if (Clock.getRoundNum() > 200){
-            double maxOre = 0;
-            double ore1 = rc.readBroadcast(Channel_OreAmount1 ) ;
-            double ore2 = rc.readBroadcast(Channel_OreAmount2 ) ;
-            double ore3 = rc.readBroadcast(Channel_OreAmount3 ) ;
-
-            ArrayList<Double> arrayList = new ArrayList<Double>(Arrays.asList(ore1, ore2,ore3));
-            Collections.sort(arrayList); 
-            double max = arrayList.get(arrayList.size() - 1);
-
-            if (max == 0){
-                //destination has not defined!
-            }if (max == ore2){
-                int coordX = rc.readBroadcast(Channel_OreAreaX2) ;
-                int coordY = rc.readBroadcast(Channel_OreAreaY2);
-                destination = new MapLocation(coordX , coordY);
-
-            }else if (max == ore3){
-                int coordX = rc.readBroadcast(Channel_OreAreaX3) ;
-                int coordY = rc.readBroadcast(Channel_OreAreaY3);
-                destination = new MapLocation(coordX , coordY);
-            }
-            //System.out.println( "DESTINATION for ore ----" + destination);
-        }else if(Clock.getRoundNum() > 600){
-            double maxOre = 0;
-            double ore1 = rc.readBroadcast(Channel_OreAmount1 ) ;
-            double ore2 = rc.readBroadcast(Channel_OreAmount2 ) ;
-            double ore3 = rc.readBroadcast(Channel_OreAmount3 ) ;
-
-            ArrayList<Double> arrayList = new ArrayList<Double>(Arrays.asList(ore1,ore2,ore3));
-            Collections.sort(arrayList); 
-            double max = arrayList.get(arrayList.size() - 1);
-
-            if (max == 0){
-                //destination has not defined!
-            }else if (max == ore1){
-                int coordX = rc.readBroadcast(Channel_OreAreaX1) ;
-                int coordY = rc.readBroadcast(Channel_OreAreaY1);
-                destination = new MapLocation(coordX , coordY);
-            }else if (max == ore2){
-                int coordX = rc.readBroadcast(Channel_OreAreaX2) ;
-                int coordY = rc.readBroadcast(Channel_OreAreaY2);
-                destination = new MapLocation(coordX , coordY);
-
-            }else if (max == ore3){
-                int coordX = rc.readBroadcast(Channel_OreAreaX3) ;
-                int coordY = rc.readBroadcast(Channel_OreAreaY3);
-                destination = new MapLocation(coordX , coordY);
-
-            }
-        }   
-    }
     
     public void mineAndMove() throws GameActionException {
         double sensedOre = rc.senseOre(rc.getLocation());
@@ -168,8 +115,32 @@ public class Miner extends Unit {
     }
 
     public void execute() throws GameActionException {
-        attackEnemyZero();
-        mineAndMove();
+        RobotInfo nearestEnemy = senseNearestEnemy(rc.getType());
+
+        if (nearestEnemy != null) {
+            int distanceToEnemy = rc.getLocation().distanceSquaredTo(
+                    nearestEnemy.location);
+            if (distanceToEnemy <= rc.getType().attackRadiusSquared) {
+                attack();
+                // attackRobot(nearestEnemy.location);
+                avoid(nearestEnemy);
+                return;
+            } else {
+                if (nearestEnemy.type == RobotType.MINER) {
+                    if (shouldStand) {
+                        shouldStand = false; // waited once
+                    } else {
+                        moveToLocation(nearestEnemy.location);
+                        shouldStand = true;
+                    }
+                } else {
+                    avoid(nearestEnemy);
+                }
+            }
+        } else {
+            mineAndMove();
+        }
+     
     }
 
 
