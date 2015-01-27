@@ -37,7 +37,6 @@ public class Tank extends Unit {
     private boolean followingCriticalPath = false;
     private ArrayList<MapLocation> criticalPathPoints = new ArrayList<MapLocation>();
     private HashSet<MapLocation> movementHistory = new HashSet<MapLocation>();
-    private Direction toEnemy;
     private double distanceToCenter;
 
     public MapLocation centerOfMap, endCorner2, endCorner1;
@@ -47,18 +46,6 @@ public class Tank extends Unit {
 
         // Initialize channelID and increment total number of this RobotType
         channelStartWith = Channel_Tank;
-        toEnemy = myHQ.directionTo(theirHQ);
-        Direction toRight = toEnemy.rotateRight().rotateRight();
-
-        centerOfMap = new MapLocation((myHQ.x + theirHQ.x) / 2,
-                (myHQ.y + theirHQ.y) / 2);
-        distanceToCenter = Math.pow(myHQ.distanceSquaredTo(centerOfMap), 0.5);
-
-        endCorner2 = centerOfMap.add(toRight, (int) distanceToCenter).add(
-                toEnemy, 2);
-        endCorner1 = centerOfMap
-                .add(toRight.opposite(), (int) distanceToCenter)
-                .add(toEnemy, 2);
 
         initChannelNum();
         supplyUpkeep = 15;

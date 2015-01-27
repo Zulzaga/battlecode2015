@@ -13,7 +13,8 @@ public class Barracks extends Structure {
     }
 
     public void execute() throws GameActionException {
-//        spawnUnit(RobotType.SOLDIER);
+//        if (rc.readBroadcast()))
+        spawnUnit(RobotType.SOLDIER);
     }
     
 
